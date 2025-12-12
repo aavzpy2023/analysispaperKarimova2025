@@ -50,6 +50,7 @@ def get_top_10_models():
     def make_stack(est):
         return StackingRegressor(estimators=est, final_estimator=RidgeCV(), cv=5, n_jobs=-1, passthrough=False)
 
+    # Nombres descriptivos (M01 a M10)
     models = [
         ("M01_ET+LGBM",       make_stack([('et', et), ('lgbm', lgbm)])),
         ("M02_ET+LGBM+PLS",   make_stack([('et', et), ('lgbm', lgbm), ('pls', pls)])),
@@ -64,12 +65,14 @@ def get_top_10_models():
     ]
     return models
 
-def run_unified_ranking():
+def run_final_audit():
     print("="*100)
-    print("PROTOCOLO FINAL: RANKING UNIFICADO (Top Hits + Referencias)")
+    print("PROTOCOLO FINAL: AUDITORÍA DE EFICIENCIA Y PREDICCIÓN FDA")
     print("="*100)
 
-    # 1. ENTRENAMIENTO
+    # -------------------------------------------------------
+    # 1. ENTRENAMIENTO (CON CRONÓMETRO)
+    # -------------------------------------------------------
     print("\n[1] Entrenando Tribunal de Modelos...")
     df_train = pd.read_csv(TRAIN_FILE).dropna(subset=['Smiles', 'pIC50 Value'])
     train_mols = [Chem.MolFromSmiles(s) for s in df_train['Smiles']]
@@ -77,18 +80,29 @@ def run_unified_ranking():
     y_train = df_train['pIC50 Value'].values
 
     trained_models = []
+    efficiency_stats = [] # Para guardar tiempos
+    
     model_definitions = get_top_10_models()
     model_col_names = [m[0] for m in model_definitions]
     
     for name, model in model_definitions:
+        start_t = time.time()
         model.fit(X_train, y_train)
+        train_time = time.time() - start_t
+        
+        print(f"    -> {name:<20} entrenado en {train_time:.2f}s")
         trained_models.append((name, model))
         
+        # Guardar parciamente el tiempo de entrenamiento
+        efficiency_stats.append({'Model': name, 'Train Time (s)': train_time})
+        
+    # Isolation Forest
     iso_forest = IsolationForest(contamination=ISO_CONTAMINATION, random_state=42, n_jobs=-1)
     iso_forest.fit(X_train)
-    print("    -> Modelos listos.")
 
+    # -------------------------------------------------------
     # 2. PROCESAMIENTO FDA
+    # -------------------------------------------------------
     print("\n[2] Procesando FDA...")
     try:
         df_fda = pd.read_csv(FDA_FILE)
@@ -120,12 +134,33 @@ def run_unified_ranking():
     
     print(f"    -> Candidatos Finales Válidos: {len(final_candidates)}")
 
-    # 3. PREDICCIONES
-    print("\n[3] Generando Votos...")
+    # -------------------------------------------------------
+    # 3. PREDICCIÓN (CON CRONÓMETRO)
+    # -------------------------------------------------------
+    print("\n[3] Generando Votos y Midiendo Tiempos de Inferencia...")
     model_predictions = {}
-    for name, model in trained_models:
-        model_predictions[name] = model.predict(X_final)
     
+    # Actualizar la tabla de eficiencia con tiempos de predicción
+    for i, (name, model) in enumerate(trained_models):
+        start_t = time.time()
+        preds = model.predict(X_final)
+        pred_time = time.time() - start_t
+        
+        model_predictions[name] = preds
+        efficiency_stats[i]['Pred Time (s)'] = pred_time
+        efficiency_stats[i]['Total Time (s)'] = efficiency_stats[i]['Train Time (s)'] + pred_time
+
+    # --- REPORTE DE EFICIENCIA ---
+    df_eff = pd.DataFrame(efficiency_stats)
+    print("\n" + "="*80)
+    print("AUDITORÍA DE EFICIENCIA COMPUTACIONAL (Top 10 Modelos)")
+    print("="*80)
+    print(df_eff.to_string(index=False))
+    print("-" * 80)
+
+    # -------------------------------------------------------
+    # 4. CONSOLIDACIÓN DE RESULTADOS QUÍMICOS
+    # -------------------------------------------------------
     detailed_results = []
     for i in range(len(final_candidates)):
         item = final_candidates[i]
@@ -142,27 +177,23 @@ def run_unified_ranking():
         
     df_res = pd.DataFrame(detailed_results).sort_values(by='CONSENSUS_MEAN', ascending=False)
     
-    # 4. CONSTRUCCIÓN DEL TABLERO UNIFICADO
+    # Ranking Unificado
     print("\n" + "="*160)
-    print("RANKING ESTRATÉGICO UNIFICADO (Top 10 Nuevos + Referencias Paper)")
+    print("RANKING ESTRATÉGICO UNIFICADO (Fármacos FDA)")
     print("="*160)
     
-    # A. Obtener el Top 10 Absoluto
     top_10 = df_res.head(10).copy()
     top_10['Type'] = '[TOP]'
     
-    # B. Obtener las Referencias del Paper
     targets = ['Trimetrexate', 'Methotrexate', 'Pyrimethamine', 'Trimethoprim', 'Bisacodyl', 'Etodolac', 'Triamterene']
-    # Crear regex para buscar cualquiera de los targets
     pattern = '|'.join(targets)
     refs = df_res[df_res['Name'].str.contains(pattern, case=False, na=False)].copy()
     refs['Type'] = '[REF]'
     
-    # C. Unir y Ordenar
     combined = pd.concat([top_10, refs]).drop_duplicates(subset=['CID'])
     combined = combined.sort_values(by='CONSENSUS_MEAN', ascending=False)
     
-    # D. Imprimir
+    # Formato de tabla ancha
     header = f"{'Type':<6} | {'Drug Name':<25} | {'Mean':<6} | {'Std':<5}"
     for i in range(1, 11):
         header += f" | {f'M{i:02d}':<5}"
@@ -178,7 +209,6 @@ def run_unified_ranking():
 
     print("\n[LEYENDA]")
     print("M01: ET+LGBM (El Ganador) | M05: LGBM Solo | M10: RF+ET (Clásico)")
-    print("[TOP]: Nuevo descubrimiento | [REF]: Fármaco mencionado en el paper")
 
 if __name__ == "__main__":
-    run_unified_ranking()
+    run_final_audit()
