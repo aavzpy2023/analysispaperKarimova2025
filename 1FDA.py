@@ -1,13 +1,20 @@
 import pandas as pd
 import numpy as np
-from rdkit import Chem, RDLogger
-from rdkit.Chem import AllChem, DataStructs, Descriptors
-from sklearn.ensemble import RandomForestRegressor, ExtraTreesRegressor, StackingRegressor, IsolationForest
-from sklearn.linear_model import RidgeCV
 import warnings
 import time
+from rdkit import Chem, RDLogger
+from rdkit.Chem import AllChem, DataStructs, Descriptors
 
-# --- PROTOCOLO DE SILENCIO ---
+# --- MODELOS ---
+from sklearn.ensemble import RandomForestRegressor, ExtraTreesRegressor, StackingRegressor, IsolationForest
+from sklearn.svm import SVR
+from sklearn.cross_decomposition import PLSRegression
+from sklearn.linear_model import RidgeCV
+import lightgbm as lgb
+
+# =========================================================
+# PROTOCOLO DE SILENCIO
+# =========================================================
 RDLogger.DisableLog('rdApp.*') 
 warnings.filterwarnings("ignore")
 
@@ -28,117 +35,160 @@ def get_fp(mol):
 def check_atom_consistency(mol):
     if mol is None: return False
     for atom in mol.GetAtoms():
-        if atom.GetAtomicNum() not in ALLOWED_ATOMS:
-            return False
+        if atom.GetAtomicNum() not in ALLOWED_ATOMS: return False
     return True
 
-def run_comparison():
-    print("="*70)
-    print("COMPARATIVA FINAL: SINGLE RF vs. STACKING (RF+ET)")
-    print("="*70)
+# --- DEFINICIÓN DE LOS 10 MEJORES (TOP TIER) ---
+def get_top_10_models():
+    # Base estimators
+    rf = RandomForestRegressor(n_estimators=100, random_state=42, n_jobs=-1)
+    et = ExtraTreesRegressor(n_estimators=100, random_state=42, n_jobs=-1)
+    lgbm = lgb.LGBMRegressor(n_estimators=100, random_state=42, verbosity=-1, n_jobs=-1)
+    svm = SVR(kernel='rbf', C=10, gamma='scale', epsilon=0.1)
+    pls = PLSRegression(n_components=10)
+    
+    # Helper
+    def make_stack(est):
+        return StackingRegressor(estimators=est, final_estimator=RidgeCV(), cv=5, n_jobs=-1, passthrough=False)
 
-    # 1. CARGA DE ENTRENAMIENTO
-    print("\n[1] Entrenando Modelos Maestros...")
+    # Nombres descriptivos (M01 a M10)
+    models = [
+        ("M01_ET+LGBM",       make_stack([('et', et), ('lgbm', lgbm)])),
+        ("M02_ET+LGBM+PLS",   make_stack([('et', et), ('lgbm', lgbm), ('pls', pls)])),
+        ("M03_RF+LGBM",       make_stack([('rf', rf), ('lgbm', lgbm)])),
+        ("M04_RF+ET+LGBM",    make_stack([('rf', rf), ('et', et), ('lgbm', lgbm)])),
+        ("M05_LGBM_Solo",     lgbm),
+        ("M06_RF+LGBM+PLS",   make_stack([('rf', rf), ('lgbm', lgbm), ('pls', pls)])),
+        ("M07_LGBM+PLS",      make_stack([('lgbm', lgbm), ('pls', pls)])),
+        ("M08_RF+LGBM+SVM",   make_stack([('rf', rf), ('lgbm', lgbm), ('svm', svm)])),
+        ("M09_ET+LGBM+SVM",   make_stack([('et', et), ('lgbm', lgbm), ('svm', svm)])),
+        ("M10_RF+ET",         make_stack([('rf', rf), ('et', et)])) 
+    ]
+    return models
+
+def run_detailed_consensus():
+    print("="*100)
+    print("PROTOCOLO 'VOTACIÓN DETALLADA': 10 MODELOS SIMULTÁNEOS (MATRIZ COMPLETA)")
+    print("="*100)
+
+    # 1. ENTRENAMIENTO
+    print("\n[1] Entrenando Tribunal de Modelos...")
     df_train = pd.read_csv(TRAIN_FILE).dropna(subset=['Smiles', 'pIC50 Value'])
     train_mols = [Chem.MolFromSmiles(s) for s in df_train['Smiles']]
     X_train = np.array([get_fp(m) for m in train_mols])
     y_train = df_train['pIC50 Value'].values
 
-    # --- MODELO A: SINGLE RF ---
-    model_rf = RandomForestRegressor(n_estimators=100, random_state=42, n_jobs=-1)
-    model_rf.fit(X_train, y_train)
+    trained_models = []
+    model_definitions = get_top_10_models()
     
-    # --- MODELO B: STACKING (RF + ET) ---
-    estimators = [
-        ('rf', RandomForestRegressor(n_estimators=100, random_state=42, n_jobs=-1)),
-        ('et', ExtraTreesRegressor(n_estimators=100, random_state=42, n_jobs=-1))
-    ]
-    model_stack = StackingRegressor(
-        estimators=estimators, 
-        final_estimator=RidgeCV(), 
-        cv=5, n_jobs=-1, passthrough=False
-    )
-    model_stack.fit(X_train, y_train)
+    # Lista solo con los nombres de las columnas para iterar luego
+    model_col_names = [m[0] for m in model_definitions]
     
-    # --- ISOLATION FOREST ---
+    for name, model in model_definitions:
+        start_t = time.time()
+        model.fit(X_train, y_train)
+        print(f"    -> {name:<20} entrenado ({time.time()-start_t:.1f}s)")
+        trained_models.append((name, model))
+        
+    # Isolation Forest
     iso_forest = IsolationForest(contamination=ISO_CONTAMINATION, random_state=42, n_jobs=-1)
     iso_forest.fit(X_train)
-    
-    print("    -> Modelos entrenados correctamente.")
 
     # 2. PROCESAMIENTO FDA
-    print("\n[2] Procesando FDA (Filtros Químicos)...")
-    df_fda = pd.read_csv(FDA_FILE)
-    df_fda.columns = df_fda.columns.str.strip() # Limpiar nombres columnas
+    print("\n[2] Procesando FDA...")
+    try:
+        df_fda = pd.read_csv(FDA_FILE)
+        df_fda.columns = df_fda.columns.str.strip()
+    except:
+        print("Error cargando FDA file")
+        return
     
     candidates = []
-    
     for _, row in df_fda.iterrows():
         smi = row.get('isosmiles')
         if pd.isna(smi): smi = row.get('canonicalsmiles')
         if pd.isna(smi): continue
-
         mol = Chem.MolFromSmiles(smi)
         if mol is None: continue
 
-        # Filtros Rápidos
         mw = row.get('mw')
-        if pd.isna(mw): mw = Descriptors.MolWt(mol)
+        if pd.isna(mw) or mw == '': mw = Descriptors.MolWt(mol)
         else: mw = float(mw)
         
         if mw > MAX_MW: continue
         if not check_atom_consistency(mol): continue
 
-        candidates.append({
-            'CID': row.get('cid'),
-            'Name': row.get('cmpdname'),
-            'FP': get_fp(mol)
-        })
+        candidates.append({'CID': row.get('cid'), 'Name': row.get('cmpdname'), 'FP': get_fp(mol), 'SMILES': smi})
 
-    # 3. FILTRO OUTLIERS
-    print(f"    -> Pre-candidatos: {len(candidates)}")
+    # Filtro Outliers
+    if not candidates: return
     X_fda = np.array([c['FP'] for c in candidates])
     iso_preds = iso_forest.predict(X_fda)
+    final_candidates = [candidates[i] for i in range(len(candidates)) if iso_preds[i] == 1]
+    X_final = np.array([c['FP'] for c in final_candidates])
     
-    final_list = [candidates[i] for i in range(len(candidates)) if iso_preds[i] == 1]
-    print(f"    -> Finales (Inliers): {len(final_list)}")
+    print(f"    -> Candidatos Finales Válidos: {len(final_candidates)}")
 
-    # 4. PREDICCIONES COMPARATIVAS
-    print("\n[3] Generando Predicciones Cruzadas...")
-    X_final = np.array([c['FP'] for c in final_list])
+    # 3. GENERACIÓN DE MATRIZ DE PREDICCIONES
+    print("\n[3] Generando Votos Individuales (10 Modelos)...")
     
-    preds_rf = model_rf.predict(X_final)
-    preds_stack = model_stack.predict(X_final)
+    model_predictions = {}
+    for name, model in trained_models:
+        model_predictions[name] = model.predict(X_final)
     
-    results = []
-    for i, item in enumerate(final_list):
-        results.append({
+    detailed_results = []
+    for i in range(len(final_candidates)):
+        item = final_candidates[i]
+        row = {
             'CID': item['CID'],
             'Name': item['Name'],
-            'RF_Pred': preds_rf[i],
-            'Stack_Pred': preds_stack[i],
-            'Diff': abs(preds_rf[i] - preds_stack[i])
-        })
+            'SMILES': item['SMILES']
+        }
+        votes = []
+        for name in model_col_names:
+            pred = model_predictions[name][i]
+            row[name] = pred
+            votes.append(pred)
         
-    df_res = pd.DataFrame(results).sort_values(by='Stack_Pred', ascending=False)
+        row['CONSENSUS_MEAN'] = np.mean(votes)
+        row['UNCERTAINTY_STD'] = np.std(votes)
+        detailed_results.append(row)
+        
+    df_res = pd.DataFrame(detailed_results).sort_values(by='CONSENSUS_MEAN', ascending=False)
+    df_res.to_csv("FDA_Detailed_Votes_Full.csv", index=False)
     
-    print("\n" + "="*80)
-    print("TOP 10 CANDIDATOS - SEGÚN STACKING (RF+ET)")
-    print("="*80)
-    print(df_res[['Name', 'RF_Pred', 'Stack_Pred']].head(10).to_string(index=False))
+    # 4. TABLA DE ANÁLISIS DETALLADO (10 COLUMNAS)
+    print("\n" + "="*140)
+    print("ANÁLISIS DE CASOS CLAVE: DESGLOSE COMPLETO (M01 - M10)")
+    print("="*140)
     
-    print("\n" + "="*80)
-    print("COMPARATIVA DE FÁRMACOS CLAVE")
-    print("="*80)
-    targets = ['Pyrimethamine', 'Trimethoprim', 'Bisacodyl', 'Etodolac', 'Triamterene', 'Methotrexate']
+    targets = ['Trimetrexate', 'Methotrexate', 'Pyrimethamine', 'Trimethoprim', 'Bisacodyl', 'Etodolac', 'Triamterene']
+    
+    # Encabezado dinámico
+    # Usamos alias cortos para que quepa en pantalla: M01, M02...
+    header = f"{'Drug Name':<15} | {'Mean':<6} | {'Std':<5}"
+    for i in range(1, 11):
+        header += f" | {f'M{i:02d}':<5}"
+    print(header)
+    print("-" * 140)
     
     for t in targets:
         match = df_res[df_res['Name'].str.contains(t, case=False, na=False)]
         if not match.empty:
-            row = match.iloc[0]
-            print(f"{t:<15} | RF: {row['RF_Pred']:.4f} | Stack: {row['Stack_Pred']:.4f} | Diff: {row['Diff']:.4f}")
+            r = match.iloc[0]
+            # Construir fila
+            line = f"{t[:15]:<15} | {r['CONSENSUS_MEAN']:.4f} | {r['UNCERTAINTY_STD']:.3f}"
+            for m in model_col_names:
+                line += f" | {r[m]:.3f}"
+            print(line)
         else:
-            print(f"{t:<15} | No encontrado (Filtrado)")
+            print(f"{t:<15} | No encontrado")
+
+    print("\n[LEYENDA MODELOS]")
+    for m in model_col_names:
+        print(f"   {m}")
+        
+    print(f"\n[INFO] Archivo guardado: FDA_Detailed_Votes_Full.csv")
 
 if __name__ == "__main__":
-    run_comparison()
+    run_detailed_consensus()
