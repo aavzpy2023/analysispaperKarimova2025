@@ -33,7 +33,7 @@ def get_fp(s):
     except:
         return np.zeros((2048,))
 
-def run_exhaustive_search_metrics(filepath):
+def run_fast_benchmark_with_mae(filepath):
     print(f"[INFO] Cargando datos: {filepath}")
     df = pd.read_csv(filepath)
     df_clean = df.dropna(subset=['Smiles', 'pIC50 Value']).reset_index(drop=True)
@@ -45,26 +45,25 @@ def run_exhaustive_search_metrics(filepath):
     # SPLIT 15%
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.15, random_state=42)
     
-    # --- LOS 7 MAGNÍFICOS ---
-    base_models = {
+    # --- LOS 6 MEJORES (Sin MLP) ---
+    models = {
         'RF':   RandomForestRegressor(n_estimators=100, random_state=42, n_jobs=-1),
         'ET':   ExtraTreesRegressor(n_estimators=100, random_state=42, n_jobs=-1),
         'LGBM': lgb.LGBMRegressor(n_estimators=100, random_state=42, verbosity=-1, n_jobs=-1),
         'SVM':  SVR(kernel='rbf', C=10, gamma='scale', epsilon=0.1),
-        'MLP':  MLPRegressor(hidden_layer_sizes=(100,50), max_iter=500, random_state=42),
         'PLS':  PLSRegression(n_components=10),
         'kNN':  KNeighborsRegressor(n_neighbors=5, metric='cosine', n_jobs=-1)
     }
     
     results = []
     
-    print("="*80)
-    print(f"INICIANDO BARRIDO TOTAL CON MÉTRICAS (Train={len(y_train)}, Test={len(y_test)})")
-    print("="*80)
+    print("="*90)
+    print(f"BENCHMARK 'FAST-TRACK' (Con MAE) | Train={len(y_train)} | Test={len(y_test)}")
+    print("="*90)
 
     # 1. INDIVIDUALES
-    print(">>> FASE 1: Individuales (7 Modelos)")
-    for name, model in base_models.items():
+    print(">>> FASE 1: Individuales")
+    for name, model in models.items():
         start = time.time()
         model.fit(X_train, y_train)
         y_pred = model.predict(X_test)
@@ -74,20 +73,12 @@ def run_exhaustive_search_metrics(filepath):
         mae = mean_absolute_error(y_test, y_pred)
         elapsed = time.time() - start
         
-        results.append({
-            'Tipo': '1-Single', 
-            'Modelo': name, 
-            'R2': r2, 
-            'MAE': mae, 
-            'Time': elapsed
-        })
+        results.append({'Tipo': '1-Single', 'Modelo': name, 'R2': r2, 'MAE': mae, 'Time': elapsed})
         print(f"   {name:<5} : R2={r2:.4f} | MAE={mae:.4f} | {elapsed:.2f}s")
 
     # 2. DUOS
-    print("\n>>> FASE 2: Duos (21 Combinaciones)")
-    model_items = list(base_models.items())
-    
-    for combo in itertools.combinations(model_items, 2):
+    print("\n>>> FASE 2: Duos (Todas las combinaciones)")
+    for combo in itertools.combinations(models.items(), 2):
         names = [c[0] for c in combo]
         combo_id = "+".join(names)
         
@@ -100,19 +91,12 @@ def run_exhaustive_search_metrics(filepath):
         mae = mean_absolute_error(y_test, y_pred)
         elapsed = time.time() - start
         
-        results.append({
-            'Tipo': '2-Duo', 
-            'Modelo': combo_id, 
-            'R2': r2, 
-            'MAE': mae, 
-            'Time': elapsed
-        })
-        
-        if r2 > 0.825: print(f"   {combo_id:<15} : R2={r2:.4f} (Top Duo)")
+        results.append({'Tipo': '2-Duo', 'Modelo': combo_id, 'R2': r2, 'MAE': mae, 'Time': elapsed})
+        print(f"   {combo_id:<15} : R2={r2:.4f} | MAE={mae:.4f} | {elapsed:.2f}s")
 
     # 3. TRIOS
-    print("\n>>> FASE 3: Trios (35 Combinaciones)")
-    for combo in itertools.combinations(model_items, 3):
+    print("\n>>> FASE 3: Trios (Todas las combinaciones)")
+    for combo in itertools.combinations(models.items(), 3):
         names = [c[0] for c in combo]
         combo_id = "+".join(names)
         
@@ -125,15 +109,8 @@ def run_exhaustive_search_metrics(filepath):
         mae = mean_absolute_error(y_test, y_pred)
         elapsed = time.time() - start
         
-        results.append({
-            'Tipo': '3-Trio', 
-            'Modelo': combo_id, 
-            'R2': r2, 
-            'MAE': mae, 
-            'Time': elapsed
-        })
-        
-        if r2 > 0.83: print(f"   {combo_id:<20} : R2={r2:.4f} (¡RÉCORD!)")
+        results.append({'Tipo': '3-Trio', 'Modelo': combo_id, 'R2': r2, 'MAE': mae, 'Time': elapsed})
+        print(f"   {combo_id:<20} : R2={r2:.4f} | MAE={mae:.4f} | {elapsed:.2f}s")
 
     # --- REPORTE FINAL ---
     df_res = pd.DataFrame(results).sort_values(by='R2', ascending=False)
@@ -141,12 +118,14 @@ def run_exhaustive_search_metrics(filepath):
     print("\n" + "="*90)
     print("TOP 30 MEJORES ARQUITECTURAS (ORDENADO POR R2)")
     print("="*90)
-    # Formato limpio para copiar
     print(df_res[['Tipo', 'Modelo', 'R2', 'MAE', 'Time']].head(30).to_string(index=False))
     print("-" * 90)
+    print(f"Paper Optimized : 0.8200")
+    print(f"Paper Augmented : 0.8500")
+    print("="*90)
     
     best = df_res.iloc[0]
-    print(f"\n[GANADOR] {best['Modelo']} | R2: {best['R2']:.4f} | MAE: {best['MAE']:.4f} | Tiempo: {best['Time']:.2f}s")
+    print(f"\n[GANADOR] {best['Modelo']} | R2: {best['R2']:.4f} | MAE: {best['MAE']:.4f}")
 
 if __name__ == "__main__":
-    run_exhaustive_search_metrics("./V2-df_ic50_chmbl_CID_myFill.csv")
+    run_fast_benchmark_with_mae("./V2-df_ic50_chmbl_CID_myFill.csv")
