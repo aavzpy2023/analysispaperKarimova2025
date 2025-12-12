@@ -40,18 +40,16 @@ def check_atom_consistency(mol):
 
 # --- DEFINICIÓN DE LOS 10 MEJORES (TOP TIER) ---
 def get_top_10_models():
-    # Base estimators
+    # Instancias base
     rf = RandomForestRegressor(n_estimators=100, random_state=42, n_jobs=-1)
     et = ExtraTreesRegressor(n_estimators=100, random_state=42, n_jobs=-1)
     lgbm = lgb.LGBMRegressor(n_estimators=100, random_state=42, verbosity=-1, n_jobs=-1)
     svm = SVR(kernel='rbf', C=10, gamma='scale', epsilon=0.1)
     pls = PLSRegression(n_components=10)
     
-    # Helper
     def make_stack(est):
         return StackingRegressor(estimators=est, final_estimator=RidgeCV(), cv=5, n_jobs=-1, passthrough=False)
 
-    # Nombres descriptivos (M01 a M10)
     models = [
         ("M01_ET+LGBM",       make_stack([('et', et), ('lgbm', lgbm)])),
         ("M02_ET+LGBM+PLS",   make_stack([('et', et), ('lgbm', lgbm), ('pls', pls)])),
@@ -66,9 +64,9 @@ def get_top_10_models():
     ]
     return models
 
-def run_detailed_consensus():
+def run_unified_ranking():
     print("="*100)
-    print("PROTOCOLO 'VOTACIÓN DETALLADA': 10 MODELOS SIMULTÁNEOS (MATRIZ COMPLETA)")
+    print("PROTOCOLO FINAL: RANKING UNIFICADO (Top Hits + Referencias)")
     print("="*100)
 
     # 1. ENTRENAMIENTO
@@ -80,19 +78,15 @@ def run_detailed_consensus():
 
     trained_models = []
     model_definitions = get_top_10_models()
-    
-    # Lista solo con los nombres de las columnas para iterar luego
     model_col_names = [m[0] for m in model_definitions]
     
     for name, model in model_definitions:
-        start_t = time.time()
         model.fit(X_train, y_train)
-        print(f"    -> {name:<20} entrenado ({time.time()-start_t:.1f}s)")
         trained_models.append((name, model))
         
-    # Isolation Forest
     iso_forest = IsolationForest(contamination=ISO_CONTAMINATION, random_state=42, n_jobs=-1)
     iso_forest.fit(X_train)
+    print("    -> Modelos listos.")
 
     # 2. PROCESAMIENTO FDA
     print("\n[2] Procesando FDA...")
@@ -100,7 +94,6 @@ def run_detailed_consensus():
         df_fda = pd.read_csv(FDA_FILE)
         df_fda.columns = df_fda.columns.str.strip()
     except:
-        print("Error cargando FDA file")
         return
     
     candidates = []
@@ -120,8 +113,6 @@ def run_detailed_consensus():
 
         candidates.append({'CID': row.get('cid'), 'Name': row.get('cmpdname'), 'FP': get_fp(mol), 'SMILES': smi})
 
-    # Filtro Outliers
-    if not candidates: return
     X_fda = np.array([c['FP'] for c in candidates])
     iso_preds = iso_forest.predict(X_fda)
     final_candidates = [candidates[i] for i in range(len(candidates)) if iso_preds[i] == 1]
@@ -129,9 +120,8 @@ def run_detailed_consensus():
     
     print(f"    -> Candidatos Finales Válidos: {len(final_candidates)}")
 
-    # 3. GENERACIÓN DE MATRIZ DE PREDICCIONES
-    print("\n[3] Generando Votos Individuales (10 Modelos)...")
-    
+    # 3. PREDICCIONES
+    print("\n[3] Generando Votos...")
     model_predictions = {}
     for name, model in trained_models:
         model_predictions[name] = model.predict(X_final)
@@ -139,11 +129,7 @@ def run_detailed_consensus():
     detailed_results = []
     for i in range(len(final_candidates)):
         item = final_candidates[i]
-        row = {
-            'CID': item['CID'],
-            'Name': item['Name'],
-            'SMILES': item['SMILES']
-        }
+        row = {'CID': item['CID'], 'Name': item['Name']}
         votes = []
         for name in model_col_names:
             pred = model_predictions[name][i]
@@ -155,40 +141,44 @@ def run_detailed_consensus():
         detailed_results.append(row)
         
     df_res = pd.DataFrame(detailed_results).sort_values(by='CONSENSUS_MEAN', ascending=False)
-    df_res.to_csv("FDA_Detailed_Votes_Full.csv", index=False)
     
-    # 4. TABLA DE ANÁLISIS DETALLADO (10 COLUMNAS)
-    print("\n" + "="*140)
-    print("ANÁLISIS DE CASOS CLAVE: DESGLOSE COMPLETO (M01 - M10)")
-    print("="*140)
+    # 4. CONSTRUCCIÓN DEL TABLERO UNIFICADO
+    print("\n" + "="*160)
+    print("RANKING ESTRATÉGICO UNIFICADO (Top 10 Nuevos + Referencias Paper)")
+    print("="*160)
     
+    # A. Obtener el Top 10 Absoluto
+    top_10 = df_res.head(10).copy()
+    top_10['Type'] = '[TOP]'
+    
+    # B. Obtener las Referencias del Paper
     targets = ['Trimetrexate', 'Methotrexate', 'Pyrimethamine', 'Trimethoprim', 'Bisacodyl', 'Etodolac', 'Triamterene']
+    # Crear regex para buscar cualquiera de los targets
+    pattern = '|'.join(targets)
+    refs = df_res[df_res['Name'].str.contains(pattern, case=False, na=False)].copy()
+    refs['Type'] = '[REF]'
     
-    # Encabezado dinámico
-    # Usamos alias cortos para que quepa en pantalla: M01, M02...
-    header = f"{'Drug Name':<15} | {'Mean':<6} | {'Std':<5}"
+    # C. Unir y Ordenar
+    combined = pd.concat([top_10, refs]).drop_duplicates(subset=['CID'])
+    combined = combined.sort_values(by='CONSENSUS_MEAN', ascending=False)
+    
+    # D. Imprimir
+    header = f"{'Type':<6} | {'Drug Name':<25} | {'Mean':<6} | {'Std':<5}"
     for i in range(1, 11):
         header += f" | {f'M{i:02d}':<5}"
     print(header)
-    print("-" * 140)
+    print("-" * 160)
     
-    for t in targets:
-        match = df_res[df_res['Name'].str.contains(t, case=False, na=False)]
-        if not match.empty:
-            r = match.iloc[0]
-            # Construir fila
-            line = f"{t[:15]:<15} | {r['CONSENSUS_MEAN']:.4f} | {r['UNCERTAINTY_STD']:.3f}"
-            for m in model_col_names:
-                line += f" | {r[m]:.3f}"
-            print(line)
-        else:
-            print(f"{t:<15} | No encontrado")
+    for _, r in combined.iterrows():
+        name = (r['Name'][:23] + '..') if len(str(r['Name'])) > 23 else r['Name']
+        line = f"{r['Type']:<6} | {name:<25} | {r['CONSENSUS_MEAN']:.4f} | {r['UNCERTAINTY_STD']:.3f}"
+        for m in model_col_names:
+            line += f" | {r[m]:.3f}"
+        print(line)
 
-    print("\n[LEYENDA MODELOS]")
-    for m in model_col_names:
-        print(f"   {m}")
-        
-    print(f"\n[INFO] Archivo guardado: FDA_Detailed_Votes_Full.csv")
+    print("\n[LEYENDA]")
+    print("M01: ET+LGBM (El Ganador) | M05: LGBM Solo | M10: RF+ET (Clásico)")
+    print("[TOP]: Nuevo descubrimiento | [REF]: Fármaco mencionado en el paper")
 
 if __name__ == "__main__":
-    run_detailed_consensus()
+    run_unified_ranking()
