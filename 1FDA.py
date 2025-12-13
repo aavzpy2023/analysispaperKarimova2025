@@ -25,6 +25,12 @@ ALLOWED_ATOMS = set([1, 6, 7, 8, 9, 15, 16, 17, 35, 53])
 MAX_MW = 1000.0
 ISO_CONTAMINATION = 0.05
 
+# --- VALORES REALES (LITERATURA) PARA CÁLCULO DE ERROR ---
+KNOWN_VALUES = {
+    'Pyrimethamine': 6.56,
+    'Trimethoprim': 5.57
+}
+
 def get_fp(mol):
     if mol is None: return np.zeros((2048,))
     fp = AllChem.GetMorganFingerprintAsBitVect(mol, 2, nBits=2048)
@@ -38,7 +44,6 @@ def check_atom_consistency(mol):
         if atom.GetAtomicNum() not in ALLOWED_ATOMS: return False
     return True
 
-# --- DEFINICIÓN DE LOS 10 MEJORES (TOP TIER) ---
 def get_top_10_models():
     # Instancias base
     rf = RandomForestRegressor(n_estimators=100, random_state=42, n_jobs=-1)
@@ -50,7 +55,6 @@ def get_top_10_models():
     def make_stack(est):
         return StackingRegressor(estimators=est, final_estimator=RidgeCV(), cv=5, n_jobs=-1, passthrough=False)
 
-    # Nombres descriptivos (M01 a M10)
     models = [
         ("M01_ET+LGBM",       make_stack([('et', et), ('lgbm', lgbm)])),
         ("M02_ET+LGBM+PLS",   make_stack([('et', et), ('lgbm', lgbm), ('pls', pls)])),
@@ -65,14 +69,12 @@ def get_top_10_models():
     ]
     return models
 
-def run_final_audit():
+def run_master_audit():
     print("="*100)
-    print("PROTOCOLO FINAL: AUDITORÍA DE EFICIENCIA Y PREDICCIÓN FDA")
+    print("AUDITORÍA MAESTRA: EFICIENCIA + EXACTITUD + PREDICCIÓN")
     print("="*100)
 
-    # -------------------------------------------------------
-    # 1. ENTRENAMIENTO (CON CRONÓMETRO)
-    # -------------------------------------------------------
+    # 1. ENTRENAMIENTO (CON METRICA DE TIEMPO)
     print("\n[1] Entrenando Tribunal de Modelos...")
     df_train = pd.read_csv(TRAIN_FILE).dropna(subset=['Smiles', 'pIC50 Value'])
     train_mols = [Chem.MolFromSmiles(s) for s in df_train['Smiles']]
@@ -80,8 +82,7 @@ def run_final_audit():
     y_train = df_train['pIC50 Value'].values
 
     trained_models = []
-    efficiency_stats = [] # Para guardar tiempos
-    
+    efficiency_stats = [] 
     model_definitions = get_top_10_models()
     model_col_names = [m[0] for m in model_definitions]
     
@@ -89,20 +90,15 @@ def run_final_audit():
         start_t = time.time()
         model.fit(X_train, y_train)
         train_time = time.time() - start_t
+        print(f"    -> {name:<20} entrenado ({train_time:.2f}s)")
         
-        print(f"    -> {name:<20} entrenado en {train_time:.2f}s")
         trained_models.append((name, model))
-        
-        # Guardar parciamente el tiempo de entrenamiento
         efficiency_stats.append({'Model': name, 'Train Time (s)': train_time})
         
-    # Isolation Forest
     iso_forest = IsolationForest(contamination=ISO_CONTAMINATION, random_state=42, n_jobs=-1)
     iso_forest.fit(X_train)
 
-    # -------------------------------------------------------
     # 2. PROCESAMIENTO FDA
-    # -------------------------------------------------------
     print("\n[2] Procesando FDA...")
     try:
         df_fda = pd.read_csv(FDA_FILE)
@@ -121,7 +117,6 @@ def run_final_audit():
         mw = row.get('mw')
         if pd.isna(mw) or mw == '': mw = Descriptors.MolWt(mol)
         else: mw = float(mw)
-        
         if mw > MAX_MW: continue
         if not check_atom_consistency(mol): continue
 
@@ -132,15 +127,12 @@ def run_final_audit():
     final_candidates = [candidates[i] for i in range(len(candidates)) if iso_preds[i] == 1]
     X_final = np.array([c['FP'] for c in final_candidates])
     
-    print(f"    -> Candidatos Finales Válidos: {len(final_candidates)}")
+    print(f"    -> Candidatos Finales: {len(final_candidates)}")
 
-    # -------------------------------------------------------
-    # 3. PREDICCIÓN (CON CRONÓMETRO)
-    # -------------------------------------------------------
-    print("\n[3] Generando Votos y Midiendo Tiempos de Inferencia...")
+    # 3. PREDICCIÓN (CON METRICA DE TIEMPO)
+    print("\n[3] Generando Votos e Inferencia...")
     model_predictions = {}
     
-    # Actualizar la tabla de eficiencia con tiempos de predicción
     for i, (name, model) in enumerate(trained_models):
         start_t = time.time()
         preds = model.predict(X_final)
@@ -150,37 +142,53 @@ def run_final_audit():
         efficiency_stats[i]['Pred Time (s)'] = pred_time
         efficiency_stats[i]['Total Time (s)'] = efficiency_stats[i]['Train Time (s)'] + pred_time
 
-    # --- REPORTE DE EFICIENCIA ---
-    df_eff = pd.DataFrame(efficiency_stats)
+    # 4. REPORTE 1: EFICIENCIA
+    df_eff = pd.DataFrame(efficiency_stats).sort_values(by='Total Time (s)')
     print("\n" + "="*80)
-    print("AUDITORÍA DE EFICIENCIA COMPUTACIONAL (Top 10 Modelos)")
+    print("REPORTE 1: AUDITORÍA DE EFICIENCIA COMPUTACIONAL")
     print("="*80)
     print(df_eff.to_string(index=False))
-    print("-" * 80)
-
-    # -------------------------------------------------------
-    # 4. CONSOLIDACIÓN DE RESULTADOS QUÍMICOS
-    # -------------------------------------------------------
+    
     detailed_results = []
     for i in range(len(final_candidates)):
         item = final_candidates[i]
-        row = {'CID': item['CID'], 'Name': item['Name']}
+        row = {'CID': item['CID'], 'Name': item['Name'], 'SMILES': item['SMILES']}
         votes = []
-        for name in model_col_names:
-            pred = model_predictions[name][i]
-            row[name] = pred
-            votes.append(pred)
+        for name, _ in trained_models:
+            votes.append(model_predictions[name][i])
         
         row['CONSENSUS_MEAN'] = np.mean(votes)
         row['UNCERTAINTY_STD'] = np.std(votes)
+        
+        # Guardar predicciones individuales para la tabla ancha
+        for name in model_col_names:
+             row[name] = model_predictions[name][i]
+             
         detailed_results.append(row)
         
     df_res = pd.DataFrame(detailed_results).sort_values(by='CONSENSUS_MEAN', ascending=False)
+
+    # 5. REPORTE 2: EXACTITUD (ERROR)
+    print("\n" + "="*80)
+    print("REPORTE 2: VALIDACIÓN DE EXACTITUD (ERROR EN CONTROLES)")
+    print("="*80)
+    print(f"{'Fármaco':<15} | {'Real':<6} | {'Predicho':<8} | {'Error Abs':<10} | {'Estado'}")
+    print("-" * 80)
     
-    # Ranking Unificado
-    print("\n" + "="*160)
-    print("RANKING ESTRATÉGICO UNIFICADO (Fármacos FDA)")
-    print("="*160)
+    for drug_name, real_val in KNOWN_VALUES.items():
+        match = df_res[df_res['Name'].str.contains(drug_name, case=False, na=False)]
+        if not match.empty:
+            pred_val = match.iloc[0]['CONSENSUS_MEAN']
+            error = abs(real_val - pred_val)
+            status = "EXCELENTE" if error < 0.5 else "ACEPTABLE" if error < 1.0 else "ALERTA"
+            print(f"{drug_name:<15} | {real_val:<6.2f} | {pred_val:<8.4f} | {error:<10.4f} | {status}")
+        else:
+            print(f"{drug_name:<15} | No encontrado (Filtrado)")
+
+    # 6. REPORTE 3: RANKING UNIFICADO + EXPORTACIÓN
+    print("\n" + "="*100)
+    print("REPORTE 3: RANKING ESTRATÉGICO UNIFICADO")
+    print("="*100)
     
     top_10 = df_res.head(10).copy()
     top_10['Type'] = '[TOP]'
@@ -190,25 +198,28 @@ def run_final_audit():
     refs = df_res[df_res['Name'].str.contains(pattern, case=False, na=False)].copy()
     refs['Type'] = '[REF]'
     
-    combined = pd.concat([top_10, refs]).drop_duplicates(subset=['CID'])
-    combined = combined.sort_values(by='CONSENSUS_MEAN', ascending=False)
+    # Combinar Top 10 con Referencias
+    combined = pd.concat([top_10, refs]).drop_duplicates(subset=['CID']).sort_values(by='CONSENSUS_MEAN', ascending=False)
     
-    # Formato de tabla ancha
+    # --- EXPORTACIÓN PARA DOCKING ---
+    docking_filename = "FDA_Candidates_For_Docking.csv"
+    combined.to_csv(docking_filename, index=False)
+    print(f"[EXPORTACIÓN] Archivo listo para 2DOCKING.py: {docking_filename}")
+    
+    # --- IMPRESIÓN DE TABLA ---
     header = f"{'Type':<6} | {'Drug Name':<25} | {'Mean':<6} | {'Std':<5}"
-    for i in range(1, 11):
-        header += f" | {f'M{i:02d}':<5}"
+    for i in range(1, 11): header += f" | {f'M{i:02d}':<5}"
     print(header)
-    print("-" * 160)
+    print("-" * 130)
     
     for _, r in combined.iterrows():
-        name = (r['Name'][:23] + '..') if len(str(r['Name'])) > 23 else r['Name']
-        line = f"{r['Type']:<6} | {name:<25} | {r['CONSENSUS_MEAN']:.4f} | {r['UNCERTAINTY_STD']:.3f}"
-        for m in model_col_names:
-            line += f" | {r[m]:.3f}"
+        name_short = (r['Name'][:23] + '..') if len(str(r['Name'])) > 23 else r['Name']
+        line = f"{r['Type']:<6} | {name_short:<25} | {r['CONSENSUS_MEAN']:.4f} | {r['UNCERTAINTY_STD']:.3f}"
+        
+        for m_name in model_col_names:
+            val = r[m_name] # Ahora están en el DF
+            line += f" | {val:.3f}"
         print(line)
 
-    print("\n[LEYENDA]")
-    print("M01: ET+LGBM (El Ganador) | M05: LGBM Solo | M10: RF+ET (Clásico)")
-
 if __name__ == "__main__":
-    run_final_audit()
+    run_master_audit()
