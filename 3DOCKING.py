@@ -18,7 +18,7 @@ OUTPUT_CSV     = "Final_Validation_Hybrid.csv"
 LATEX_FILE     = "docking_variables.tex"
 
 # Active site coordinates (detected by prep_receptor.py from crystal ligand CP6)
-CENTER_X, CENTER_Y, CENTER_Z = 17.394, 68.757, -68.051
+CENTER_X, CENTER_Y, CENTER_Z = 3.689, 39.992, -62.818
 BOX_SIZE       = 20.0   # Angstroms
 EXHAUSTIVENESS = 32     # Higher = more thorough (8 is standard, 32 is publication quality)
 N_POSES        = 3      # Save top 3 poses per ligand
