@@ -1,26 +1,43 @@
-contourpy==1.3.3
-cycler==0.12.1
-fonttools==4.61.0
-joblib==1.5.2
-kiwisolver==1.4.9
-lightgbm==4.6.0
-matplotlib==3.10.8
+# ── Core data science ──────────────────────────────────
 numpy==2.3.5
-nvidia-nccl-cu12==2.28.9
-packaging==25.0
 pandas==2.3.3
-pillow==12.0.0
-PubChemPy==1.0.5
-pyparsing==3.2.5
-python-dateutil==2.9.0.post0
-pytz==2025.2
-rdkit==2025.9.3
-scikit-learn==1.8.0
 scipy==1.16.3
-six==1.17.0
-threadpoolctl==3.6.0
-tzdata==2025.2
+scikit-learn==1.8.0
+joblib==1.5.2
+
+# ── ML models ──────────────────────────────────────────
+lightgbm==4.6.0
 xgboost==3.1.2
+
+# ── GNN baselines (5GNNBASELINE.py) ───────────────────
+torch>=2.0.0
+chemprop>=2.0.0
+dgl
+dgllife
+
+# ── Cheminformatics ────────────────────────────────────
+rdkit==2025.9.3
+PubChemPy==1.0.5
+
+# ── Docking (3DOCKING.py, 4REDOCKING_VALIDATION.py) ───
 vina
 meeko
 gemmi
+
+# ── Visualization ──────────────────────────────────────
+matplotlib==3.10.8
+pillow==12.0.0
+contourpy==1.3.3
+cycler==0.12.1
+fonttools==4.61.0
+kiwisolver==1.4.9
+pyparsing==3.2.5
+
+# ── Utilities ──────────────────────────────────────────
+packaging==25.0
+python-dateutil==2.9.0.post0
+pytz==2025.2
+six==1.17.0
+threadpoolctl==3.6.0
+tzdata==2025.2
+nvidia-nccl-cu12==2.28.9
