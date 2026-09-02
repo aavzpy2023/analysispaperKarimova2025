@@ -1,0 +1,66 @@
+(vina_env) (base) andrey@raul-HP-Z820-Workstation:~/Projects/analysispaperKarimova2025$ python 1AUGMENT.py
+====================================================================================================
+1AUGMENT.py — Feature Selection + Gaussian Augmentation Benchmark
+Mirrors the paper pipeline (Sections 3.4 and 3.5) for classical ML
+====================================================================================================
+
+[DATA] 756 compounds loaded.
+[SPLIT] Dev=642 | Test held-out=114 (never used for selection)
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+EXPERIMENT A: ML stacking baseline (no feature selection, no augmentation)
+────────────────────────────────────────────────────────────────────────────────────────────────────
+  R2=0.8072 | MAE=0.4881 | 95%CI [0.7275, 0.8624] | 245.2s
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+EXPERIMENT B: + Permutation Importance feature selection (mirrors paper Section 3.4)
+────────────────────────────────────────────────────────────────────────────────────────────────────
+  [PI] Fitting model for Permutation Importance calculation...
+  [PI] Computing Permutation Importance (n_repeats=5)...
+  [PI] Features selected (importance > 0): 1212/2048
+  R2=0.8089 | MAE=0.4857 | 95%CI [0.7303, 0.8646] | 558.5s
+  Paper analogue: R2=0.82 after PI selection
+  [SAVED] selected_features_mask.npy
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+EXPERIMENT C: + Gaussian augmentation (mirrors paper Section 3.5)
+────────────────────────────────────────────────────────────────────────────────────────────────────
+  [AUG] Dataset size: 642 -> 1926 (noise levels: [0.01, 0.001])
+  R2=0.7819 | MAE=0.5293 | 95%CI [0.6892, 0.8467] | 6355.2s
+  Paper analogue: R2=0.85 after augmentation + DNN ensemble
+
+====================================================================================================
+EXECUTIVE SUMMARY — read top to bottom to draft Results/Discussion
+====================================================================================================
+
+Exp A (baseline): R2=0.8072 | MAE=0.4881 | 95%CI [0.7275, 0.8624]
+  vs 2D/3D/FP, no feature selection (R2=0.75): above by 0.0572 | t=67.557, p=0.0000 -> SIGNIFICANT (p<0.05)
+  vs After Permutation Importance feature selection (R2=0.82): below by 0.0128 | t=-21.716, p=0.0000 -> SIGNIFICANT (p<0.05)
+  vs Data augmentation + DNN ensemble (R2=0.85): below by 0.0428 | t=-59.975, p=0.0000 -> SIGNIFICANT (p<0.05)
+
+Exp B (+feat.sel.): R2=0.8089 | MAE=0.4857 | 95%CI [0.7303, 0.8646]
+  vs 2D/3D/FP, no feature selection (R2=0.75): above by 0.0589 | t=70.544, p=0.0000 -> SIGNIFICANT (p<0.05)
+  vs After Permutation Importance feature selection (R2=0.82): below by 0.0111 | t=-19.925, p=0.0000 -> SIGNIFICANT (p<0.05)
+  vs Data augmentation + DNN ensemble (R2=0.85): below by 0.0411 | t=-58.697, p=0.0000 -> SIGNIFICANT (p<0.05)
+
+Exp C (+augment.): R2=0.7819 | MAE=0.5293 | 95%CI [0.6892, 0.8467]
+  vs 2D/3D/FP, no feature selection (R2=0.75): above by 0.0319 | t=28.504, p=0.0000 -> SIGNIFICANT (p<0.05)
+  vs After Permutation Importance feature selection (R2=0.82): below by 0.0381 | t=-48.031, p=0.0000 -> SIGNIFICANT (p<0.05)
+  vs Data augmentation + DNN ensemble (R2=0.85): below by 0.0681 | t=-80.832, p=0.0000 -> SIGNIFICANT (p<0.05)
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+KEY FINDING FOR THE DISCUSSION:
+  Augmentation gain (Exp A -> Exp C): delta R2=-0.0254 (paired t=-57.578, p=0.0000)
+  Exp C vs paper final (R2=0.85): significantly different from (t=-80.832, p=0.0000)
+
+  CANDIDATE SENTENCE (Discussion):
+  "Despite applying identical augmentation, the classical stacking ensemble reached R2=0.782 vs the DNN's R2=0.85 (p=0.0000), suggesting that architectural factors beyond data volume contribute to the DNN advantage for this dataset size."
+====================================================================================================
+
+[SAVE] Fitting final model on full dev set (augmented) for 2FDA.py...
+[SAVE] best_model.joblib saved (used by 2FDA.py)
+
+[LATEX] Variables exported to augment_variables.tex
+[FIGURE] Saved augment_r2_comparison.png
+
+[DONE] 1AUGMENT.py complete.
