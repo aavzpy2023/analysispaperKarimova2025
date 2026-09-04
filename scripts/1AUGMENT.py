@@ -136,7 +136,7 @@ def select_features_by_permutation_importance(X, y, model, n_repeats=5):
         scoring='neg_mean_squared_error',
         n_repeats=n_repeats,
         random_state=RANDOM_STATE,
-        n_jobs=N_JOBS,
+        n_jobs=1,
     )
     mask = result.importances_mean > 0
     n_selected = mask.sum()

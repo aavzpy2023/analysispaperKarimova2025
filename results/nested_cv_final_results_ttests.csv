@@ -2,12 +2,12 @@ Mode,Paper_reference_label,Paper_reference_desc,Paper_R2,Our_R2_mean,Our_R2_std,
 morgan,PaperBaseline,"2D/3D/FP model, no feature selection",0.75,0.7406745490668608,0.051263455177507286,-0.6806533474608231,0.5071925309028331,False
 morgan,PaperSelected,After importance-based feature selection (no augmentation),0.82,0.7406745490668608,0.051263455177507286,-5.7898684046053885,4.6854717608557716e-05,True
 morgan,PaperFinal,Data augmentation + DNN ensemble (paper final result),0.85,0.7406745490668608,0.051263455177507286,-7.979532000524491,1.4108926027019302e-06,True
+rdkit2d3d_fp,PaperBaseline,"2D/3D/FP model, no feature selection",0.75,0.7386925816634569,0.06549051820744603,-0.6460245926021614,0.5287114025245074,False
+rdkit2d3d_fp,PaperSelected,After importance-based feature selection (no augmentation),0.82,0.7386925816634569,0.06549051820744603,-4.645321349493556,0.00037842840721701173,True
+rdkit2d3d_fp,PaperFinal,Data augmentation + DNN ensemble (paper final result),0.85,0.7386925816634569,0.06549051820744603,-6.359305673875585,1.770586126024297e-05,True
 rdkit2d,PaperBaseline,"2D/3D/FP model, no feature selection",0.75,0.6798192870578347,0.0663097379863786,-3.960084762257036,0.0014232838101452224,True
 rdkit2d,PaperSelected,After importance-based feature selection (no augmentation),0.82,0.6798192870578347,0.0663097379863786,-7.909972441318273,1.5619055638421614e-06,True
 rdkit2d,PaperFinal,Data augmentation + DNN ensemble (paper final result),0.85,0.6798192870578347,0.0663097379863786,-9.602781446630235,1.539648311103818e-07,True
 rdkit2d_fp,PaperBaseline,"2D/3D/FP model, no feature selection",0.75,0.7322220975217971,0.06206386189862935,-1.0717802291704246,0.3019476449155123,False
 rdkit2d_fp,PaperSelected,After importance-based feature selection (no augmentation),0.82,0.7322220975217971,0.06206386189862935,-5.291885280028692,0.0001138345098855646,True
 rdkit2d_fp,PaperFinal,Data augmentation + DNN ensemble (paper final result),0.85,0.7322220975217971,0.06206386189862935,-7.100501730396524,5.332791584639111e-06,True
-rdkit2d3d_fp,PaperBaseline,"2D/3D/FP model, no feature selection",0.75,0.7386925816634569,0.06549051820744603,-0.6460245926021614,0.5287114025245074,False
-rdkit2d3d_fp,PaperSelected,After importance-based feature selection (no augmentation),0.82,0.7386925816634569,0.06549051820744603,-4.645321349493556,0.00037842840721701173,True
-rdkit2d3d_fp,PaperFinal,Data augmentation + DNN ensemble (paper final result),0.85,0.7386925816634569,0.06549051820744603,-6.359305673875585,1.770586126024297e-05,True
