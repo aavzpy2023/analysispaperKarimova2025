@@ -17,10 +17,10 @@ warnings.filterwarnings("ignore")
 # =========================================================
 # CONFIG
 # =========================================================
-TRAIN_FILE    = "../data/V2-df_ic50_chmbl_CID_myFill.csv"
-RESULTS_DIR   = "../results"
-LATEX_DIR     = "../latex"
-FIGURES_DIR   = "../figures"
+TRAIN_FILE    = "data/V2-df_ic50_chmbl_CID_myFill.csv"
+RESULTS_DIR   = "results"
+LATEX_DIR     = "latex"
+FIGURES_DIR   = "figures"
 
 RANDOM_STATE  = 42
 N_BOOTSTRAP   = 2000
@@ -48,10 +48,86 @@ os.makedirs(FIGURES_DIR, exist_ok=True)
 # =========================================================
 # CHECK DEPENDENCIES
 # =========================================================
+def run_chemprop(smiles, y, test_idx, train_idx):
+    """ChemProp v2.x API (chemprop >= 2.0)"""
+    try:
+        import chemprop
+        import torch
+        from lightning import pytorch as pl
+        from chemprop import data as cpdata, models, nn as cpnn
+        from sklearn.metrics import r2_score, mean_absolute_error
+    except ImportError as e:
+        print(f"  [ChemProp] Import error: {e}")
+        return None
+
+    print("\n  [ChemProp] Preparing data (v2 API)...")
+
+    smiles_train = [smiles[i] for i in train_idx]
+    y_train      = y[train_idx].reshape(-1, 1).tolist()
+    smiles_test  = [smiles[i] for i in test_idx]
+    y_test_vals  = y[test_idx].reshape(-1, 1).tolist()
+
+    try:
+        # Build datasets
+        train_data = [cpdata.MoleculeDatapoint.from_smi(s, t)
+                      for s, t in zip(smiles_train, y_train)
+                      if cpdata.MoleculeDatapoint.from_smi(s, t) is not None]
+        test_data  = [cpdata.MoleculeDatapoint.from_smi(s, t)
+                      for s, t in zip(smiles_test, y_test_vals)
+                      if cpdata.MoleculeDatapoint.from_smi(s, t) is not None]
+
+        featurizer  = chemprop.featurizers.SimpleMoleculeMolGraphFeaturizer()
+        train_dset  = cpdata.MoleculeDataset(train_data, featurizer)
+        test_dset   = cpdata.MoleculeDataset(test_data,  featurizer)
+
+        train_loader = cpdata.build_dataloader(train_dset, shuffle=True,  num_workers=0)
+        test_loader  = cpdata.build_dataloader(test_dset,  shuffle=False, num_workers=0)
+
+        # Scaler
+        scaler = train_dset.normalize_targets()
+        test_dset.normalize_targets(scaler)
+
+        # Model
+        mp    = cpnn.BondMessagePassing()
+        agg   = cpnn.MeanAggregation()
+        ffn   = cpnn.RegressionFFN()
+        batch_norm = cpnn.BatchNorm(mp.output_dim)
+        mpnn  = models.MPNN(mp, agg, ffn, batch_norm=batch_norm, metrics=[cpnn.metrics.RMSE()])
+
+        # Train
+        trainer = pl.Trainer(
+            max_epochs=100,
+            enable_progress_bar=False,
+            enable_model_summary=False,
+            logger=False,
+            accelerator='cpu',
+        )
+        trainer.fit(mpnn, train_loader)
+
+        # Predict
+        preds_raw = trainer.predict(mpnn, test_loader)
+        y_pred_scaled = torch.cat(preds_raw).numpy().flatten()
+        y_pred = scaler.inverse_transform(y_pred_scaled.reshape(-1, 1)).flatten()
+        y_true = y[test_idx]
+
+        r2  = r2_score(y_true, y_pred)
+        mae = mean_absolute_error(y_true, y_pred)
+        boot_mean, ci_lo, ci_hi, boots = bootstrap_r2_ci(y_true, y_pred)
+
+        print(f"  [ChemProp v2] R2={r2:.4f} | MAE={mae:.4f} | "
+              f"95%CI [{ci_lo:.4f}, {ci_hi:.4f}]")
+        return dict(model='ChemProp (D-MPNN)', r2=r2, mae=mae,
+                    ci_lo=ci_lo, ci_hi=ci_hi, boots=boots,
+                    y_test=y_true, y_pred=y_pred)
+
+    except Exception as e:
+        print(f"  [ChemProp] Failed: {e}")
+        return None
+
 def check_chemprop():
     try:
         import chemprop
-        version = getattr(chemprop, '__version__', 'unknown')
+        version = getattr(chemprop, "__version__", "unknown")
         print(f"  [OK] chemprop {version}")
         return True
     except ImportError:
@@ -106,110 +182,6 @@ def bootstrap_r2_ci(y_true, y_pred, n_boot=N_BOOTSTRAP, ci=0.95):
 
 # =========================================================
 # MODEL 1: ChemProp (D-MPNN)
-# =========================================================
-def run_chemprop(smiles, y, test_idx, train_idx):
-    """
-    Trains ChemProp (Directed Message Passing Neural Network) on the
-    training split and evaluates on the test split.
-    Uses the same 85/15 split as the original paper and 0STACK.py.
-    """
-    try:
-        import chemprop
-        from chemprop import data, featurizers, models, training
-        from sklearn.metrics import r2_score, mean_absolute_error
-        import torch
-    except ImportError:
-        return None
-
-    print("\n  [ChemProp] Preparing data...")
-
-    smiles_train = [smiles[i] for i in train_idx]
-    y_train      = y[train_idx]
-    smiles_test  = [smiles[i] for i in test_idx]
-    y_test       = y[test_idx]
-
-    # ChemProp v2 API
-    try:
-        # v2.x API
-        train_data = [data.MoleculeDatapoint.from_smi(s, [yi])
-                      for s, yi in zip(smiles_train, y_train)]
-        test_data  = [data.MoleculeDatapoint.from_smi(s, [yi])
-                      for s, yi in zip(smiles_test, y_test)]
-
-        featurizer = featurizers.SimpleMoleculeMolGraphFeaturizer()
-        train_dset = data.MoleculeDataset(train_data, featurizer)
-        test_dset  = data.MoleculeDataset(test_data,  featurizer)
-
-        train_loader = data.build_dataloader(train_dset, shuffle=True)
-        test_loader  = data.build_dataloader(test_dset,  shuffle=False)
-
-        mpnn = models.MPNN(
-            message_passing=models.BondMessagePassing(),
-            agg=models.MeanAggregation(),
-            ffn=models.RegressionFFN(),
-        )
-
-        trainer = training.Trainer(
-            max_epochs=50,
-            enable_progress_bar=False,
-            enable_model_summary=False,
-            logger=False,
-        )
-        trainer.fit(mpnn, train_loader, test_loader)
-
-        preds = trainer.predict(mpnn, test_loader)
-        y_pred = np.array([p[0] for p in preds]).flatten()
-
-    except Exception:
-        # v1.x API fallback
-        try:
-            from chemprop.train import cross_validate, run_training
-            from chemprop.args import TrainArgs
-            import tempfile, csv
-
-            # Write temp CSVs
-            tmpdir = tempfile.mkdtemp()
-            train_csv = os.path.join(tmpdir, 'train.csv')
-            test_csv  = os.path.join(tmpdir, 'test.csv')
-
-            with open(train_csv, 'w', newline='') as f:
-                w = csv.writer(f)
-                w.writerow(['smiles', 'pIC50'])
-                w.writerows(zip(smiles_train, y_train))
-
-            with open(test_csv, 'w', newline='') as f:
-                w = csv.writer(f)
-                w.writerow(['smiles', 'pIC50'])
-                w.writerows(zip(smiles_test, y_test))
-
-            args = TrainArgs().parse_args([
-                '--data_path', train_csv,
-                '--separate_test_path', test_csv,
-                '--dataset_type', 'regression',
-                '--epochs', '50',
-                '--quiet',
-                '--save_dir', os.path.join(tmpdir, 'model'),
-                '--seed', str(RANDOM_STATE),
-            ])
-            _, test_scores, _, preds_raw = cross_validate(args=args, train_func=run_training)
-            y_pred = np.array(preds_raw).flatten()[:len(y_test)]
-        except Exception as e:
-            print(f"  [ChemProp] Both v1 and v2 APIs failed: {e}")
-            return None
-
-    r2  = r2_score(y_test, y_pred)
-    mae = mean_absolute_error(y_test, y_pred)
-    boot_mean, ci_lo, ci_hi, boots = bootstrap_r2_ci(y_test, y_pred)
-
-    print(f"  [ChemProp] R2={r2:.4f} | MAE={mae:.4f} | "
-          f"95%CI [{ci_lo:.4f}, {ci_hi:.4f}]")
-    return dict(model='ChemProp (D-MPNN)', r2=r2, mae=mae,
-                ci_lo=ci_lo, ci_hi=ci_hi, boots=boots,
-                y_test=y_test, y_pred=y_pred)
-
-
-# =========================================================
-# MODEL 2: AttentiveFP (via DGL-LifeSci)
 # =========================================================
 def run_attentivefp(smiles, y, test_idx, train_idx):
     """
