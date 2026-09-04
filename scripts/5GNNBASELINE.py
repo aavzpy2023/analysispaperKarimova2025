@@ -88,12 +88,12 @@ def run_chemprop(smiles, y, test_idx, train_idx):
         test_dset.normalize_targets(scaler)
 
         # Model
-        mp    = cpnn.BondMessagePassing()
-        agg   = cpnn.MeanAggregation()
-        ffn   = cpnn.RegressionFFN()
-        batch_norm = cpnn.BatchNorm(mp.output_dim)
-        mpnn  = models.MPNN(mp, agg, ffn, batch_norm=batch_norm, metrics=[cpnn.metrics.RMSE()])
+        mp = cpnn.BondMessagePassing()
+        agg = cpnn.MeanAggregation()
+        ffn = cpnn.RegressionFFN()
+        mpnn = models.MPNN(mp, agg, ffn, batch_norm=True, metrics=[cpnn.metrics.RMSE()])
 
+        
         # Train
         trainer = pl.Trainer(
             max_epochs=100,
