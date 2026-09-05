@@ -1,0 +1,126 @@
+\documentclass[a4paper,12pt]{article}
+
+% --- PAQUETES ESENCIALES ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{geometry}
+\usepackage{graphicx}
+\graphicspath{{figures/}}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{amsmath, amssymb}
+\usepackage{enumitem}
+\usepackage{calc}
+\usepackage{csquotes}
+\usepackage{setspace}
+\usepackage{xfp}  % for math calculation
+
+\input{latex/augment_variables.tex}
+\input{latex/docking_variables.tex}
+\input{latex/gnn_variables.tex}
+\input{latex/paper_variables.tex}
+\input{latex/redocking_variables.tex}
+% --- CONFIGURACIÓN DE MÁRGENES ---
+\geometry{
+	a4paper,
+	left=2.5cm,
+	right=2.5cm, 
+	top=2cm,
+	bottom=3.5cm,
+	headsep=0.8cm,
+	footskip=1cm
+}
+
+% --- HEADHEIGHT PARA FANCYHDR ---
+\setlength{\headheight}{55pt}
+
+% --- COLORES PERSONALIZADOS ---
+\definecolor{utemBlue}{RGB}{0, 51, 102}
+\definecolor{utemLight}{RGB}{230, 240, 255}
+\definecolor{accentColor}{RGB}{200, 50, 50}
+
+% --- DATOS EDITABLES ---
+\newcommand{\NombreAlumno}{Andrey Vinajera Zamora}
+\newcommand{\RUT}{99900286-2}
+\newcommand{\Asignatura}{\textbf{Redacción Científica}}
+\newcommand{\Profesor}{Dr. Tomás Veloz}
+\newcommand{\TituloTarea}{Tarea 2.1 }
+\newcommand{\FechaEntrega}{\today}
+
+% --- ESTILO DE CAJAS ---
+\tcbuselibrary{skins, breakable}
+
+\newtcolorbox{pregunta}[1]{
+	colback=white,
+	colframe=utemBlue,
+	fonttitle=\bfseries,
+	title={#1},
+	breakable,
+	arc=4pt,
+	before skip=6pt,
+	after skip=6pt
+}
+
+% --- HEADER Y FOOTER ---
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\includegraphics[height=1.2cm]{assets/logos/UTEM.jpeg}}
+\fancyhead[R]{\small\textbf{\Asignatura}  \\ \footnotesize \NombreAlumno}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{utemBlue}\leaders\hrule height \headrulewidth\hfill}}
+
+% --- HYPERREF CONFIG ---
+\hypersetup{
+	colorlinks=true,
+	linkcolor=utemBlue,
+	urlcolor=accentColor,
+	citecolor=utemBlue,
+	pdfstartview=FitH
+}
+
+% --- COMANDO PARA ESPACIO DE RESPUESTA ---
+\newcommand{\espacioRespuesta}[1][8]{
+	\vspace{#1\baselineskip}
+	\noindent\rule{\linewidth}{0.4pt}
+}
+
+\begin{document}
+	
+	% --- PORTADA ---
+	
+	
+
+	
+	%\newpage
+	\setcounter{page}{1}
+	
+
+\begin{center}
+	\begin{singlespace}
+		 \textbf{PAPER} \\
+		\vspace{0.5cm}
+		 \textbf{When simple wins: leakage-free benchmarking of classical Machine learning vs. graph neural networks in low-data bioactivity prediction}
+	\end{singlespace}
+	
+\end{center}
+
+\input{sections/00abstract.tex}
+\input{sections/01Introduction.tex}
+\input{sections/02materials.tex}
+%\input{sections/03Results.tex}
+%\input{sections/04Discussion.tex}
+%\input{sections/05Conclusions.tex}
+
+\bibliographystyle{ieeetr}
+\bibliography{references}
+
+
+\end{document}

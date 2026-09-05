@@ -1,0 +1,9 @@
+\subsection{Conclusions and future directions}
+This study demonstrates that while AI architectures possess a robust predictive advantage over traditional epidemiological baselines, the relative superiority of these forecasting models is heavily driven by strategic data engineering rather than algorithmic complexity alone. Moving forward, the scientific community must prioritize resolving the validation vulnerabilities, temporal data leakage, and open-science deficits that currently paralyze real-world deployment. 
+
+To bridge this translational gap, we propose three methodological pillars for the future of digital epidemiology and infectious disease modeling:
+\begin{enumerate}
+	\item \textbf{Mandatory chronological integrity:} Time-series models must employ strict walk-forward validation and nested cross-validation for hyperparameter tuning, universally abandoning non-temporal random splits (e.g., standard $K$-fold) to prevent future data leakage.
+	\item \textbf{Strict open-science compliance:} Academic models should mandate Level 2 OSMI compliance, providing the scientific community with containerized environments, rigorous dependency files, and pre-trained model weights to ensure external reproducibility.
+	\item \textbf{Operational co-development and explainability:} Algorithmic development must be integrated with advanced explainability frameworks and automated data ingestion pipelines, co-designed directly with public health authorities to successfully transition retrospective academic exercises into operational Early Warning Systems.
+\end{enumerate}

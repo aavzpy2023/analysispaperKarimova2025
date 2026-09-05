@@ -1,0 +1,23 @@
+\section{Materials and Methods}
+
+\subsection{Bioactivity Benchmark Dataset and Curation}
+
+The dataset used in this study was derived from a previously published benchmark on \textit{Toxoplasma gondii} dihydrofolate reductase (TgDHFR) enzyme inhibitors \cite{karimova2025}. The provenance of these data relies on the integration of primary public repositories to ensure chemical and bioactivity representativeness, aligning with foundational QSAR guidelines that mandate rigorous data preparation \cite{tropsha2010}:
+
+\begin{itemize}
+	\item \textbf{Primary Data Sources:} The initial collection was constructed by combining records from BindingDB, which provided detailed drug-protein interaction parameters and SMILES structures, alongside bioactivity data retrieved from ChEMBL \cite{karimova2025}.
+	\item \textbf{Consolidation and Curation Protocol:} Following database integration, discordant duplicates and intermediate compounds were systematically removed to mitigate experimental noise and avoid overfitting, adhering to internationally recognized QSAR curation standards \cite{cherkasov2014, iwuala2025}. Automated standardization steps, such as salt stripping and structural validation, were applied to guarantee overall chemical integrity \cite{damilola2025}.
+	\item \textbf{Treatment of Experimental Variations:} To address compounds with multiple $IC_{50}$ measurements obtained under varying conditions, the Interquartile Range (IQR) method was employed to filter out statistical outliers across identical CID identifiers \cite{karimova2025}. For the remaining consistent entries, an average $IC_{50}$ value was calculated to establish a single representative measurement per ligand group \cite{karimova2025}.
+	\item \textbf{Target Variable Formulation:} The final dataset comprises a benchmark of 873 unique molecules \cite{karimova2025}. The continuous target variable was formulated as $pIC_{50}$, defined as the negative logarithm of the molar $IC_{50}$ concentration ($pIC_{50} = -\log_{10}(IC_{50})$) \cite{karimova2025}. This logarithmic conversion standardizes the response values, reduces variance, and compresses the active range, rendering it optimal for robust regression algorithms \cite{karimova2025}.
+\end{itemize}
+
+
+\subsection{Representation Spaces: Molecular Fingerprints and Conformational Descriptors}
+
+To systematically evaluate the structure-activity relationship, three distinct molecular representation spaces were programmatically generated using the open-source cheminformatics library RDKit \cite{landrum2025}:
+
+\begin{itemize}
+	\item \textbf{Molecular Fingerprints (ECFP4):} Morgan fingerprints were computed to represent molecular structures as vector spaces \cite{samina2019}. Extended-connectivity fingerprints (ECFPs) were specifically developed for structure-activity modeling because they can be calculated rapidly and represent an essentially infinite number of distinct molecular features, including stereochemical information \cite{rogers2010}. Furthermore, classical 2D fingerprint-based models have been demonstrated to perform as well as state-of-the-art 3D structure-based models for bioactivity predictions relying solely on ligand information \cite{gao2020}.
+	\item \textbf{2D Physicochemical Descriptors:} A comprehensive set of conventional two-dimensional topological representations was extracted to establish a quantitative physicochemical baseline \cite{samina2019}. Well-curated 2D molecular representations are highly robust, and recent studies have shown they can maintain scaffold-robust advantages over 3D alternatives in various permeability and property prediction tasks \cite{tiwari2026}.
+	\item \textbf{3D Conformational Descriptors (ETKDG):} Three-dimensional conformers were generated employing the distance geometry approach implemented in RDKit \cite{riniker2015}. Because purely distance-based constraints tend to lead to distorted aromatic rings and $sp^2$ centers, this methodology utilizes experimental torsion-angle preferences obtained from small-molecule crystallographic data to improve conformation generation \cite{riniker2015}. Although recent evaluations indicate that 3D conformer descriptors may provide limited incremental predictive value over curated 2D representations in specific tabular benchmark algorithms \cite{tiwari2026}, integrating spatial information remains highly relevant for molecular image-based modeling \cite{matsu2023} and geometry-augmented representation learning \cite{yanan2024}.
+\end{itemize}
