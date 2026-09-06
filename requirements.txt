@@ -15,9 +15,10 @@ chemprop>=2.0.0
 dgl
 dgllife
 
-# ── Cheminformatics ────────────────────────────────────
+# ── Cheminformatics & ADMET (2.5_ADMET.py) ─────────────
 rdkit==2025.9.3
 PubChemPy==1.0.5
+PyTDC>=0.4.1
 
 # ── Docking (3DOCKING.py, 4REDOCKING_VALIDATION.py) ───
 vina

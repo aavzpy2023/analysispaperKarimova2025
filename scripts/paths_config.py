@@ -29,7 +29,7 @@ SELECTION_LOG_FILE   = os.path.join(RESULTS_DIR, "nested_cv_selection_log.csv")
 FINAL_RESULTS_FILE   = os.path.join(RESULTS_DIR, "nested_cv_final_results.csv")
 MODEL_FILE           = os.path.join(RESULTS_DIR, "best_model.joblib")
 MASK_FILE            = os.path.join(RESULTS_DIR, "selected_features_mask.npy")
-FDA_CANDIDATES_CSV   = os.path.join(RESULTS_DIR, "FDA_Candidates_For_Docking.csv")
+FDA_CANDIDATES_CSV   = os.path.join(RESULTS_DIR, "ADMET_CANDIDATES_For_Docking.csv")
 DOCKING_RESULTS_CSV  = os.path.join(RESULTS_DIR, "Final_Validation_Hybrid.csv")
 
 # LaTeX files
