@@ -14,6 +14,7 @@ torch>=2.0.0
 chemprop>=2.0.0
 dgl
 dgllife
+torchdata==0.7.1
 
 # ── Cheminformatics & ADMET (2.5_ADMET.py) ─────────────
 rdkit==2025.9.3
