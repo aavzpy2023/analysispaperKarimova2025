@@ -8,6 +8,7 @@ dependencies:
   # Core & ML
   - python=3.11
   - pip
+  - setuptools
   - numpy=2.3.5
   - pandas=2.3.3
   - scipy=1.16.3
