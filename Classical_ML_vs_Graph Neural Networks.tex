@@ -1,126 +1,258 @@
-\documentclass[a4paper,12pt]{article}
+%% 
+%% Copyright 2019-2024 Elsevier Ltd
+%% 
+%% This file is part of the 'CAS Bundle'.
+%% --------------------------------------
+%% 
+%% It may be distributed under the conditions of the LaTeX Project Public
+%% License, either version 1.3c of this license or (at your option) any
+%% later version.  The latest version of this license is in
+%%    http://www.latex-project.org/lppl.txt
+%% and version 1.3c or later is part of all distributions of LaTeX
+%% version 1999/12/01 or later.
+%% 
+%% The list of all files belonging to the 'CAS Bundle' is
+%% given in the file `manifest.txt'.
+%% 
+%% Template article for cas-sc documentclass for 
+%% double column output.
 
-% --- PAQUETES ESENCIALES ---
-\usepackage[utf8]{inputenc}
+\documentclass[a4paper,fleqn]{cas-sc}
+
+% If the frontmatter runs over more than one page
+% use the longmktitle option.
+
+%\documentclass[a4paper,fleqn,longmktitle]{cas-sc}
+
+%\usepackage[numbers]{natbib}
+%\usepackage[authoryear]{natbib}
+\usepackage[authoryear,longnamesfirst]{natbib}
+\usepackage{amssymb}
+%% The amsmath package provides various useful equation environments.
+\usepackage{amsmath}
 \usepackage[T1]{fontenc}
-\usepackage[english]{babel}
-\usepackage{geometry}
+\usepackage[utf8]{inputenc}
 \usepackage{graphicx}
-\graphicspath{{figures/}}
-\usepackage{tikz}
-\usetikzlibrary{shapes.geometric, arrows.meta, positioning}
-\usepackage{xcolor}
-\usepackage{tcolorbox}
-\usepackage{longtable}
+\usepackage{amssymb}
+\graphicspath{ {./images/} }
 \usepackage{booktabs}
-\usepackage{fancyhdr}
+\usepackage{aligned-overset}
+\usepackage{bm}
+\usepackage{float}
 \usepackage{hyperref}
-\usepackage{amsmath, amssymb}
-\usepackage{enumitem}
-\usepackage{calc}
-\usepackage{csquotes}
-\usepackage{setspace}
-\usepackage{xfp}  % for math calculation
+\usepackage{xcolor}
+\usepackage{comment}
+\usepackage{longtable}
+\usepackage{pdflscape}
+%%%Author macros
+\def\tsc#1{\csdef{#1}{\textsc{\lowercase{#1}}\xspace}}
+\tsc{WGM}
+\tsc{QE}
+%%%
 
 \input{latex/augment_variables.tex}
 \input{latex/docking_variables.tex}
 \input{latex/gnn_variables.tex}
 \input{latex/paper_variables.tex}
 \input{latex/redocking_variables.tex}
-% --- CONFIGURACIÓN DE MÁRGENES ---
-\geometry{
-	a4paper,
-	left=2.5cm,
-	right=2.5cm, 
-	top=2cm,
-	bottom=3.5cm,
-	headsep=0.8cm,
-	footskip=1cm
-}
 
-% --- HEADHEIGHT PARA FANCYHDR ---
-\setlength{\headheight}{55pt}
-
-% --- COLORES PERSONALIZADOS ---
-\definecolor{utemBlue}{RGB}{0, 51, 102}
-\definecolor{utemLight}{RGB}{230, 240, 255}
-\definecolor{accentColor}{RGB}{200, 50, 50}
-
-% --- DATOS EDITABLES ---
-\newcommand{\NombreAlumno}{Andrey Vinajera Zamora}
-\newcommand{\RUT}{99900286-2}
-\newcommand{\Asignatura}{\textbf{Redacción Científica}}
-\newcommand{\Profesor}{Dr. Tomás Veloz}
-\newcommand{\TituloTarea}{Tarea 2.1 }
-\newcommand{\FechaEntrega}{\today}
-
-% --- ESTILO DE CAJAS ---
-\tcbuselibrary{skins, breakable}
-
-\newtcolorbox{pregunta}[1]{
-	colback=white,
-	colframe=utemBlue,
-	fonttitle=\bfseries,
-	title={#1},
-	breakable,
-	arc=4pt,
-	before skip=6pt,
-	after skip=6pt
-}
-
-% --- HEADER Y FOOTER ---
-\pagestyle{fancy}
-\fancyhf{}
-\fancyhead[L]{\includegraphics[height=1.2cm]{assets/logos/UTEM.jpeg}}
-\fancyhead[R]{\small\textbf{\Asignatura}  \\ \footnotesize \NombreAlumno}
-\fancyfoot[C]{\thepage}
-\renewcommand{\headrulewidth}{0.4pt}
-\renewcommand{\headrule}{\hbox to\headwidth{\color{utemBlue}\leaders\hrule height \headrulewidth\hfill}}
-
-% --- HYPERREF CONFIG ---
-\hypersetup{
-	colorlinks=true,
-	linkcolor=utemBlue,
-	urlcolor=accentColor,
-	citecolor=utemBlue,
-	pdfstartview=FitH
-}
-
-% --- COMANDO PARA ESPACIO DE RESPUESTA ---
-\newcommand{\espacioRespuesta}[1][8]{
-	\vspace{#1\baselineskip}
-	\noindent\rule{\linewidth}{0.4pt}
-}
+% Uncomment and use as if needed
+%\newtheorem{theorem}{Theorem}
+%\newtheorem{lemma}[theorem]{Lemma}
+%\newdefinition{rmk}{Remark}
+%\newproof{pf}{Proof}
+%\newproof{pot}{Proof of Theorem \ref{thm}}
+\newcommand{\mycite}[1]{\cite{#1}} 
 
 \begin{document}
+	\let\WriteBookmarks\relax
+	\def\floatpagepagefraction{1}
+	\def\textpagefraction{.001}
 	
-	% --- PORTADA ---
+	% Short title
+	\shorttitle{Spatial prediction of potential sources of dengue using Random Forest}    
+	
+	% Short author
+	\shortauthors{Vinajera-Zamora et. al, 2026}  
+	
+	% Main title of the paper
+	\title [mode = title]{When simple wins: leakage-free benchmarking of classical Machine learning vs. graph neural networks in low-data bioactivity prediction
+		geographic and entomological data}  
+	
+	% Title footnote mark
+	% eg: \tnotemark[1]
+	\tnotemark[1] 
+	
+	% Title footnote 1.
+	% eg: \tnotetext[1]{Title footnote text}
+	\tnotetext[1]{smontejo@utem.cl} 
+	
+	% First author
+	%
+	% Options: Use if required
+	% eg: \author[1,3]{Author Name}[type=editor,
+	%       style=chinese,
+	%       auid=000,
+	%       bioid=1,
+	%       prefix=Sir,
+	%       orcid=0000-0000-0000-0000,
+	%       facebook=<facebook id>,
+	%       twitter=<twitter id>,
+	%       linkedin=<linkedin id>,
+	%       gplus=<gplus id>]
+	
+	\author[1]{Andrey Vinajera-Zamora}%[<options>]
+	
+	% Corresponding author indication
+	%\cormark[1]
+	
+	% Footnote of the first author
+	%\fnmark[1]
+	
+	% Email id of the first author
+	\ead{avinajera@utem.cl}
+	
+	% URL of the first author
+	\ead[url]{https://orcid.org/0000-0002-4922-457X}
+	
+	% Credit authorship
+	% eg: \credit{Conceptualization of this study, Methodology, Software}
+	\credit{Conceptualization, Methodology, Formal analysis, Software, Validation, Investigation, Data curation, Writing – original draft, Visualization}
+	
+	% Address/affiliation
+	\affiliation[1]{organization={Instituto Universitario de Investigación y Desarrollo Tecnológico, Universidad Tecnol\'ogica Metropolitana},
+		addressline={Ignacio Valdivieso 2409}, 
+		city={Regi\'on Metropolitana},
+		%          citysep={}, % Uncomment if no comma needed between city and postcode
+		postcode={97279}, 
+		state={Santiago},
+		country={Chile}}
+	
+	\author[1]{Samuel Montejo-Sánchez}%[]
+	
+	% Footnote of the second author
+	\cormark[1]
+	
+	% Email id of the second author
+	\ead{smontejo@utem.cl}
+	
+	% URL of the second author
+	\ead[url]{https://ieeexplore.ieee.org/author/37085682270}
+	
+	% Credit authorship
+	\credit{Conceptualization, Validation, Writing – review \& editing, Supervision}
 	
 	
-
 	
-	%\newpage
-	\setcounter{page}{1}
+	\author[2]{Jorge Vergara-Quezada}%[]
 	
-
-\begin{center}
-	\begin{singlespace}
-		 \textbf{PAPER} \\
-		\vspace{0.5cm}
-		 \textbf{When simple wins: leakage-free benchmarking of classical Machine learning vs. graph neural networks in low-data bioactivity prediction}
-	\end{singlespace}
+	% Footnote of the second author
+	%\fnmark[3]
 	
-\end{center}
-
-\input{sections/00abstract.tex}
-\input{sections/01Introduction.tex}
-\input{sections/02materials.tex}
-%\input{sections/03Results.tex}
-%\input{sections/04Discussion.tex}
-%\input{sections/05Conclusions.tex}
-
-\bibliographystyle{ieeetr}
-\bibliography{references}
-
-
+	% Email id of the second author
+	\ead{jorgever@utem.cl}
+	
+	% URL of the second author
+	\ead[url]{http://orcid.org/0000-0001-6699-4181 }
+	
+	% Credit authorship
+	\credit{Validation, Writing – review & editing }
+	
+	% Address/affiliation
+	\affiliation[2]{organization={Departamento de Inform\'atica y Computación, Universidad Tecnol\'ogica Metropolitana},
+		addressline={Jos\'e Pedro Alessandri 1242, Ñuñoa}, 
+		city={Regi\'on Metropolitana},
+		%          citysep={}, % Uncomment if no comma needed between city and postcode
+		postcode={7750000}, 
+		state={Santiago},
+		country={Chile}}
+	
+	
+	
+	% Footnote text
+	%\fntext[1]{}
+	
+	
+	\author[1]{Juan Castillo-Garit} %% Author name
+	
+	% Email id of the four author
+	\ead{j.castillo@utem.cl}
+	
+	% URL of the second author
+	\ead[url]{https://orcid.org/0000-0003-0896-9484 }
+	
+	% Credit authorship
+	\credit{Validation, Writing – review & editing }
+	
+	
+	\author[1]{Raul Arias-Carrasco} %% Author name
+	
+	% Email id of the four author
+	\ead{raul.arias@utem.cl}
+	
+	% URL of the second author
+	\ead[url]{https://orcid.org/0000-0003-1698-9282 }
+	
+	% Credit authorship
+	\credit{Validation, Supervision, Writing – review & editing , Visualization}
+	
+	% For a title note without a number/mark
+	%\nonumnote{}
+	
+	% Here goes the abstract
+%	\begin{abstract}
+	%	This research addresses the prediction of the incidence of dengue in a municipality in Cuba. The Random Forest algorithm was used as the base model, combined with the \textit{bagging and pasting} voting techniques and the \textit{adaptive boosting} technique to enhance the predictive power. A stacking algorithm combined previous models to get an ensemble model. The eight predictor variables used were created with feature engineering from entomological and geographic data. K-means clustering was used to detect potential outliers, and then the data was appropriately re-labeled to remove any negative instances. The hyperparameters of the base model were tuned with a grid search to identify the best possible combination. The model was then trained using the original dataset and the dataset with outliers removed. The best results correspond to the model formed from the combination of the \textit{bagging}, \textit{pasting}, and \textit{adaptive boosting} classifiers, which scored a 0.9151 f1 score. In prediction, this model achieved a precision and recall score of over 83\%.
+%	\end{abstract}
+	
+	% Use if graphical abstract is present
+	%\begin{graphicalabstract}
+	%\includegraphics{}
+	%\end{graphicalabstract}
+	
+	% % Research highlights
+	% \begin{highlights}
+		% \item Introduces Transmitting Source of Dengue (TSD) for localized prediction.
+		% \item Combines geographic and entomological data to detect dengue sources.
+		% \item Stacked RF-bagging-pasting-AdaBoost ensemble achieves F1 score of 0.9151.
+		% \item K-means relabeling improved precision, recall, and F1 by \textasciitilde25\%.
+		% \item Model predicted monthly TSD risk blocks with 84.35\% precision, 83.24\% recall.
+		% \end{highlights}
+	
+	
+	% Keywords
+	% Each keyword is seperated by \sep
+%	\begin{keywords}
+%		machine learning \sep random forest \sep dengue incidence prediction \sep artificial intelligence \sep transmitting source of dengue
+%	\end{keywords}
+	
+	\maketitle
+	
+	% Main text
+	\input{sections/00abstract.tex}
+	\input{sections/01Introduction.tex}
+	\input{sections/02materials.tex}
+	\input{sections/03Results.tex}
+	\input{sections/04Discussion.tex}
+	\input{sections/05Conclusions.tex}
+	
+	% To print the credit authorship contribution details
+	\printcredits
+	
+	%% Loading bibliography style file
+	%\bibliographystyle{model1-num-names}
+	\bibliographystyle{cas-model2-names}
+	
+	% Loading bibliography database
+	\bibliography{references.bib}
+	
+	% Biography
+	%\bio{}
+	% Here goes the biography details.
+	%\endbio
+	
+	%\bio{pic1}
+	% Here goes the biography details.
+	%\endbio
+	
 \end{document}
+
