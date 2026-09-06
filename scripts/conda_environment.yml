@@ -1,0 +1,45 @@
+name: fda_pipeline_env
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+  - defaults
+dependencies:
+  # Core & ML
+  - python=3.10
+  - numpy=2.3.5
+  - pandas=2.3.3
+  - scipy=1.16.3
+  - scikit-learn=1.8.0
+  - joblib=1.5.2
+  - lightgbm=4.6.0
+  - xgboost=3.1.2
+
+  # GNN & Deep Learning (Instalación nativa de PyTorch con CUDA)
+  - pytorch
+  - pytorch-cuda=12.1
+
+  # Cheminformatics nativo de Conda (Evita errores de compilación C++)
+  - rdkit=2025.9.3
+
+  # Visualización y utilidades
+  - matplotlib=3.10.8
+  - pillow=12.0.0
+  - contourpy=1.3.3
+  - cycler=0.12.1
+  - fonttools=4.61.0
+  - kiwisolver=1.4.9
+  - pyparsing=3.2.5
+  - packaging=25.0
+  - python-dateutil=2.9.0
+
+  # Dependencias exclusivas de PIP
+  - pip:
+    - PyTDC>=0.4.1
+    - PubChemPy==1.0.5
+    - chemprop>=2.0.0
+    - dgl
+    - dgllife
+    - vina
+    - meeko
+    - gemmi
