@@ -4,7 +4,7 @@ import sys
 import numpy as np
 import pandas as pd
 from rdkit import Chem
-from rdkit.Chem import AllChem, Descriptors
+from rdkit.Chem import AllChem, Descriptors, rdFingerprintGenerator
 from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
 from tdc.single_pred import ADME, Tox
 
@@ -36,13 +36,17 @@ def evaluate_smiles(row):
 
 
 def smiles_to_fps(smiles_list, radius=2, n_bits=2048):
-    """Generates Morgan fingerprints as Numpy arrays."""
+    """Generates Morgan fingerprints as Numpy arrays using the modern RDKit Generator."""
     fps = []
+    # Instanciar el generador fuera del bucle mejora el rendimiento
+    morgan_gen = rdFingerprintGenerator.GetMorganGenerator(radius=radius, fpSize=n_bits)
+
     for s in smiles_list:
         mol = Chem.MolFromSmiles(s)
         if mol:
-            fp = AllChem.GetMorganFingerprintAsBitVect(mol, radius, nBits=n_bits)
-            fps.append(np.array(fp))
+            # Obtener el array de Numpy directamente
+            fp = morgan_gen.GetFingerprintAsNumPy(mol)
+            fps.append(fp)
         else:
             fps.append(np.zeros(n_bits))
     return np.array(fps)
