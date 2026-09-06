@@ -8,8 +8,8 @@ dependencies:
   # Core & ML
   - python=3.11
   - pip
-  - setuptools
-  - numpy=2.3.5
+  - setuptools<70.0.0
+  - numpy=1.26.4
   - pandas=2.3.3
   - scipy=1.16.3
   - scikit-learn=1.8.0
@@ -22,7 +22,7 @@ dependencies:
   - pytorch-cuda=12.1
 
   # Cheminformatics
-  - rdkit=2025.9.3
+  - rdkit
 
   # Visualización y utilidades
   - matplotlib=3.10.8
