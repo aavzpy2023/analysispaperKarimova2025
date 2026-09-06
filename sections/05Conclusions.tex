@@ -1,9 +1,11 @@
 \subsection{Conclusions and future directions}
-This study demonstrates that while AI architectures possess a robust predictive advantage over traditional epidemiological baselines, the relative superiority of these forecasting models is heavily driven by strategic data engineering rather than algorithmic complexity alone. Moving forward, the scientific community must prioritize resolving the validation vulnerabilities, temporal data leakage, and open-science deficits that currently paralyze real-world deployment. 
 
-To bridge this translational gap, we propose three methodological pillars for the future of digital epidemiology and infectious disease modeling:
-\begin{enumerate}
-	\item \textbf{Mandatory chronological integrity:} Time-series models must employ strict walk-forward validation and nested cross-validation for hyperparameter tuning, universally abandoning non-temporal random splits (e.g., standard $K$-fold) to prevent future data leakage.
-	\item \textbf{Strict open-science compliance:} Academic models should mandate Level 2 OSMI compliance, providing the scientific community with containerized environments, rigorous dependency files, and pre-trained model weights to ensure external reproducibility.
-	\item \textbf{Operational co-development and explainability:} Algorithmic development must be integrated with advanced explainability frameworks and automated data ingestion pipelines, co-designed directly with public health authorities to successfully transition retrospective academic exercises into operational Early Warning Systems.
-\end{enumerate}
+This study critically re-evaluates the methodological requirements for effective molecular property prediction in low-data regimes, yielding three primary conclusions. First, for small-scale datasets, classical machine learning ensembles leveraging the explicit inductive bias of 2D topological fingerprints match or exceed the predictive utility of complex deep learning architectures and computationally expensive 3D descriptors. Second, the deployment of a rigorous nested cross-validation framework is imperative to prevent optimistic performance bias and ensure the true generalizability of the selected models. Finally, integrating ligand-based machine learning predictions with structure-based molecular docking establishes a robust consensus filtering protocol. This orthogonal validation effectively mitigates the false-positive rates inherent to standalone screening methods, ensuring that only high-confidence, structurally viable candidates are prioritized for therapeutic repurposing.
+
+\section*{Data and Code Availability}
+
+All source code, Python scripts for dataset processing, nested cross-validation, model training, and docking validation protocols, as well as the benchmark datasets, are publicly available in the GitHub repository: \url{https://github.com/aavzpy2023/analysispaperKarimova2025}
+
+\section*{Declaration of Generative AI in Scientific Writing}
+
+During the preparation of this work, the author(s) utilized generative artificial intelligence technologies (Large Language Models) solely to assist with language polishing, structural formatting, and improving the overall readability of the manuscript. After using these tools, the author(s) thoroughly reviewed, edited, and validated all generated text. The author(s) take full and sole responsibility for the final content, scientific integrity, and accuracy of this publication. No AI technologies were used to generate data, perform statistical analyses, or draw scientific conclusions.
