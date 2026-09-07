@@ -1,6 +1,7 @@
 import concurrent.futures
 import os
 import sys
+from paths_config import *
 import numpy as np
 import pandas as pd
 from rdkit import Chem
