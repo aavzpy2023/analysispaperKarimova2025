@@ -1,111 +1,104 @@
+\newcommand{\boxheight}{4cm}
 \begin{figure*}[t]
-\centering
-\resizebox{\textwidth}{!}{%
-\begin{tikzpicture}[
-    font=\sffamily\small,
-    >=Stealth,
-    node distance=0.5cm,
-    phase/.style={
-        draw=blue!70!black,
-        fill=blue!5,
-        thick,
-        rounded corners=4pt,
-        text width=3.3cm,
-        minimum height=3.6cm,
-        align=left,
-        inner sep=6pt
-    },
-    filter/.style={
-        draw=orange!80!black,
-        fill=orange!5,
-        thick,
-        rounded corners=4pt,
-        text width=3.3cm,
-        minimum height=3.6cm,
-        align=left,
-        inner sep=6pt
-    },
-    finalhit/.style={
-        draw=teal!80!black,
-        fill=teal!8,
-        thick,
-        rounded corners=4pt,
-        text width=2.8cm,
-        minimum height=3.6cm,
-        align=center,
-        inner sep=6pt
-    },
-    arrowline/.style={
-        ->,
-        ultra thick,
-        draw=gray!70
-    }
-]
-
-    % FASE 1: ML BENCHMARKING
-    \node[phase] (box1) {
-        \centering \textbf{Phase 1: ML Modeling} \par\vspace{3pt}\hrule\vspace{5pt}
-        \raggedright
-        \textbf{Dataset:} $N = \NCompounds$ TgDHFR \par\vspace{2pt}
-        \textbf{CV:} $5 \times 3$ Nested CV \par\vspace{2pt}
-        \textbf{Features:} Morgan, 2D, 2D/3D/FP \par\vspace{2pt}
-        \textbf{Selection:} RF+XGB+SVR \par\vspace{2pt}
-        \textbf{Ablation:} PI + Gaussian Noise
-    };
-
-    % FASE 2: FDA SCREENING
-    \node[filter, right=of box1] (box2) {
-        \centering \textbf{Phase 2: Virtual Screen} \par\vspace{3pt}\hrule\vspace{5pt}
-        \raggedright
-        \textbf{Target:} FDA Library \par\vspace{2pt}
-        \textbf{Library Size:} $N \approx 1,700$ \par\vspace{2pt}
-        \textbf{Filters:} MW $\le 1000$ Da, Atoms \par\vspace{2pt}
-        \textbf{Domain:} Isolation Forest \par\vspace{2pt}
-        \textbf{Prioritized:} Top candidates
-    };
-
-    % FASE 3: MOLECULAR DOCKING
-    \node[phase, right=of box2] (box3) {
-        \centering \textbf{Phase 3: 3D Consensus} \par\vspace{3pt}\hrule\vspace{5pt}
-        \raggedright
-        \textbf{Receptor:} TgDHFR (PDB: 6AOG) \par\vspace{2pt}
-        \textbf{Engine:} AutoDock Vina \par\vspace{2pt}
-        \textbf{Exhaustiveness:} \DockExhaustiveness \par\vspace{2pt}
-        \textbf{Validation:} CP6 Redock \par\vspace{2pt}
-        \textbf{Consensus:} ML vs. Physics
-    };
-
-    % FASE 4: ADMET PROFILING
-    \node[filter, right=of box3] (box4) {
-        \centering \textbf{Phase 4: ADMET Filter} \par\vspace{3pt}\hrule\vspace{5pt}
-        \raggedright
-        \textbf{Input:} Validated hits \par\vspace{2pt}
-        \textbf{Rule of 5:} Lipinski rules \par\vspace{2pt}
-        \textbf{Permeability:} Caco-2 ($> -5.15$) \par\vspace{2pt}
-        \textbf{Toxicity:} hERG ($P < 0.5$) \par\vspace{2pt}
-        \textbf{Engine:} TDC Random Forest
-    };
-
-    % OUTCOME / FINAL CANDIDATE
-    \node[finalhit, right=of box4] (box5) {
-        \centering \textbf{Repurposed Leads} \par\vspace{3pt}\hrule\vspace{6pt}
-        \textbf{Pyrimethamine} \par
-        {\scriptsize ($p\mathrm{IC}_{50} = 6.42$, Vina $-7.31$)} \par\vspace{6pt}
-        \textbf{Trimethoprim} \par
-        {\scriptsize ($p\mathrm{IC}_{50} = 5.66$, Vina $-7.28$)} \par\vspace{4pt}
-        \hrule\vspace{3pt}
-        \textit{\scriptsize Dual-filtered hits}
-    };
-
-    % FLECHAS DE CONEXIÓN
-    \draw[arrowline] (box1) -- (box2);
-    \draw[arrowline] (box2) -- (box3);
-    \draw[arrowline] (box3) -- (box4);
-    \draw[arrowline] (box4) -- (box5);
-
-\end{tikzpicture}%
-}
-\caption{\textbf{Schematic architecture of the multi-tier virtual screening pipeline.}
-The workflow integrates 2D ligand-based classical machine learning, applicability domain constraints, 3D physics-based molecular docking, and in silico ADMET filtering to isolate clinically viable TgDHFR inhibitors.}
-\label{fig:pipeline_flowchart}
+	\centering
+	\resizebox{\textwidth}{!}{%
+		\begin{tikzpicture}[
+			font=\sffamily\scriptsize,
+			>=Stealth,
+			node distance=0.45cm,
+			% Estilo base geométrico unificado y centrado
+			basebox/.style={
+				thick,
+				rounded corners=4pt,
+				inner sep=6pt,
+				anchor=center,
+				align=center
+			},
+			phase1/.style={basebox, draw=blue!75!black, fill=blue!4},
+			phase2/.style={basebox, draw=violet!75!black, fill=violet!4},
+			phase3/.style={basebox, draw=teal!80!black, fill=teal!4},
+			phase4/.style={basebox, draw=orange!85!black, fill=orange!4},
+			phase5/.style={basebox, draw=green!60!black, fill=green!5},
+			arrowline/.style={->, ultra thick, draw=gray!65}
+			]
+			
+			% FASE 1: ML BENCHMARKING (Centrado)
+			\node[phase1] (box1) {
+				\begin{minipage}[t][\boxheight][t]{3.15cm}
+					\centering
+					\textbf{\footnotesize Phase 1: ML Modeling} \par\vspace{2pt}\hrule\vspace{8pt}
+					\textbf{Training Set:} \\$N = \NCompounds$ TgDHFR \par\vspace{5pt}
+					\textbf{Validation:} \\$5 \times 3$ Nested CV \par\vspace{5pt}
+					\textbf{Descriptors:} \\ECFP4, 2D, 2D/3D \par\vspace{5pt}
+					\textbf{Ensemble:} \\Stacking + RidgeCV \par\vspace{5pt}
+					\textbf{Ablation:} \\PI + Gaussian Noise
+				\end{minipage}
+			};
+			
+			% FASE 2: FDA SCREENING (Centrado)
+			\node[phase2, right=of box1] (box2) {
+				\begin{minipage}[t][\boxheight][t]{3.15cm}
+					\centering
+					\textbf{\footnotesize Phase 2: Virtual Screen} \par\vspace{2pt}\hrule\vspace{8pt}
+					\textbf{Target Space:} \\FDA Approved \par\vspace{5pt}
+					\textbf{Library Size:} \\$N \approx 1,700$ \par\vspace{5pt}
+					\textbf{PhysChem:} MW \\$\le 1000$\,Da \par\vspace{5pt}
+					\textbf{Applicability:} \\Isolation Forest \par\vspace{5pt}
+					\textbf{Filtered Hits:} \\$N = 17$ prioritized
+				\end{minipage}
+			};
+			
+			% FASE 3: MOLECULAR DOCKING (Centrado)
+			\node[phase3, right=of box2] (box3) {
+				\begin{minipage}[t][\boxheight][t]{3.15cm}
+					\centering
+					\textbf{\footnotesize Phase 3: 3D Consensus} \par\vspace{2pt}\hrule\vspace{8pt}
+					\textbf{Receptor:} \\TgDHFR (6AOG, Ch.~B) \par\vspace{5pt}
+					\textbf{Engine:} \\AutoDock Vina \par\vspace{5pt}
+					\textbf{Exhaustiveness:}\\ \DockExhaustiveness \par\vspace{5pt}
+					\textbf{Redock Fidelity:} \\RMSD = \RedockRMSD\,\AA \par\vspace{5pt}
+					\textbf{Consensus:} \\ML--Physics overlap
+				\end{minipage}
+			};
+			
+			% FASE 4: ADMET PROFILING (Centrado)
+			\node[phase4, right=of box3] (box4) {
+				\begin{minipage}[t][\boxheight][t]{3.15cm}
+					\centering
+					\textbf{\footnotesize Phase 4: ADMET Filter} \par\vspace{2pt}\hrule\vspace{8pt}
+					\textbf{Input:} \\Docking consensus set \par\vspace{5pt}
+					\textbf{Druggability:} \\Lipinski Rule of 5 \par\vspace{5pt}
+					\textbf{Absorption:} \\Caco-2 ($> -5.15$) \par\vspace{5pt}
+					\textbf{Safety:} \\hERG ($P_\mathrm{block} < 0.5$) \par\vspace{5pt}
+					\textbf{Framework:} \\TDC Benchmarks
+				\end{minipage}
+			};
+			
+			% OUTCOME / FINAL CANDIDATE (Centrado)
+			\node[phase5, right=of box4] (box5) {
+				\begin{minipage}[t][\boxheight][t]{3.15cm}
+					\centering
+					\textbf{\footnotesize Validated Candidates} \par\vspace{2pt}\hrule\vspace{6pt}
+					\textbf{Pyrimethamine} \par\vspace{1pt}
+					\textit{Repurposed Lead Hit} \par\vspace{2pt}
+					$p\mathrm{IC}_{50} = 6.42$ \quad $-7.31$\,kcal/mol \par\vspace{8pt}
+					\textbf{Trimethoprim} \par\vspace{1pt}
+					\textit{Active Reference Control} \par\vspace{2pt}
+					$p\mathrm{IC}_{50} = 5.66$ \quad $-7.28$\,kcal/mol \par\vspace{6pt}
+					\hrule\vspace{4pt}
+					\textit{Structurally \& ADMET verified}
+				\end{minipage}
+			};
+			
+			% FLECHAS DE CONEXIÓN
+			\draw[arrowline] (box1) -- (box2);
+			\draw[arrowline] (box2) -- (box3);
+			\draw[arrowline] (box3) -- (box4);
+			\draw[arrowline] (box4) -- (box5);
+			
+		\end{tikzpicture}%
+	}
+	\caption{\textbf{Schematic overview of the multi-tier computational repurposing and validation pipeline.} 
+		The hierarchical funnel integrates: (1) 2D ligand-based representation benchmarking under nested cross-validation, (2) applicability domain-constrained screening of FDA-approved compounds, (3) orthogonal physics-based consensus validation via molecular docking (AutoDock Vina), and (4) in silico ADMET profiling (Caco-2 permeability and hERG cardiotoxicity) to isolate clinically viable TgDHFR candidates.}
+	\label{fig:pipeline_flowchart}
 \end{figure*}
