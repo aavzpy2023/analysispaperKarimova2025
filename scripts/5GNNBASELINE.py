@@ -93,7 +93,7 @@ def run_chemprop(smiles, y, test_idx, train_idx):
         ffn = cpnn.RegressionFFN()
         mpnn = models.MPNN(mp, agg, ffn, batch_norm=True, metrics=[cpnn.metrics.RMSE()])
 
-        
+
         # Train
         trainer = pl.Trainer(
             max_epochs=100,
@@ -140,8 +140,8 @@ def check_dgllife():
         import dgllife
         print(f"  [OK] dgl {dgl.__version__}, dgllife {dgllife.__version__}")
         return True
-    except ImportError:
-        print("  [MISSING] dgllife — install with: pip install dgl dgllife")
+    except Exception as e:
+        print(f"  [SKIP] dgl/dgllife no disponible ({type(e).__name__}: binario no compatible con PyTorch 2.5.1). Se omitirá AttentiveFP.")
         return False
 
 def check_torch():
@@ -198,8 +198,8 @@ def run_attentivefp(smiles, y, test_idx, train_idx):
         from rdkit import Chem
         from torch.utils.data import DataLoader, Dataset
         from sklearn.metrics import r2_score, mean_absolute_error
-    except ImportError:
-        print("  [AttentiveFP] dgllife not available, skipping.")
+    except Exception as e:
+        print(f"  [AttentiveFP] No se pudo inicializar DGL ({e}), omitiendo.")
         return None
 
     print("\n  [AttentiveFP] Preparing molecular graphs...")
