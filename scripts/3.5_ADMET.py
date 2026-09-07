@@ -12,7 +12,7 @@ from tdc.single_pred import ADME, Tox
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from paths_config import FDA_ADMET_CANDIDATES_CSV, FDA_RAW_CANDIDATES_CSV
 
-INPUT_PATH = FDA_RAW_CANDIDATES_CSV
+INPUT_PATH = DOCKING_RESULTS_CSV
 OUTPUT_PATH = FDA_ADMET_CANDIDATES_CSV
 CORES = 48
 

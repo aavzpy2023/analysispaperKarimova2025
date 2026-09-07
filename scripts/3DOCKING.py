@@ -58,6 +58,9 @@ def prepare_ligand_pdbqt(smiles, name):
 # =========================================================
 # LATEX EXPORT
 # =========================================================
+# =========================================================
+# LATEX EXPORT
+# =========================================================
 def newcommand(f, name, value):
     f.write(f"\\newcommand{{\\{name}}}{{{value}}}\n")
 
@@ -95,11 +98,17 @@ def export_latex(df_results):
         best = df_results.sort_values('Docking_Score').iloc[0]
         name_safe = "".join(c for c in str(best['Name']) if c.isalpha())[:20]
         newcommand(f, "DockBestCandidate",    name_safe)
-        newcommand(f, "DockBestMLpIC50",      f"{best['ML_pIC50']:.4f}")
+        newcommand(f, "DockBestMLpIC",        f"{best['ML_pIC50']:.4f}") # Fixed macro name to match LaTeX
         newcommand(f, "DockBestDockScore",    f"{best['Docking_Score']:.2f}")
 
-    print(f"[LATEX] Docking variables exported to {LATEX_FILE}")
+        # Dynamic extraction for true negative example (Chlorambucil)
+        chlorambucil = df_results[df_results['Name'].str.contains('Chlorambucil', case=False, na=False)]
+        if not chlorambucil.empty:
+            c_row = chlorambucil.iloc[0]
+            newcommand(f, "ChlorambucilMLpIC", f"{c_row['ML_pIC50']:.2f}")
+            newcommand(f, "ChlorambucilDockScore", f"{c_row['Docking_Score']:.2f}")
 
+    print(f"[LATEX] Docking variables exported to {LATEX_FILE}")
 
 # =========================================================
 # MAIN
@@ -128,10 +137,10 @@ def run():
 
     df = pd.read_csv(INPUT_CSV)
 
-    # Select candidates: top 15 by pIC50 + paper reference drugs
+    # Select candidates: top 15 by pIC50 + paper reference drugs + Chlorambucil
     top = df.head(15).copy()
     ref_names = ['Pyrimethamine', 'Trimethoprim', 'Bisacodyl',
-                 'Etodolac', 'Triamterene', 'Methotrexate']
+                 'Etodolac', 'Triamterene', 'Methotrexate', 'Chlorambucil']
     refs = df[df['Name'].str.contains('|'.join(ref_names), case=False, na=False)]
     candidates = pd.concat([top, refs]).drop_duplicates('CID').reset_index(drop=True)
     print(f"\n[INFO] {len(candidates)} candidates selected for docking")

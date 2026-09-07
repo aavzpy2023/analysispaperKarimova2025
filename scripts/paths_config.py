@@ -33,7 +33,7 @@ MASK_FILE            = os.path.join(RESULTS_DIR, "selected_features_mask.npy")
 # ADMET & Docking Candidates
 FDA_RAW_CANDIDATES_CSV   = os.path.join(RESULTS_DIR, "FDA_Candidates_For_Docking.csv")
 FDA_ADMET_CANDIDATES_CSV = os.path.join(RESULTS_DIR, "ADMET_CANDIDATES_For_Docking.csv")
-FDA_CANDIDATES_CSV       = FDA_ADMET_CANDIDATES_CSV
+FDA_CANDIDATES_CSV  = os.path.join(RESULTS_DIR, "FDA_Candidates_For_Docking.csv")
 DOCKING_RESULTS_CSV  = os.path.join(RESULTS_DIR, "Final_Validation_Hybrid.csv")
 
 # LaTeX files
