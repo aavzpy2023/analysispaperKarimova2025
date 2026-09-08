@@ -1,0 +1,36 @@
+Árbol de directorios de archivos exportados:
+
+--- Raíz de escaneo: . ---
+│   ├── README.md
+│   ├── conda_environment.yml
+│   ├── reorganize.sh
+│   ├── requirements.txt
+│   ├── assets/
+│   │   ├── logos/
+│   ├── sections/
+│   ├── figures/
+│   ├── archive/
+│   │   ├── 1FDA.py
+│   │   ├── 2DOCKING.py
+│   ├── results/
+│   ├── latex/
+│   ├── receptor/
+│   ├── scripts/
+│   │   ├── 0.1Wilcoxon.py
+│   │   ├── 0STACK.py
+│   │   ├── 1AUGMENT.py
+│   │   ├── 2FDA.py
+│   │   ├── 3.5_ADMET.py
+│   │   ├── 3DOCKING.py
+│   │   ├── 4REDOCKING_VALIDATION.py
+│   │   ├── 5GNNBASELINE.py
+│   │   ├── paths_config.py
+│   │   ├── prep_receptor.py
+│   │   ├── update_paths.py
+│   ├── checkpoints/
+│   ├── data/
+│   ├── logs/
+│   │   ├── 0STACK_output.txt
+│   │   ├── 1AUGMENT_output.txt
+│   │   ├── 2FDA_output.txt
+│   │   ├── 3DOCKING_output.txt
