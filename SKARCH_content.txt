@@ -1,0 +1,2062 @@
+=== SK-CONTEXT MANIFEST ===
+Intent: SKARCH
+Date: 2026-09-07 06:38:06
+AST Mode: True
+Line Numbers: False
+Modules: Global/Custom
+Processed Files: 21
+===========================
+
+
+
+// --- ./README.md ---
+
+# 🧬 Toxoplasma gondii: QSAR & Molecular Docking Pipeline
+
+![Python](https://img.shields.io/badge/Python-3.11-blue?style=for-the-badge&logo=python)
+![Status](https://img.shields.io/badge/Status-Production-success?style=for-the-badge)
+![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
+![Area](https://img.shields.io/badge/Area-Computational_Drug_Discovery-purple?style=for-the-badge)
+
+> **Algorithmic Audit & Optimization of Drug Discovery Frameworks**
+>
+> An advanced computational pipeline that integrates **Ensemble Machine Learning** (Stacking Regressors), **ADMET Profiling** (TDC), and **Bio-physical Simulations** (AutoDock Vina) to identify potent inhibitors of the *TgDHFR* enzyme. This project challenges and improves upon existing Deep Learning (GNN) baselines by applying the principle of parsimony, robust heuristic filtering, and rigorous validation.
+
+---
+
+## 🛠️ Tech Stack & Requirements
+
+This project relies on a highly reproducible scientific stack managed via Conda to prevent C++/CUDA compilation conflicts.
+
+### 🐍 Core Ecosystem
+| Library | Version | Purpose |
+| :--- | :--- | :--- |
+| ![RDKit](https://img.shields.io/badge/RDKit-2025.9.3-orange) | `2025.9.3` | Cheminformatics & Heuristic Filtering |
+| ![Scikit-Learn](https://img.shields.io/badge/scikit--learn-1.8.0-F7931E?logo=scikit-learn&logoColor=white) | `1.8.0` | Classical ML & Stacking Architectures |
+| **PyTorch / DGL** | `>=2.0.0` | Graph Neural Network Baselines |
+| **PyTDC** | `>=0.4.1` | ADMET Oracles (hERG, Caco-2) |
+| **AutoDock Vina** | `1.2.5` | Molecular Docking Engine (Python bindings) |
+| **Meeko / Gemmi** | `Latest` | PDBQT Ligand Preparation & Structure Handling |
+
+### 🐧 System Dependencies (Ubuntu/Linux)
+Molecular docking preparation requires specific system-level tools to handle PDB conversions.
+
+```bash
+# Update Repositories and install OpenBabel (Critical for PDB -> PDBQT)
+sudo apt-get update
+sudo apt-get install openbabel libxrender1 libxext6
+
+
+
+// --- ./archive/1FDA.py ---
+
+import pandas as pd
+import numpy as np
+import warnings
+import time
+from rdkit import Chem, RDLogger
+from rdkit.Chem import AllChem, DataStructs, Descriptors
+from sklearn.ensemble import RandomForestRegressor, ExtraTreesRegressor, StackingRegressor, IsolationForest
+from sklearn.svm import SVR
+from sklearn.cross_decomposition import PLSRegression
+from sklearn.linear_model import RidgeCV
+import lightgbm as lgb
+RDLogger.DisableLog('rdApp.*')
+warnings.filterwarnings('ignore')
+TRAIN_FILE = './V2-df_ic50_chmbl_CID_myFill.csv'
+FDA_FILE = 'PubChem_FDA-approved_NoInorganics.csv'
+ALLOWED_ATOMS = set([1, 6, 7, 8, 9, 15, 16, 17, 35, 53])
+MAX_MW = 1000.0
+ISO_CONTAMINATION = 0.05
+KNOWN_VALUES = {'Pyrimethamine': 6.56, 'Trimethoprim': 5.57}
+
+def get_fp(mol):
+    """..."""
+
+def check_atom_consistency(mol):
+    """..."""
+
+def get_top_10_models():
+    """..."""
+
+def run_master_audit():
+    """..."""
+if __name__ == '__main__':
+    run_master_audit()
+
+
+// --- ./archive/2DOCKING.py ---
+
+import pandas as pd
+import numpy as np
+from rdkit import Chem
+from rdkit.Chem import AllChem
+from meeko import MoleculePreparation
+from meeko import PDBQTMolecule
+from vina import Vina
+import os
+import warnings
+warnings.filterwarnings('ignore')
+RECEPTOR_FILE = 'receptor.pdbqt'
+INPUT_CSV = 'FDA_Candidates_For_Docking.csv'
+CENTER_X = 17.394
+CENTER_Y = 68.757
+CENTER_Z = -68.051
+BOX_SIZE = 20.0
+EXHAUSTIVENESS = 8
+
+def prepare_ligand_pdbqt(smiles, name):
+    """..."""
+
+def run_docking_pipeline():
+    """..."""
+if __name__ == '__main__':
+    if not os.path.exists(RECEPTOR_FILE):
+        print(f'[ERROR] No se encuentra {RECEPTOR_FILE}. Ejecuta primero prep_receptor.py')
+    else:
+        run_docking_pipeline()
+
+
+// --- ./conda_environment.yml ---
+
+name: fda_pipeline_env
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+  - defaults
+dependencies:
+  # Core & ML
+  - python=3.11
+  - pip
+  - setuptools<70.0.0
+  - numpy=1.26.4
+  - pandas=2.3.3
+  - scipy=1.16.3
+  - scikit-learn=1.8.0
+  - joblib=1.5.2
+  - lightgbm=4.6.0
+  - xgboost=3.1.2
+
+  # GNN & Deep Learning
+  - pytorch
+  - pytorch-cuda=12.1
+
+  # Cheminformatics
+  - rdkit
+
+  # Visualización y utilidades
+  - matplotlib=3.10.8
+  - pillow=12.0.0
+  - contourpy=1.3.3
+  - cycler=0.12.1
+  - fonttools=4.61.0
+  - kiwisolver=1.4.9
+  - pyparsing=3.2.5
+  - packaging=25.0
+  - python-dateutil=2.9.0
+
+  # Dependencias exclusivas de PIP
+  - pip:
+    - PyTDC>=0.4.1
+    - PubChemPy==1.0.5
+    - chemprop>=2.0.0
+    - dgl
+    - dgllife
+    - vina
+    - meeko
+    - gemmi
+
+
+
+// --- ./logs/0STACK_output.txt ---
+
+(vina_env) (base) andrey@raul-HP-Z820-Workstation:~/Projects/analysispaperKarimova2025$ python 0STACK.py
+[INFO] Active profile: workstation | N_JOBS=44 | Outer folds=5x3=15
+[INFO] Loading data: ./V2-df_ic50_chmbl_CID_myFill.csv
+[INFO] N compounds: 756
+
+====================================================================================================
+METHODS (summary — copy/adapt directly into the manuscript)
+====================================================================================================
+- Training dataset: 756 unique compounds (column 'Smiles', target 'pIC50 Value'), matching the size of the original paper's dataset (873 compounds after BindingDB+ChEMBL deduplication).
+- Base models compared (6): Random Forest, Extra Trees, LightGBM, XGBoost, SVR (RBF kernel), Partial Least Squares, k-Nearest Neighbors (cosine metric).
+- Architectures evaluated per representation: 41 (all single, pairwise, and triple combinations of the 6 base models, with stacking + RidgeCV as the meta-estimator for combos with 2+ members).
+- Molecular representations compared (4):
+    - morgan: Morgan fingerprints (ECFP4, 2048 bits) — no physicochemical descriptors
+    - rdkit2d: 217 RDKit 2D descriptors (analogous to the paper's "2D" model)
+    - rdkit2d_fp: RDKit 2D descriptors + Morgan FP (analogous to the paper's "2D/FP" model)
+    - rdkit2d3d_fp: 2D + 3D (geometric, via ETKDGv3 embedding + MMFF94s optimization) descriptors + Morgan FP (analogous to the paper's best model, "2D/3D/FP")
+- Validation scheme: nested cross-validation. Outer loop: 5-fold repeated 3 times (15 independent outer splits). Inner loop (architecture selection): 5-fold on the training portion of each outer split. The test portion of every outer fold is NEVER used for model selection, avoiding the optimistic bias of reporting the best score among many configurations evaluated on the same held-out set.
+- Preprocessing (non-binary representations): median imputation, standardization (StandardScaler), and positive-importance feature selection via SelectFromModel(RandomForestRegressor), all inside a scikit-learn Pipeline refit on every fold (no information leakage across folds).
+- random_state=42 for every split, matching the original paper.
+====================================================================================================
+
+
+####################################################################################################
+# NESTED CV — REPRESENTATION: morgan
+# Morgan fingerprints (ECFP4, 2048 bits) — no physicochemical descriptors
+####################################################################################################
+[INFO] Features generated: 2048 (binary)
+[CHECKPOINT] 6/15 folds already completed for 'morgan', resuming.
+
+    [INFO] Starting evaluation of 41 architectures in parallel for fold 7...
+[Parallel(n_jobs=44)]: Using backend LokyBackend with 44 concurrent workers.
+[Parallel(n_jobs=44)]: Done   4 out of  41 | elapsed:    8.0s remaining:  1.2min
+[Parallel(n_jobs=44)]: Done   9 out of  41 | elapsed:   33.0s remaining:  2.0min
+[Parallel(n_jobs=44)]: Done  14 out of  41 | elapsed:   51.6s remaining:  1.7min
+[Parallel(n_jobs=44)]: Done  19 out of  41 | elapsed:  3.4min remaining:  3.9min
+[Parallel(n_jobs=44)]: Done  24 out of  41 | elapsed:  3.7min remaining:  2.6min
+[Parallel(n_jobs=44)]: Done  29 out of  41 | elapsed:  5.1min remaining:  2.1min
+[Parallel(n_jobs=44)]: Done  34 out of  41 | elapsed:  5.7min remaining:  1.2min
+[Parallel(n_jobs=44)]: Done  39 out of  41 | elapsed:  7.9min remaining:   24.3s
+[Parallel(n_jobs=44)]: Done  41 out of  41 | elapsed:  8.2min finished
+    [INFO] Inner evaluation complete. Selecting best architecture...
+[morgan] Fold 7/15 -> best=RF+LGBM+SVM | R2_outer=0.7831 | MAE_outer=0.4772 | features=2048/2048 | 533.9s
+
+    [INFO] Starting evaluation of 41 architectures in parallel for fold 8...
+[Parallel(n_jobs=44)]: Using backend LokyBackend with 44 concurrent workers.
+[Parallel(n_jobs=44)]: Done   4 out of  41 | elapsed:    6.7s remaining:  1.0min
+[Parallel(n_jobs=44)]: Done   9 out of  41 | elapsed:   32.3s remaining:  1.9min
+[Parallel(n_jobs=44)]: Done  14 out of  41 | elapsed:   45.3s remaining:  1.5min
+[Parallel(n_jobs=44)]: Done  19 out of  41 | elapsed:  3.3min remaining:  3.9min
+[Parallel(n_jobs=44)]: Done  24 out of  41 | elapsed:  3.8min remaining:  2.7min
+[Parallel(n_jobs=44)]: Done  29 out of  41 | elapsed:  5.0min remaining:  2.1min
+[Parallel(n_jobs=44)]: Done  34 out of  41 | elapsed:  5.6min remaining:  1.2min
+[Parallel(n_jobs=44)]: Done  39 out of  41 | elapsed:  8.2min remaining:   25.3s
+[Parallel(n_jobs=44)]: Done  41 out of  41 | elapsed:  8.9min finished
+    [INFO] Inner evaluation complete. Selecting best architecture...
+[morgan] Fold 8/15 -> best=SVM | R2_outer=0.7384 | MAE_outer=0.5075 | features=2048/2048 | 537.1s
+
+    [INFO] Starting evaluation of 41 architectures in parallel for fold 9...
+[Parallel(n_jobs=44)]: Using backend LokyBackend with 44 concurrent workers.
+[Parallel(n_jobs=44)]: Done   4 out of  41 | elapsed:    7.4s remaining:  1.1min
+[Parallel(n_jobs=44)]: Done   9 out of  41 | elapsed:   36.3s remaining:  2.2min
+[Parallel(n_jobs=44)]: Done  14 out of  41 | elapsed:   55.0s remaining:  1.8min
+[Parallel(n_jobs=44)]: Done  19 out of  41 | elapsed:  3.4min remaining:  3.9min
+[Parallel(n_jobs=44)]: Done  24 out of  41 | elapsed:  4.0min remaining:  2.9min
+[Parallel(n_jobs=44)]: Done  29 out of  41 | elapsed:  5.6min remaining:  2.3min
+[Parallel(n_jobs=44)]: Done  34 out of  41 | elapsed:  6.4min remaining:  1.3min
+[Parallel(n_jobs=44)]: Done  39 out of  41 | elapsed:  8.9min remaining:   27.5s
+[Parallel(n_jobs=44)]: Done  41 out of  41 | elapsed:  9.0min finished
+    [INFO] Inner evaluation complete. Selecting best architecture...
+[morgan] Fold 9/15 -> best=XGB+SVM+kNN | R2_outer=0.7675 | MAE_outer=0.4528 | features=2048/2048 | 546.9s
+
+    [INFO] Starting evaluation of 41 architectures in parallel for fold 10...
+[Parallel(n_jobs=44)]: Using backend LokyBackend with 44 concurrent workers.
+[Parallel(n_jobs=44)]: Done   4 out of  41 | elapsed:    6.6s remaining:  1.0min
+[Parallel(n_jobs=44)]: Done   9 out of  41 | elapsed:   34.6s remaining:  2.1min
+[Parallel(n_jobs=44)]: Done  14 out of  41 | elapsed:   46.1s remaining:  1.5min
+[Parallel(n_jobs=44)]: Done  19 out of  41 | elapsed:  3.3min remaining:  3.9min
+[Parallel(n_jobs=44)]: Done  24 out of  41 | elapsed:  3.8min remaining:  2.7min
+[Parallel(n_jobs=44)]: Done  29 out of  41 | elapsed:  5.4min remaining:  2.2min
+[Parallel(n_jobs=44)]: Done  34 out of  41 | elapsed:  5.8min remaining:  1.2min
+[Parallel(n_jobs=44)]: Done  39 out of  41 | elapsed:  8.5min remaining:   26.0s
+[Parallel(n_jobs=44)]: Done  41 out of  41 | elapsed:  9.1min finished
+    [INFO] Inner evaluation complete. Selecting best architecture...
+[morgan] Fold 10/15 -> best=SVM | R2_outer=0.6289 | MAE_outer=0.5355 | features=2048/2048 | 545.6s
+
+    [INFO] Starting evaluation of 41 architectures in parallel for fold 11...
+[Parallel(n_jobs=44)]: Using backend LokyBackend with 44 concurrent workers.
+[Parallel(n_jobs=44)]: Done   4 out of  41 | elapsed:    5.8s remaining:   53.5s
+[Parallel(n_jobs=44)]: Done   9 out of  41 | elapsed:   37.1s remaining:  2.2min
+[Parallel(n_jobs=44)]: Done  14 out of  41 | elapsed:   53.0s remaining:  1.7min
+[Parallel(n_jobs=44)]: Done  19 out of  41 | elapsed:  3.3min remaining:  3.8min
+[Parallel(n_jobs=44)]: Done  24 out of  41 | elapsed:  3.9min remaining:  2.7min
+[Parallel(n_jobs=44)]: Done  29 out of  41 | elapsed:  5.1min remaining:  2.1min
+[Parallel(n_jobs=44)]: Done  34 out of  41 | elapsed:  5.6min remaining:  1.1min
+[Parallel(n_jobs=44)]: Done  39 out of  41 | elapsed:  8.2min remaining:   25.3s
+[Parallel(n_jobs=44)]: Done  41 out of  41 | elapsed:  8.7min finished
+    [INFO] Inner evaluation complete. Selecting best architecture...
+[morgan] Fold 11/15 -> best=RF+SVM+kNN | R2_outer=0.7397 | MAE_outer=0.5221 | features=2048/2048 | 562.3s
+
+    [INFO] Starting evaluation of 41 architectures in parallel for fold 12...
+[Parallel(n_jobs=44)]: Using backend LokyBackend with 44 concurrent workers.
+[Parallel(n_jobs=44)]: Done   4 out of  41 | elapsed:    5.0s remaining:   45.9s
+[Parallel(n_jobs=44)]: Done   9 out of  41 | elapsed:   36.4s remaining:  2.2min
+[Parallel(n_jobs=44)]: Done  14 out of  41 | elapsed:   45.5s remaining:  1.5min
+[Parallel(n_jobs=44)]: Done  19 out of  41 | elapsed:  3.5min remaining:  4.0min
+[Parallel(n_jobs=44)]: Done  24 out of  41 | elapsed:  3.7min remaining:  2.6min
+[Parallel(n_jobs=44)]: Done  29 out of  41 | elapsed:  5.3min remaining:  2.2min
+[Parallel(n_jobs=44)]: Done  34 out of  41 | elapsed:  5.7min remaining:  1.2min
+[Parallel(n_jobs=44)]: Done  39 out of  41 | elapsed:  8.2min remaining:   25.1s
+[Parallel(n_jobs=44)]: Done  41 out of  41 | elapsed:  8.4min finished
+    [INFO] Inner evaluation complete. Selecting best architecture...
+[morgan] Fold 12/15 -> best=RF+XGB+SVM | R2_outer=0.7906 | MAE_outer=0.4390 | features=2048/2048 | 549.0s
+
+    [INFO] Starting evaluation of 41 architectures in parallel for fold 13...
+[Parallel(n_jobs=44)]: Using backend LokyBackend with 44 concurrent workers.
+[Parallel(n_jobs=44)]: Done   4 out of  41 | elapsed:    6.1s remaining:   56.6s
+[Parallel(n_jobs=44)]: Done   9 out of  41 | elapsed:   35.9s remaining:  2.1min
+[Parallel(n_jobs=44)]: Done  14 out of  41 | elapsed:   46.7s remaining:  1.5min
+[Parallel(n_jobs=44)]: Done  19 out of  41 | elapsed:  3.3min remaining:  3.9min
+[Parallel(n_jobs=44)]: Done  24 out of  41 | elapsed:  3.7min remaining:  2.6min
+[Parallel(n_jobs=44)]: Done  29 out of  41 | elapsed:  5.3min remaining:  2.2min
+[Parallel(n_jobs=44)]: Done  34 out of  41 | elapsed:  5.7min remaining:  1.2min
+[Parallel(n_jobs=44)]: Done  39 out of  41 | elapsed:  8.1min remaining:   25.0s
+[Parallel(n_jobs=44)]: Done  41 out of  41 | elapsed:  8.6min finished
+    [INFO] Inner evaluation complete. Selecting best architecture...
+[morgan] Fold 13/15 -> best=RF+ET+SVM | R2_outer=0.7450 | MAE_outer=0.4508 | features=2048/2048 | 614.6s
+
+    [INFO] Starting evaluation of 41 architectures in parallel for fold 14...
+[Parallel(n_jobs=44)]: Using backend LokyBackend with 44 concurrent workers.
+[Parallel(n_jobs=44)]: Done   4 out of  41 | elapsed:    7.6s remaining:  1.2min
+[Parallel(n_jobs=44)]: Done   9 out of  41 | elapsed:   40.9s remaining:  2.4min
+[Parallel(n_jobs=44)]: Done  14 out of  41 | elapsed:   53.2s remaining:  1.7min
+[Parallel(n_jobs=44)]: Done  19 out of  41 | elapsed:  3.4min remaining:  3.9min
+[Parallel(n_jobs=44)]: Done  24 out of  41 | elapsed:  3.7min remaining:  2.6min
+[Parallel(n_jobs=44)]: Done  29 out of  41 | elapsed:  5.2min remaining:  2.2min
+[Parallel(n_jobs=44)]: Done  34 out of  41 | elapsed:  5.6min remaining:  1.2min
+[Parallel(n_jobs=44)]: Done  39 out of  41 | elapsed:  8.3min remaining:   25.5s
+[Parallel(n_jobs=44)]: Done  41 out of  41 | elapsed:  8.5min finished
+    [INFO] Inner evaluation complete. Selecting best architecture...
+[morgan] Fold 14/15 -> best=LGBM+XGB+SVM | R2_outer=0.7730 | MAE_outer=0.4314 | features=2048/2048 | 517.1s
+
+    [INFO] Starting evaluation of 41 architectures in parallel for fold 15...
+[Parallel(n_jobs=44)]: Using backend LokyBackend with 44 concurrent workers.
+[Parallel(n_jobs=44)]: Done   4 out of  41 | elapsed:    5.4s remaining:   49.8s
+[Parallel(n_jobs=44)]: Done   9 out of  41 | elapsed:   35.8s remaining:  2.1min
+[Parallel(n_jobs=44)]: Done  14 out of  41 | elapsed:   52.9s remaining:  1.7min
+[Parallel(n_jobs=44)]: Done  19 out of  41 | elapsed:  3.3min remaining:  3.8min
+[Parallel(n_jobs=44)]: Done  24 out of  41 | elapsed:  3.7min remaining:  2.6min
+[Parallel(n_jobs=44)]: Done  29 out of  41 | elapsed:  5.1min remaining:  2.1min
+[Parallel(n_jobs=44)]: Done  34 out of  41 | elapsed:  5.6min remaining:  1.2min
+[Parallel(n_jobs=44)]: Done  39 out of  41 | elapsed:  7.9min remaining:   24.3s
+[Parallel(n_jobs=44)]: Done  41 out of  41 | elapsed:  8.8min finished
+    [INFO] Inner evaluation complete. Selecting best architecture...
+[morgan] Fold 15/15 -> best=RF+SVM+kNN | R2_outer=0.6935 | MAE_outer=0.5308 | features=2048/2048 | 567.8s
+
+----------------------------------------------------------------------------------------------------
+SUMMARY [morgan] — ready to paste into Results
+----------------------------------------------------------------------------------------------------
+- R2 (nested CV, 15 outer folds): mean=0.7407, std=0.0513, min=0.6289, max=0.8016
+- MAE (nested CV): mean=0.4830, std=0.0406
+- Most frequently selected architecture: 'LGBM+XGB+SVM' (won in 2/15 folds = 13.3% selection stability)
+- Other architectures selected at least once: {'RF+XGB+SVM': 2, 'XGB+SVM+kNN': 2, 'SVM': 2, 'RF+SVM+kNN': 2, 'XGB+SVM': 1, 'RF+SVM': 1, 'LGBM+SVM': 1, 'RF+LGBM+SVM': 1, 'RF+ET+SVM': 1}
+----------------------------------------------------------------------------------------------------
+
+####################################################################################################
+# NESTED CV — REPRESENTATION: rdkit2d
+# 217 RDKit 2D descriptors (analogous to the paper's "2D" model)
+####################################################################################################
+[INFO] Features generated: 217 (continuous, with impute+scale+select)
+
+    [INFO] Starting evaluation of 41 architectures in parallel for fold 1...
+[Parallel(n_jobs=44)]: Using backend LokyBackend with 44 concurrent workers.
+[Parallel(n_jobs=44)]: Done   4 out of  41 | elapsed:   39.9s remaining:  6.2min
+[Parallel(n_jobs=44)]: Done   9 out of  41 | elapsed:  1.1min remaining:  3.9min
+[Parallel(n_jobs=44)]: Done  14 out of  41 | elapsed:  2.0min remaining:  3.9min
+[Parallel(n_jobs=44)]: Done  19 out of  41 | elapsed:  2.4min remaining:  2.8min
+[Parallel(n_jobs=44)]: Done  24 out of  41 | elapsed:  2.8min remaining:  2.0min
+[Parallel(n_jobs=44)]: Done  29 out of  41 | elapsed:  3.2min remaining:  1.3min
+[Parallel(n_jobs=44)]: Done  34 out of  41 | elapsed:  3.7min remaining:   45.9s
+[Parallel(n_jobs=44)]: Done  39 out of  41 | elapsed:  4.2min remaining:   12.9s
+[Parallel(n_jobs=44)]: Done  41 out of  41 | elapsed:  4.9min finished
+    [INFO] Inner evaluation complete. Selecting best architecture...
+[rdkit2d] Fold 1/15 -> best=RF+ET+SVM | R2_outer=0.7214 | MAE_outer=0.5304 | features=179/217 | 341.3s
+
+    [INFO] Starting evaluation of 41 architectures in parallel for fold 2...
+[Parallel(n_jobs=44)]: Using backend LokyBackend with 44 concurrent workers.
+[Parallel(n_jobs=44)]: Done   4 out of  41 | elapsed:   42.3s remaining:  6.5min
+[Parallel(n_jobs=44)]: Done   9 out of  41 | elapsed:  1.1min remaining:  4.0min
+[Parallel(n_jobs=44)]: Done  14 out of  41 | elapsed:  1.7min remaining:  3.4min
+[Parallel(n_jobs=44)]: Done  19 out of  41 | elapsed:  2.3min remaining:  2.7min
+[Parallel(n_jobs=44)]: Done  24 out of  41 | elapsed:  2.7min remaining:  1.9min
+[Parallel(n_jobs=44)]: Done  29 out of  41 | elapsed:  3.1min remaining:  1.3min
+[Parallel(n_jobs=44)]: Done  34 out of  41 | elapsed:  3.6min remaining:   44.8s
+[Parallel(n_jobs=44)]: Done  39 out of  41 | elapsed:  4.4min remaining:   13.6s
+[Parallel(n_jobs=44)]: Done  41 out of  41 | elapsed:  5.0min finished
+    [INFO] Inner evaluation complete. Selecting best architecture...
+[rdkit2d] Fold 2/15 -> best=ET+LGBM+SVM | R2_outer=0.6446 | MAE_outer=0.5047 | features=179/217 | 327.4s
+
+    [INFO] Starting evaluation of 41 architectures in parallel for fold 3...
+[Parallel(n_jobs=44)]: Using backend LokyBackend with 44 concurrent workers.
+[Parallel(n_jobs=44)]: Done   4 out of  41 | elapsed:   43.1s remaining:  6.6min
+[Parallel(n_jobs=44)]: Done   9 out of  41 | elapsed:  1.1min remaining:  3.9min
+[Parallel(n_jobs=44)]: Done  14 out of  41 | elapsed:  2.0min remaining:  3.9min
+[Parallel(n_jobs=44)]: Done  19 out of  41 | elapsed:  2.3min remaining:  2.7min
+[Parallel(n_jobs=44)]: Done  24 out of  41 | elapsed:  2.9min remaining:  2.0min
+[Parallel(n_jobs=44)]: Done  29 out of  41 | elapsed:  3.1min remaining:  1.3min
+[Parallel(n_jobs=44)]: Done  34 out of  41 | elapsed:  3.5min remaining:   43.4s
+[Parallel(n_jobs=44)]: Done  39 out of  41 | elapsed:  4.5min remaining:   14.0s
+[Parallel(n_jobs=44)]: Done  41 out of  41 | elapsed:  5.1min finished
+    [INFO] Inner evaluation complete. Selecting best architecture...
+[rdkit2d] Fold 3/15 -> best=ET+LGBM | R2_outer=0.7029 | MAE_outer=0.5217 | features=182/217 | 333.3s
+
+    [INFO] Starting evaluation of 41 architectures in parallel for fold 4...
+[Parallel(n_jobs=44)]: Using backend LokyBackend with 44 concurrent workers.
+[Parallel(n_jobs=44)]: Done   4 out of  41 | elapsed:   41.6s remaining:  6.4min
+[Parallel(n_jobs=44)]: Done   9 out of  41 | elapsed:  1.0min remaining:  3.7min
+[Parallel(n_jobs=44)]: Done  14 out of  41 | elapsed:  1.7min remaining:  3.3min
+[Parallel(n_jobs=44)]: Done  19 out of  41 | elapsed:  2.4min remaining:  2.8min
+[Parallel(n_jobs=44)]: Done  24 out of  41 | elapsed:  2.9min remaining:  2.0min
+[Parallel(n_jobs=44)]: Done  29 out of  41 | elapsed:  3.2min remaining:  1.3min
+[Parallel(n_jobs=44)]: Done  34 out of  41 | elapsed:  3.7min remaining:   45.5s
+[Parallel(n_jobs=44)]: Done  39 out of  41 | elapsed:  4.3min remaining:   13.1s
+[Parallel(n_jobs=44)]: Done  41 out of  41 | elapsed:  4.7min finished
+    [INFO] Inner evaluation complete. Selecting best architecture...
+[rdkit2d] Fold 4/15 -> best=ET+LGBM+SVM | R2_outer=0.7529 | MAE_outer=0.4978 | features=183/217 | 312.6s
+
+    [INFO] Starting evaluation of 41 architectures in parallel for fold 5...
+[Parallel(n_jobs=44)]: Using backend LokyBackend with 44 concurrent workers.
+[Parallel(n_jobs=44)]: Done   4 out of  41 | elapsed:   39.9s remaining:  6.1min
+[Parallel(n_jobs=44)]: Done   9 out of  41 | elapsed:  1.1min remaining:  3.9min
+[Parallel(n_jobs=44)]: Done  14 out of  41 | elapsed:  1.9min remaining:  3.6min
+[Parallel(n_jobs=44)]: Done  19 out of  41 | elapsed:  2.3min remaining:  2.6min
+[Parallel(n_jobs=44)]: Done  24 out of  41 | elapsed:  2.8min remaining:  2.0min
+[Parallel(n_jobs=44)]: Done  29 out of  41 | elapsed:  3.0min remaining:  1.2min
+[Parallel(n_jobs=44)]: Done  34 out of  41 | elapsed:  3.4min remaining:   42.0s
+[Parallel(n_jobs=44)]: Done  39 out of  41 | elapsed:  4.5min remaining:   14.0s
+[Parallel(n_jobs=44)]: Done  41 out of  41 | elapsed:  5.1min finished
+    [INFO] Inner evaluation complete. Selecting best architecture...
+[rdkit2d] Fold 5/15 -> best=RF+ET+SVM | R2_outer=0.6166 | MAE_outer=0.5170 | features=182/217 | 358.0s
+
+    [INFO] Starting evaluation of 41 architectures in parallel for fold 6...
+[Parallel(n_jobs=44)]: Using backend LokyBackend with 44 concurrent workers.
+[Parallel(n_jobs=44)]: Done   4 out of  41 | elapsed:   41.3s remaining:  6.4min
+[Parallel(n_jobs=44)]: Done   9 out of  41 | elapsed:  1.1min remaining:  3.9min
+[Parallel(n_jobs=44)]: Done  14 out of  41 | elapsed:  2.1min remaining:  4.1min
+[Parallel(n_jobs=44)]: Done  19 out of  41 | elapsed:  2.4min remaining:  2.8min
+[Parallel(n_jobs=44)]: Done  24 out of  41 | elapsed:  2.9min remaining:  2.0min
+[Parallel(n_jobs=44)]: Done  29 out of  41 | elapsed:  3.1min remaining:  1.3min
+[Parallel(n_jobs=44)]: Done  34 out of  41 | elapsed:  3.5min remaining:   43.0s
+[Parallel(n_jobs=44)]: Done  39 out of  41 | elapsed:  4.4min remaining:   13.6s
+[Parallel(n_jobs=44)]: Done  41 out of  41 | elapsed:  5.0min finished
+    [INFO] Inner evaluation complete. Selecting best architecture...
+[rdkit2d] Fold 6/15 -> best=RF+ET | R2_outer=0.7348 | MAE_outer=0.5157 | features=181/217 | 349.4s
+
+    [INFO] Starting evaluation of 41 architectures in parallel for fold 7...
+[Parallel(n_jobs=44)]: Using backend LokyBackend with 44 concurrent workers.
+[Parallel(n_jobs=44)]: Done   4 out of  41 | elapsed:   44.3s remaining:  6.8min
+[Parallel(n_jobs=44)]: Done   9 out of  41 | elapsed:  1.1min remaining:  4.1min
+[Parallel(n_jobs=44)]: Done  14 out of  41 | elapsed:  1.9min remaining:  3.7min
+[Parallel(n_jobs=44)]: Done  19 out of  41 | elapsed:  2.6min remaining:  3.0min
+[Parallel(n_jobs=44)]: Done  24 out of  41 | elapsed:  2.8min remaining:  2.0min
+[Parallel(n_jobs=44)]: Done  29 out of  41 | elapsed:  3.1min remaining:  1.3min
+[Parallel(n_jobs=44)]: Done  34 out of  41 | elapsed:  3.7min remaining:   45.3s
+[Parallel(n_jobs=44)]: Done  39 out of  41 | elapsed:  4.3min remaining:   13.3s
+[Parallel(n_jobs=44)]: Done  41 out of  41 | elapsed:  4.8min finished
+    [INFO] Inner evaluation complete. Selecting best architecture...
+[rdkit2d] Fold 7/15 -> best=RF+ET+SVM | R2_outer=0.6890 | MAE_outer=0.5372 | features=183/217 | 336.6s
+
+    [INFO] Starting evaluation of 41 architectures in parallel for fold 8...
+[Parallel(n_jobs=44)]: Using backend LokyBackend with 44 concurrent workers.
+[Parallel(n_jobs=44)]: Done   4 out of  41 | elapsed:   39.8s remaining:  6.1min
+[Parallel(n_jobs=44)]: Done   9 out of  41 | elapsed:  1.1min remaining:  3.9min
+[Parallel(n_jobs=44)]: Done  14 out of  41 | elapsed:  1.9min remaining:  3.7min
+[Parallel(n_jobs=44)]: Done  19 out of  41 | elapsed:  2.4min remaining:  2.8min
+[Parallel(n_jobs=44)]: Done  24 out of  41 | elapsed:  2.8min remaining:  2.0min
+[Parallel(n_jobs=44)]: Done  29 out of  41 | elapsed:  3.1min remaining:  1.3min
+[Parallel(n_jobs=44)]: Done  34 out of  41 | elapsed:  3.5min remaining:   42.6s
+[Parallel(n_jobs=44)]: Done  39 out of  41 | elapsed:  4.4min remaining:   13.7s
+[Parallel(n_jobs=44)]: Done  41 out of  41 | elapsed:  4.7min finished
+    [INFO] Inner evaluation complete. Selecting best architecture...
+[rdkit2d] Fold 8/15 -> best=RF+ET+SVM | R2_outer=0.6732 | MAE_outer=0.5459 | features=181/217 | 335.4s
+
+    [INFO] Starting evaluation of 41 architectures in parallel for fold 9...
+[Parallel(n_jobs=44)]: Using backend LokyBackend with 44 concurrent workers.
+[Parallel(n_jobs=44)]: Done   4 out of  41 | elapsed:   45.0s remaining:  6.9min
+[Parallel(n_jobs=44)]: Done   9 out of  41 | elapsed:  1.1min remaining:  3.8min
+[Parallel(n_jobs=44)]: Done  14 out of  41 | elapsed:  1.9min remaining:  3.7min
+[Parallel(n_jobs=44)]: Done  19 out of  41 | elapsed:  2.6min remaining:  3.0min
+[Parallel(n_jobs=44)]: Done  24 out of  41 | elapsed:  2.8min remaining:  2.0min
+[Parallel(n_jobs=44)]: Done  29 out of  41 | elapsed:  3.1min remaining:  1.3min
+[Parallel(n_jobs=44)]: Done  34 out of  41 | elapsed:  3.6min remaining:   44.3s
+[Parallel(n_jobs=44)]: Done  39 out of  41 | elapsed:  4.4min remaining:   13.6s
+[Parallel(n_jobs=44)]: Done  41 out of  41 | elapsed:  4.9min finished
+    [INFO] Inner evaluation complete. Selecting best architecture...
+[rdkit2d] Fold 9/15 -> best=RF+ET+SVM | R2_outer=0.7583 | MAE_outer=0.4477 | features=181/217 | 347.5s
+
+    [INFO] Starting evaluation of 41 architectures in parallel for fold 10...
+[Parallel(n_jobs=44)]: Using backend LokyBackend with 44 concurrent workers.
+[Parallel(n_jobs=44)]: Done   4 out of  41 | elapsed:   44.8s remaining:  6.9min
+[Parallel(n_jobs=44)]: Done   9 out of  41 | elapsed:  1.1min remaining:  3.9min
+[Parallel(n_jobs=44)]: Done  14 out of  41 | elapsed:  1.8min remaining:  3.6min
+[Parallel(n_jobs=44)]: Done  19 out of  41 | elapsed:  2.4min remaining:  2.8min
+[Parallel(n_jobs=44)]: Done  24 out of  41 | elapsed:  2.9min remaining:  2.0min
+[Parallel(n_jobs=44)]: Done  29 out of  41 | elapsed:  3.1min remaining:  1.3min
+[Parallel(n_jobs=44)]: Done  34 out of  41 | elapsed:  3.4min remaining:   42.5s
+[Parallel(n_jobs=44)]: Done  39 out of  41 | elapsed:  4.2min remaining:   12.9s
+[Parallel(n_jobs=44)]: Done  41 out of  41 | elapsed:  4.7min finished
+    [INFO] Inner evaluation complete. Selecting best architecture...
+[rdkit2d] Fold 10/15 -> best=LGBM | R2_outer=0.4943 | MAE_outer=0.6197 | features=180/217 | 289.3s
+
+    [INFO] Starting evaluation of 41 architectures in parallel for fold 11...
+[Parallel(n_jobs=44)]: Using backend LokyBackend with 44 concurrent workers.
+[Parallel(n_jobs=44)]: Done   4 out of  41 | elapsed:   40.3s remaining:  6.2min
+[Parallel(n_jobs=44)]: Done   9 out of  41 | elapsed:  1.1min remaining:  3.9min
+[Parallel(n_jobs=44)]: Done  14 out of  41 | elapsed:  1.7min remaining:  3.3min
+[Parallel(n_jobs=44)]: Done  19 out of  41 | elapsed:  2.3min remaining:  2.7min
+[Parallel(n_jobs=44)]: Done  24 out of  41 | elapsed:  2.8min remaining:  2.0min
+[Parallel(n_jobs=44)]: Done  29 out of  41 | elapsed:  3.0min remaining:  1.3min
+[Parallel(n_jobs=44)]: Done  34 out of  41 | elapsed:  3.7min remaining:   45.1s
+[Parallel(n_jobs=44)]: Done  39 out of  41 | elapsed:  4.3min remaining:   13.1s
+[Parallel(n_jobs=44)]: Done  41 out of  41 | elapsed:  5.1min finished
+    [INFO] Inner evaluation complete. Selecting best architecture...
+[rdkit2d] Fold 11/15 -> best=ET+LGBM+SVM | R2_outer=0.6913 | MAE_outer=0.5491 | features=182/217 | 334.1s
+
+    [INFO] Starting evaluation of 41 architectures in parallel for fold 12...
+[Parallel(n_jobs=44)]: Using backend LokyBackend with 44 concurrent workers.
+[Parallel(n_jobs=44)]: Done   4 out of  41 | elapsed:   42.4s remaining:  6.5min
+[Parallel(n_jobs=44)]: Done   9 out of  41 | elapsed:   59.8s remaining:  3.5min
+[Parallel(n_jobs=44)]: Done  14 out of  41 | elapsed:  1.8min remaining:  3.5min
+[Parallel(n_jobs=44)]: Done  19 out of  41 | elapsed:  2.4min remaining:  2.7min
+[Parallel(n_jobs=44)]: Done  24 out of  41 | elapsed:  3.0min remaining:  2.1min
+[Parallel(n_jobs=44)]: Done  29 out of  41 | elapsed:  3.2min remaining:  1.3min
+[Parallel(n_jobs=44)]: Done  34 out of  41 | elapsed:  3.5min remaining:   43.3s
+[Parallel(n_jobs=44)]: Done  39 out of  41 | elapsed:  4.2min remaining:   12.9s
+[Parallel(n_jobs=44)]: Done  41 out of  41 | elapsed:  4.8min finished
+    [INFO] Inner evaluation complete. Selecting best architecture...
+[rdkit2d] Fold 12/15 -> best=ET+LGBM+SVM | R2_outer=0.7513 | MAE_outer=0.4973 | features=177/217 | 314.1s
+
+    [INFO] Starting evaluation of 41 architectures in parallel for fold 13...
+[Parallel(n_jobs=44)]: Using backend LokyBackend with 44 concurrent workers.
+[Parallel(n_jobs=44)]: Done   4 out of  41 | elapsed:   44.6s remaining:  6.9min
+[Parallel(n_jobs=44)]: Done   9 out of  41 | elapsed:  1.1min remaining:  4.0min
+[Parallel(n_jobs=44)]: Done  14 out of  41 | elapsed:  1.9min remaining:  3.6min
+[Parallel(n_jobs=44)]: Done  19 out of  41 | elapsed:  2.3min remaining:  2.6min
+[Parallel(n_jobs=44)]: Done  24 out of  41 | elapsed:  2.9min remaining:  2.0min
+[Parallel(n_jobs=44)]: Done  29 out of  41 | elapsed:  3.3min remaining:  1.3min
+[Parallel(n_jobs=44)]: Done  34 out of  41 | elapsed:  3.6min remaining:   44.4s
+[Parallel(n_jobs=44)]: Done  39 out of  41 | elapsed:  4.3min remaining:   13.2s
+[Parallel(n_jobs=44)]: Done  41 out of  41 | elapsed:  5.0min finished
+    [INFO] Inner evaluation complete. Selecting best architecture...
+[rdkit2d] Fold 13/15 -> best=ET+XGB+SVM | R2_outer=0.6491 | MAE_outer=0.5128 | features=180/217 | 331.7s
+
+    [INFO] Starting evaluation of 41 architectures in parallel for fold 14...
+[Parallel(n_jobs=44)]: Using backend LokyBackend with 44 concurrent workers.
+[Parallel(n_jobs=44)]: Done   4 out of  41 | elapsed:   44.0s remaining:  6.8min
+[Parallel(n_jobs=44)]: Done   9 out of  41 | elapsed:  1.1min remaining:  3.9min
+[Parallel(n_jobs=44)]: Done  14 out of  41 | elapsed:  2.0min remaining:  3.8min
+[Parallel(n_jobs=44)]: Done  19 out of  41 | elapsed:  2.4min remaining:  2.8min
+[Parallel(n_jobs=44)]: Done  24 out of  41 | elapsed:  2.9min remaining:  2.0min
+[Parallel(n_jobs=44)]: Done  29 out of  41 | elapsed:  3.2min remaining:  1.3min
+[Parallel(n_jobs=44)]: Done  34 out of  41 | elapsed:  3.5min remaining:   43.1s
+[Parallel(n_jobs=44)]: Done  39 out of  41 | elapsed:  4.3min remaining:   13.1s
+[Parallel(n_jobs=44)]: Done  41 out of  41 | elapsed:  4.8min finished
+    [INFO] Inner evaluation complete. Selecting best architecture...
+[rdkit2d] Fold 14/15 -> best=ET+LGBM+SVM | R2_outer=0.6929 | MAE_outer=0.4885 | features=184/217 | 316.6s
+
+    [INFO] Starting evaluation of 41 architectures in parallel for fold 15...
+[Parallel(n_jobs=44)]: Using backend LokyBackend with 44 concurrent workers.
+[Parallel(n_jobs=44)]: Done   4 out of  41 | elapsed:   44.1s remaining:  6.8min
+[Parallel(n_jobs=44)]: Done   9 out of  41 | elapsed:  1.1min remaining:  3.9min
+[Parallel(n_jobs=44)]: Done  14 out of  41 | elapsed:  1.9min remaining:  3.6min
+[Parallel(n_jobs=44)]: Done  19 out of  41 | elapsed:  2.3min remaining:  2.7min
+[Parallel(n_jobs=44)]: Done  24 out of  41 | elapsed:  2.7min remaining:  1.9min
+[Parallel(n_jobs=44)]: Done  29 out of  41 | elapsed:  3.1min remaining:  1.3min
+[Parallel(n_jobs=44)]: Done  34 out of  41 | elapsed:  3.5min remaining:   43.0s
+[Parallel(n_jobs=44)]: Done  39 out of  41 | elapsed:  4.3min remaining:   13.3s
+[Parallel(n_jobs=44)]: Done  41 out of  41 | elapsed:  5.1min finished
+    [INFO] Inner evaluation complete. Selecting best architecture...
+[rdkit2d] Fold 15/15 -> best=RF+LGBM+SVM | R2_outer=0.6249 | MAE_outer=0.6091 | features=180/217 | 352.0s
+
+----------------------------------------------------------------------------------------------------
+SUMMARY [rdkit2d] — ready to paste into Results
+----------------------------------------------------------------------------------------------------
+- R2 (nested CV, 15 outer folds): mean=0.6798, std=0.0663, min=0.4943, max=0.7583
+- MAE (nested CV): mean=0.5263, std=0.0422
+- Most frequently selected architecture: 'RF+ET+SVM' (won in 5/15 folds = 33.3% selection stability)
+- Other architectures selected at least once: {'ET+LGBM+SVM': 5, 'ET+LGBM': 1, 'RF+ET': 1, 'LGBM': 1, 'ET+XGB+SVM': 1, 'RF+LGBM+SVM': 1}
+----------------------------------------------------------------------------------------------------
+
+####################################################################################################
+# NESTED CV — REPRESENTATION: rdkit2d_fp
+# RDKit 2D descriptors + Morgan FP (analogous to the paper's "2D/FP" model)
+####################################################################################################
+[INFO] Features generated: 2265 (continuous, with impute+scale+select)
+
+    [INFO] Starting evaluation of 41 architectures in parallel for fold 1...
+[Parallel(n_jobs=44)]: Using backend LokyBackend with 44 concurrent workers.
+[Parallel(n_jobs=44)]: Done   4 out of  41 | elapsed:  1.5min remaining: 14.2min
+[Parallel(n_jobs=44)]: Done   9 out of  41 | elapsed:  2.4min remaining:  8.6min
+[Parallel(n_jobs=44)]: Done  14 out of  41 | elapsed:  3.1min remaining:  6.0min
+[Parallel(n_jobs=44)]: Done  19 out of  41 | elapsed:  5.7min remaining:  6.6min
+[Parallel(n_jobs=44)]: Done  24 out of  41 | elapsed:  6.2min remaining:  4.4min
+[Parallel(n_jobs=44)]: Done  29 out of  41 | elapsed:  6.6min remaining:  2.7min
+[Parallel(n_jobs=44)]: Done  34 out of  41 | elapsed:  7.3min remaining:  1.5min
+[Parallel(n_jobs=44)]: Done  39 out of  41 | elapsed: 10.1min remaining:   31.0s
+[Parallel(n_jobs=44)]: Done  41 out of  41 | elapsed: 10.8min finished
+    [INFO] Inner evaluation complete. Selecting best architecture...
+[rdkit2d_fp] Fold 1/15 -> best=RF+ET+LGBM | R2_outer=0.7824 | MAE_outer=0.4566 | features=1265/2265 | 776.2s
+
+    [INFO] Starting evaluation of 41 architectures in parallel for fold 2...
+[Parallel(n_jobs=44)]: Using backend LokyBackend with 44 concurrent workers.
+[Parallel(n_jobs=44)]: Done   4 out of  41 | elapsed:  1.6min remaining: 14.8min
+[Parallel(n_jobs=44)]: Done   9 out of  41 | elapsed:  2.4min remaining:  8.7min
+[Parallel(n_jobs=44)]: Done  14 out of  41 | elapsed:  2.9min remaining:  5.6min
+[Parallel(n_jobs=44)]: Done  19 out of  41 | elapsed:  5.8min remaining:  6.7min
+[Parallel(n_jobs=44)]: Done  24 out of  41 | elapsed:  6.3min remaining:  4.5min
+[Parallel(n_jobs=44)]: Done  29 out of  41 | elapsed:  6.8min remaining:  2.8min
+[Parallel(n_jobs=44)]: Done  34 out of  41 | elapsed:  7.3min remaining:  1.5min
+[Parallel(n_jobs=44)]: Done  39 out of  41 | elapsed:  9.9min remaining:   30.4s
+[Parallel(n_jobs=44)]: Done  41 out of  41 | elapsed: 10.7min finished
+    [INFO] Inner evaluation complete. Selecting best architecture...
+[rdkit2d_fp] Fold 2/15 -> best=ET+SVM+kNN | R2_outer=0.6735 | MAE_outer=0.5011 | features=1266/2265 | 711.9s
+
+    [INFO] Starting evaluation of 41 architectures in parallel for fold 3...
+[Parallel(n_jobs=44)]: Using backend LokyBackend with 44 concurrent workers.
+[Parallel(n_jobs=44)]: Done   4 out of  41 | elapsed:  1.6min remaining: 14.6min
+[Parallel(n_jobs=44)]: Done   9 out of  41 | elapsed:  2.3min remaining:  8.2min
+[Parallel(n_jobs=44)]: Done  14 out of  41 | elapsed:  3.1min remaining:  6.0min
+[Parallel(n_jobs=44)]: Done  19 out of  41 | elapsed:  5.7min remaining:  6.6min
+[Parallel(n_jobs=44)]: Done  24 out of  41 | elapsed:  6.2min remaining:  4.4min
+[Parallel(n_jobs=44)]: Done  29 out of  41 | elapsed:  6.7min remaining:  2.8min
+[Parallel(n_jobs=44)]: Done  34 out of  41 | elapsed:  7.4min remaining:  1.5min
+[Parallel(n_jobs=44)]: Done  39 out of  41 | elapsed: 10.0min remaining:   30.9s
+[Parallel(n_jobs=44)]: Done  41 out of  41 | elapsed: 10.9min finished
+    [INFO] Inner evaluation complete. Selecting best architecture...
+[rdkit2d_fp] Fold 3/15 -> best=ET+LGBM+XGB | R2_outer=0.7412 | MAE_outer=0.5077 | features=1250/2265 | 739.2s
+
+    [INFO] Starting evaluation of 41 architectures in parallel for fold 4...
+[Parallel(n_jobs=44)]: Using backend LokyBackend with 44 concurrent workers.
+[Parallel(n_jobs=44)]: Done   4 out of  41 | elapsed:  1.7min remaining: 15.4min
+[Parallel(n_jobs=44)]: Done   9 out of  41 | elapsed:  2.2min remaining:  7.7min
+[Parallel(n_jobs=44)]: Done  14 out of  41 | elapsed:  3.0min remaining:  5.7min
+[Parallel(n_jobs=44)]: Done  19 out of  41 | elapsed:  5.7min remaining:  6.6min
+[Parallel(n_jobs=44)]: Done  24 out of  41 | elapsed:  6.4min remaining:  4.5min
+[Parallel(n_jobs=44)]: Done  29 out of  41 | elapsed:  6.9min remaining:  2.9min
+[Parallel(n_jobs=44)]: Done  34 out of  41 | elapsed:  7.2min remaining:  1.5min
+[Parallel(n_jobs=44)]: Done  39 out of  41 | elapsed:  9.7min remaining:   29.9s
+[Parallel(n_jobs=44)]: Done  41 out of  41 | elapsed: 10.8min finished
+    [INFO] Inner evaluation complete. Selecting best architecture...
+[rdkit2d_fp] Fold 4/15 -> best=ET+LGBM+SVM | R2_outer=0.7921 | MAE_outer=0.4508 | features=1247/2265 | 724.9s
+
+    [INFO] Starting evaluation of 41 architectures in parallel for fold 5...
+[Parallel(n_jobs=44)]: Using backend LokyBackend with 44 concurrent workers.
+[Parallel(n_jobs=44)]: Done   4 out of  41 | elapsed:  1.6min remaining: 14.4min
+[Parallel(n_jobs=44)]: Done   9 out of  41 | elapsed:  2.3min remaining:  8.0min
+[Parallel(n_jobs=44)]: Done  14 out of  41 | elapsed:  3.2min remaining:  6.1min
+[Parallel(n_jobs=44)]: Done  19 out of  41 | elapsed:  5.8min remaining:  6.7min
+[Parallel(n_jobs=44)]: Done  24 out of  41 | elapsed:  6.5min remaining:  4.6min
+[Parallel(n_jobs=44)]: Done  29 out of  41 | elapsed:  6.9min remaining:  2.9min
+[Parallel(n_jobs=44)]: Done  34 out of  41 | elapsed:  7.3min remaining:  1.5min
+[Parallel(n_jobs=44)]: Done  39 out of  41 | elapsed:  9.9min remaining:   30.4s
+[Parallel(n_jobs=44)]: Done  41 out of  41 | elapsed: 10.6min finished
+    [INFO] Inner evaluation complete. Selecting best architecture...
+[rdkit2d_fp] Fold 5/15 -> best=RF+XGB+SVM | R2_outer=0.6805 | MAE_outer=0.4620 | features=1275/2265 | 716.2s
+
+    [INFO] Starting evaluation of 41 architectures in parallel for fold 6...
+[Parallel(n_jobs=44)]: Using backend LokyBackend with 44 concurrent workers.
+[Parallel(n_jobs=44)]: Done   4 out of  41 | elapsed:  1.7min remaining: 15.4min
+[Parallel(n_jobs=44)]: Done   9 out of  41 | elapsed:  2.7min remaining:  9.7min
+[Parallel(n_jobs=44)]: Done  14 out of  41 | elapsed:  3.0min remaining:  5.9min
+[Parallel(n_jobs=44)]: Done  19 out of  41 | elapsed:  5.7min remaining:  6.6min
+[Parallel(n_jobs=44)]: Done  24 out of  41 | elapsed:  6.5min remaining:  4.6min
+[Parallel(n_jobs=44)]: Done  29 out of  41 | elapsed:  6.8min remaining:  2.8min
+[Parallel(n_jobs=44)]: Done  34 out of  41 | elapsed:  7.5min remaining:  1.6min
+[Parallel(n_jobs=44)]: Done  39 out of  41 | elapsed: 10.0min remaining:   30.8s
+[Parallel(n_jobs=44)]: Done  41 out of  41 | elapsed: 10.6min finished
+    [INFO] Inner evaluation complete. Selecting best architecture...
+[rdkit2d_fp] Fold 6/15 -> best=ET+LGBM+SVM | R2_outer=0.7893 | MAE_outer=0.4664 | features=1265/2265 | 711.0s
+
+    [INFO] Starting evaluation of 41 architectures in parallel for fold 7...
+[Parallel(n_jobs=44)]: Using backend LokyBackend with 44 concurrent workers.
+[Parallel(n_jobs=44)]: Done   4 out of  41 | elapsed:  1.7min remaining: 15.5min
+[Parallel(n_jobs=44)]: Done   9 out of  41 | elapsed:  2.5min remaining:  8.9min
+[Parallel(n_jobs=44)]: Done  14 out of  41 | elapsed:  3.1min remaining:  6.1min
+[Parallel(n_jobs=44)]: Done  19 out of  41 | elapsed:  5.7min remaining:  6.7min
+[Parallel(n_jobs=44)]: Done  24 out of  41 | elapsed:  6.0min remaining:  4.3min
+[Parallel(n_jobs=44)]: Done  29 out of  41 | elapsed:  6.8min remaining:  2.8min
+[Parallel(n_jobs=44)]: Done  34 out of  41 | elapsed:  7.1min remaining:  1.5min
+[Parallel(n_jobs=44)]: Done  39 out of  41 | elapsed: 10.1min remaining:   30.9s
+[Parallel(n_jobs=44)]: Done  41 out of  41 | elapsed: 10.9min finished
+    [INFO] Inner evaluation complete. Selecting best architecture...
+[rdkit2d_fp] Fold 7/15 -> best=RF+ET+SVM | R2_outer=0.7418 | MAE_outer=0.4990 | features=1259/2265 | 783.3s
+
+    [INFO] Starting evaluation of 41 architectures in parallel for fold 8...
+[Parallel(n_jobs=44)]: Using backend LokyBackend with 44 concurrent workers.
+[Parallel(n_jobs=44)]: Done   4 out of  41 | elapsed:  1.7min remaining: 15.3min
+[Parallel(n_jobs=44)]: Done   9 out of  41 | elapsed:  2.1min remaining:  7.5min
+[Parallel(n_jobs=44)]: Done  14 out of  41 | elapsed:  3.0min remaining:  5.8min
+[Parallel(n_jobs=44)]: Done  19 out of  41 | elapsed:  5.9min remaining:  6.8min
+[Parallel(n_jobs=44)]: Done  24 out of  41 | elapsed:  6.2min remaining:  4.4min
+[Parallel(n_jobs=44)]: Done  29 out of  41 | elapsed:  6.8min remaining:  2.8min
+[Parallel(n_jobs=44)]: Done  34 out of  41 | elapsed:  7.1min remaining:  1.5min
+[Parallel(n_jobs=44)]: Done  39 out of  41 | elapsed:  9.7min remaining:   29.8s
+[Parallel(n_jobs=44)]: Done  41 out of  41 | elapsed: 10.6min finished
+    [INFO] Inner evaluation complete. Selecting best architecture...
+[rdkit2d_fp] Fold 8/15 -> best=ET+SVM+kNN | R2_outer=0.7609 | MAE_outer=0.4807 | features=1244/2265 | 706.1s
+
+    [INFO] Starting evaluation of 41 architectures in parallel for fold 9...
+[Parallel(n_jobs=44)]: Using backend LokyBackend with 44 concurrent workers.
+[Parallel(n_jobs=44)]: Done   4 out of  41 | elapsed:  1.6min remaining: 14.8min
+[Parallel(n_jobs=44)]: Done   9 out of  41 | elapsed:  2.7min remaining:  9.5min
+[Parallel(n_jobs=44)]: Done  14 out of  41 | elapsed:  3.1min remaining:  5.9min
+[Parallel(n_jobs=44)]: Done  19 out of  41 | elapsed:  5.7min remaining:  6.6min
+[Parallel(n_jobs=44)]: Done  24 out of  41 | elapsed:  6.3min remaining:  4.5min
+[Parallel(n_jobs=44)]: Done  29 out of  41 | elapsed:  6.8min remaining:  2.8min
+[Parallel(n_jobs=44)]: Done  34 out of  41 | elapsed:  7.2min remaining:  1.5min
+[Parallel(n_jobs=44)]: Done  39 out of  41 | elapsed: 10.3min remaining:   31.8s
+[Parallel(n_jobs=44)]: Done  41 out of  41 | elapsed: 10.5min finished
+    [INFO] Inner evaluation complete. Selecting best architecture...
+[rdkit2d_fp] Fold 9/15 -> best=ET+LGBM | R2_outer=0.7751 | MAE_outer=0.4111 | features=1279/2265 | 731.1s
+
+    [INFO] Starting evaluation of 41 architectures in parallel for fold 10...
+[Parallel(n_jobs=44)]: Using backend LokyBackend with 44 concurrent workers.
+[Parallel(n_jobs=44)]: Done   4 out of  41 | elapsed:  1.6min remaining: 14.9min
+[Parallel(n_jobs=44)]: Done   9 out of  41 | elapsed:  2.4min remaining:  8.5min
+[Parallel(n_jobs=44)]: Done  14 out of  41 | elapsed:  3.2min remaining:  6.2min
+[Parallel(n_jobs=44)]: Done  19 out of  41 | elapsed:  5.8min remaining:  6.7min
+[Parallel(n_jobs=44)]: Done  24 out of  41 | elapsed:  6.3min remaining:  4.5min
+[Parallel(n_jobs=44)]: Done  29 out of  41 | elapsed:  6.7min remaining:  2.8min
+[Parallel(n_jobs=44)]: Done  34 out of  41 | elapsed:  7.1min remaining:  1.5min
+[Parallel(n_jobs=44)]: Done  39 out of  41 | elapsed: 10.2min remaining:   31.4s
+[Parallel(n_jobs=44)]: Done  41 out of  41 | elapsed: 10.9min finished
+    [INFO] Inner evaluation complete. Selecting best architecture...
+[rdkit2d_fp] Fold 10/15 -> best=ET+LGBM | R2_outer=0.5515 | MAE_outer=0.5661 | features=1251/2265 | 729.0s
+
+    [INFO] Starting evaluation of 41 architectures in parallel for fold 11...
+[Parallel(n_jobs=44)]: Using backend LokyBackend with 44 concurrent workers.
+[Parallel(n_jobs=44)]: Done   4 out of  41 | elapsed:  1.6min remaining: 15.0min
+[Parallel(n_jobs=44)]: Done   9 out of  41 | elapsed:  2.2min remaining:  7.8min
+[Parallel(n_jobs=44)]: Done  14 out of  41 | elapsed:  3.0min remaining:  5.7min
+[Parallel(n_jobs=44)]: Done  19 out of  41 | elapsed:  5.9min remaining:  6.8min
+[Parallel(n_jobs=44)]: Done  24 out of  41 | elapsed:  6.3min remaining:  4.4min
+[Parallel(n_jobs=44)]: Done  29 out of  41 | elapsed:  6.8min remaining:  2.8min
+[Parallel(n_jobs=44)]: Done  34 out of  41 | elapsed:  7.3min remaining:  1.5min
+[Parallel(n_jobs=44)]: Done  39 out of  41 | elapsed: 10.2min remaining:   31.4s
+[Parallel(n_jobs=44)]: Done  41 out of  41 | elapsed: 10.8min finished
+    [INFO] Inner evaluation complete. Selecting best architecture...
+[rdkit2d_fp] Fold 11/15 -> best=ET+LGBM+kNN | R2_outer=0.7457 | MAE_outer=0.5160 | features=1266/2265 | 724.1s
+
+    [INFO] Starting evaluation of 41 architectures in parallel for fold 12...
+[Parallel(n_jobs=44)]: Using backend LokyBackend with 44 concurrent workers.
+[Parallel(n_jobs=44)]: Done   4 out of  41 | elapsed:  1.7min remaining: 15.4min
+[Parallel(n_jobs=44)]: Done   9 out of  41 | elapsed:  2.5min remaining:  9.0min
+[Parallel(n_jobs=44)]: Done  14 out of  41 | elapsed:  3.2min remaining:  6.1min
+[Parallel(n_jobs=44)]: Done  19 out of  41 | elapsed:  5.8min remaining:  6.7min
+[Parallel(n_jobs=44)]: Done  24 out of  41 | elapsed:  6.2min remaining:  4.4min
+[Parallel(n_jobs=44)]: Done  29 out of  41 | elapsed:  6.6min remaining:  2.7min
+[Parallel(n_jobs=44)]: Done  34 out of  41 | elapsed:  7.2min remaining:  1.5min
+[Parallel(n_jobs=44)]: Done  39 out of  41 | elapsed: 10.0min remaining:   30.7s
+[Parallel(n_jobs=44)]: Done  41 out of  41 | elapsed: 10.4min finished
+    [INFO] Inner evaluation complete. Selecting best architecture...
+[rdkit2d_fp] Fold 12/15 -> best=ET+LGBM+SVM | R2_outer=0.7866 | MAE_outer=0.4462 | features=1240/2265 | 700.0s
+
+    [INFO] Starting evaluation of 41 architectures in parallel for fold 13...
+[Parallel(n_jobs=44)]: Using backend LokyBackend with 44 concurrent workers.
+[Parallel(n_jobs=44)]: Done   4 out of  41 | elapsed:  1.6min remaining: 14.5min
+[Parallel(n_jobs=44)]: Done   9 out of  41 | elapsed:  2.4min remaining:  8.6min
+[Parallel(n_jobs=44)]: Done  14 out of  41 | elapsed:  3.1min remaining:  6.1min
+[Parallel(n_jobs=44)]: Done  19 out of  41 | elapsed:  5.7min remaining:  6.6min
+[Parallel(n_jobs=44)]: Done  24 out of  41 | elapsed:  6.5min remaining:  4.6min
+[Parallel(n_jobs=44)]: Done  29 out of  41 | elapsed:  6.9min remaining:  2.9min
+[Parallel(n_jobs=44)]: Done  34 out of  41 | elapsed:  7.6min remaining:  1.6min
+[Parallel(n_jobs=44)]: Done  39 out of  41 | elapsed: 10.0min remaining:   30.7s
+[Parallel(n_jobs=44)]: Done  41 out of  41 | elapsed: 10.3min finished
+    [INFO] Inner evaluation complete. Selecting best architecture...
+[rdkit2d_fp] Fold 13/15 -> best=ET+SVM+kNN | R2_outer=0.7312 | MAE_outer=0.4456 | features=1275/2265 | 690.2s
+
+    [INFO] Starting evaluation of 41 architectures in parallel for fold 14...
+[Parallel(n_jobs=44)]: Using backend LokyBackend with 44 concurrent workers.
+[Parallel(n_jobs=44)]: Done   4 out of  41 | elapsed:  1.3min remaining: 12.4min
+[Parallel(n_jobs=44)]: Done   9 out of  41 | elapsed:  2.5min remaining:  8.7min
+[Parallel(n_jobs=44)]: Done  14 out of  41 | elapsed:  3.3min remaining:  6.3min
+[Parallel(n_jobs=44)]: Done  19 out of  41 | elapsed:  5.8min remaining:  6.7min
+[Parallel(n_jobs=44)]: Done  24 out of  41 | elapsed:  6.1min remaining:  4.4min
+[Parallel(n_jobs=44)]: Done  29 out of  41 | elapsed:  6.5min remaining:  2.7min
+[Parallel(n_jobs=44)]: Done  34 out of  41 | elapsed:  7.3min remaining:  1.5min
+[Parallel(n_jobs=44)]: Done  39 out of  41 | elapsed: 10.2min remaining:   31.4s
+[Parallel(n_jobs=44)]: Done  41 out of  41 | elapsed: 11.1min finished
+    [INFO] Inner evaluation complete. Selecting best architecture...
+[rdkit2d_fp] Fold 14/15 -> best=ET+LGBM+SVM | R2_outer=0.7552 | MAE_outer=0.4544 | features=1260/2265 | 741.4s
+
+    [INFO] Starting evaluation of 41 architectures in parallel for fold 15...
+[Parallel(n_jobs=44)]: Using backend LokyBackend with 44 concurrent workers.
+[Parallel(n_jobs=44)]: Done   4 out of  41 | elapsed:  1.6min remaining: 14.3min
+[Parallel(n_jobs=44)]: Done   9 out of  41 | elapsed:  2.2min remaining:  7.7min
+[Parallel(n_jobs=44)]: Done  14 out of  41 | elapsed:  3.1min remaining:  5.9min
+[Parallel(n_jobs=44)]: Done  19 out of  41 | elapsed:  5.7min remaining:  6.6min
+[Parallel(n_jobs=44)]: Done  24 out of  41 | elapsed:  6.2min remaining:  4.4min
+[Parallel(n_jobs=44)]: Done  29 out of  41 | elapsed:  6.7min remaining:  2.8min
+[Parallel(n_jobs=44)]: Done  34 out of  41 | elapsed:  7.5min remaining:  1.5min
+[Parallel(n_jobs=44)]: Done  39 out of  41 | elapsed: 10.0min remaining:   30.7s
+[Parallel(n_jobs=44)]: Done  41 out of  41 | elapsed: 11.0min finished
+    [INFO] Inner evaluation complete. Selecting best architecture...
+[rdkit2d_fp] Fold 15/15 -> best=RF+ET+LGBM | R2_outer=0.6763 | MAE_outer=0.5471 | features=1279/2265 | 786.0s
+
+----------------------------------------------------------------------------------------------------
+SUMMARY [rdkit2d_fp] — ready to paste into Results
+----------------------------------------------------------------------------------------------------
+- R2 (nested CV, 15 outer folds): mean=0.7322, std=0.0621, min=0.5515, max=0.7921
+- MAE (nested CV): mean=0.4807, std=0.0403
+- Most frequently selected architecture: 'ET+LGBM+SVM' (won in 4/15 folds = 26.7% selection stability)
+- Other architectures selected at least once: {'ET+SVM+kNN': 3, 'RF+ET+LGBM': 2, 'ET+LGBM': 2, 'ET+LGBM+XGB': 1, 'RF+XGB+SVM': 1, 'RF+ET+SVM': 1, 'ET+LGBM+kNN': 1}
+----------------------------------------------------------------------------------------------------
+
+####################################################################################################
+# NESTED CV — REPRESENTATION: rdkit2d3d_fp
+# 2D + 3D (geometric, via ETKDGv3 embedding + MMFF94s optimization) descriptors + Morgan FP (analogous to the paper's best model, "2D/3D/FP")
+####################################################################################################
+    [INFO] Generating 3D conformers in parallel (embedding + MMFF)...
+[INFO] Features generated: 2275 (continuous, with impute+scale+select)
+
+    [INFO] Starting evaluation of 41 architectures in parallel for fold 1...
+[Parallel(n_jobs=44)]: Using backend LokyBackend with 44 concurrent workers.
+[Parallel(n_jobs=44)]: Done   4 out of  41 | elapsed:  1.7min remaining: 15.3min
+[Parallel(n_jobs=44)]: Done   9 out of  41 | elapsed:  2.6min remaining:  9.3min
+[Parallel(n_jobs=44)]: Done  14 out of  41 | elapsed:  3.3min remaining:  6.4min
+[Parallel(n_jobs=44)]: Done  19 out of  41 | elapsed:  5.8min remaining:  6.7min
+[Parallel(n_jobs=44)]: Done  24 out of  41 | elapsed:  6.4min remaining:  4.5min
+[Parallel(n_jobs=44)]: Done  29 out of  41 | elapsed:  6.9min remaining:  2.9min
+[Parallel(n_jobs=44)]: Done  34 out of  41 | elapsed:  7.5min remaining:  1.5min
+[Parallel(n_jobs=44)]: Done  39 out of  41 | elapsed: 10.4min remaining:   32.0s
+[Parallel(n_jobs=44)]: Done  41 out of  41 | elapsed: 11.4min finished
+    [INFO] Inner evaluation complete. Selecting best architecture...
+[rdkit2d3d_fp] Fold 1/15 -> best=ET+LGBM+XGB | R2_outer=0.7921 | MAE_outer=0.4525 | features=1264/2275 | 770.6s
+
+    [INFO] Starting evaluation of 41 architectures in parallel for fold 2...
+[Parallel(n_jobs=44)]: Using backend LokyBackend with 44 concurrent workers.
+[Parallel(n_jobs=44)]: Done   4 out of  41 | elapsed:  1.7min remaining: 16.0min
+[Parallel(n_jobs=44)]: Done   9 out of  41 | elapsed:  2.3min remaining:  8.3min
+[Parallel(n_jobs=44)]: Done  14 out of  41 | elapsed:  3.3min remaining:  6.4min
+[Parallel(n_jobs=44)]: Done  19 out of  41 | elapsed:  6.2min remaining:  7.2min
+[Parallel(n_jobs=44)]: Done  24 out of  41 | elapsed:  6.6min remaining:  4.7min
+[Parallel(n_jobs=44)]: Done  29 out of  41 | elapsed:  6.9min remaining:  2.9min
+[Parallel(n_jobs=44)]: Done  34 out of  41 | elapsed:  7.3min remaining:  1.5min
+[Parallel(n_jobs=44)]: Done  39 out of  41 | elapsed: 10.5min remaining:   32.2s
+[Parallel(n_jobs=44)]: Done  41 out of  41 | elapsed: 11.3min finished
+    [INFO] Inner evaluation complete. Selecting best architecture...
+[rdkit2d3d_fp] Fold 2/15 -> best=ET+LGBM+SVM | R2_outer=0.7011 | MAE_outer=0.4809 | features=1258/2275 | 754.0s
+
+    [INFO] Starting evaluation of 41 architectures in parallel for fold 3...
+[Parallel(n_jobs=44)]: Using backend LokyBackend with 44 concurrent workers.
+[Parallel(n_jobs=44)]: Done   4 out of  41 | elapsed:  1.7min remaining: 16.0min
+[Parallel(n_jobs=44)]: Done   9 out of  41 | elapsed:  2.6min remaining:  9.3min
+[Parallel(n_jobs=44)]: Done  14 out of  41 | elapsed:  3.3min remaining:  6.4min
+[Parallel(n_jobs=44)]: Done  19 out of  41 | elapsed:  5.9min remaining:  6.8min
+[Parallel(n_jobs=44)]: Done  24 out of  41 | elapsed:  6.6min remaining:  4.7min
+[Parallel(n_jobs=44)]: Done  29 out of  41 | elapsed:  7.1min remaining:  2.9min
+[Parallel(n_jobs=44)]: Done  34 out of  41 | elapsed:  7.6min remaining:  1.6min
+[Parallel(n_jobs=44)]: Done  39 out of  41 | elapsed: 10.3min remaining:   31.6s
+[Parallel(n_jobs=44)]: Done  41 out of  41 | elapsed: 11.3min finished
+    [INFO] Inner evaluation complete. Selecting best architecture...
+[rdkit2d3d_fp] Fold 3/15 -> best=ET+LGBM+kNN | R2_outer=0.7324 | MAE_outer=0.5229 | features=1238/2275 | 760.2s
+
+    [INFO] Starting evaluation of 41 architectures in parallel for fold 4...
+[Parallel(n_jobs=44)]: Using backend LokyBackend with 44 concurrent workers.
+[Parallel(n_jobs=44)]: Done   4 out of  41 | elapsed:  1.7min remaining: 15.4min
+[Parallel(n_jobs=44)]: Done   9 out of  41 | elapsed:  2.6min remaining:  9.1min
+[Parallel(n_jobs=44)]: Done  14 out of  41 | elapsed:  3.1min remaining:  6.1min
+[Parallel(n_jobs=44)]: Done  19 out of  41 | elapsed:  6.1min remaining:  7.1min
+[Parallel(n_jobs=44)]: Done  24 out of  41 | elapsed:  6.5min remaining:  4.6min
+[Parallel(n_jobs=44)]: Done  29 out of  41 | elapsed:  7.0min remaining:  2.9min
+[Parallel(n_jobs=44)]: Done  34 out of  41 | elapsed:  7.5min remaining:  1.5min
+[Parallel(n_jobs=44)]: Done  39 out of  41 | elapsed: 10.5min remaining:   32.4s
+[Parallel(n_jobs=44)]: Done  41 out of  41 | elapsed: 11.1min finished
+    [INFO] Inner evaluation complete. Selecting best architecture...
+[rdkit2d3d_fp] Fold 4/15 -> best=ET+LGBM | R2_outer=0.7978 | MAE_outer=0.4388 | features=1275/2275 | 742.9s
+
+    [INFO] Starting evaluation of 41 architectures in parallel for fold 5...
+[Parallel(n_jobs=44)]: Using backend LokyBackend with 44 concurrent workers.
+[Parallel(n_jobs=44)]: Done   4 out of  41 | elapsed:  1.6min remaining: 14.4min
+[Parallel(n_jobs=44)]: Done   9 out of  41 | elapsed:  2.6min remaining:  9.1min
+[Parallel(n_jobs=44)]: Done  14 out of  41 | elapsed:  3.4min remaining:  6.6min
+[Parallel(n_jobs=44)]: Done  19 out of  41 | elapsed:  6.1min remaining:  7.1min
+[Parallel(n_jobs=44)]: Done  24 out of  41 | elapsed:  6.6min remaining:  4.7min
+[Parallel(n_jobs=44)]: Done  29 out of  41 | elapsed:  6.9min remaining:  2.9min
+[Parallel(n_jobs=44)]: Done  34 out of  41 | elapsed:  7.8min remaining:  1.6min
+[Parallel(n_jobs=44)]: Done  39 out of  41 | elapsed: 10.6min remaining:   32.7s
+[Parallel(n_jobs=44)]: Done  41 out of  41 | elapsed: 10.9min finished
+    [INFO] Inner evaluation complete. Selecting best architecture...
+[rdkit2d3d_fp] Fold 5/15 -> best=RF+LGBM+SVM | R2_outer=0.6843 | MAE_outer=0.4674 | features=1287/2275 | 752.1s
+
+    [INFO] Starting evaluation of 41 architectures in parallel for fold 6...
+[Parallel(n_jobs=44)]: Using backend LokyBackend with 44 concurrent workers.
+[Parallel(n_jobs=44)]: Done   4 out of  41 | elapsed:  1.7min remaining: 16.0min
+[Parallel(n_jobs=44)]: Done   9 out of  41 | elapsed:  2.3min remaining:  8.1min
+[Parallel(n_jobs=44)]: Done  14 out of  41 | elapsed:  3.3min remaining:  6.4min
+[Parallel(n_jobs=44)]: Done  19 out of  41 | elapsed:  6.1min remaining:  7.0min
+[Parallel(n_jobs=44)]: Done  24 out of  41 | elapsed:  6.5min remaining:  4.6min
+[Parallel(n_jobs=44)]: Done  29 out of  41 | elapsed:  7.1min remaining:  2.9min
+[Parallel(n_jobs=44)]: Done  34 out of  41 | elapsed:  7.8min remaining:  1.6min
+[Parallel(n_jobs=44)]: Done  39 out of  41 | elapsed: 10.5min remaining:   32.2s
+[Parallel(n_jobs=44)]: Done  41 out of  41 | elapsed: 11.3min finished
+    [INFO] Inner evaluation complete. Selecting best architecture...
+[rdkit2d3d_fp] Fold 6/15 -> best=ET+LGBM+SVM | R2_outer=0.7966 | MAE_outer=0.4594 | features=1274/2275 | 756.8s
+
+    [INFO] Starting evaluation of 41 architectures in parallel for fold 7...
+[Parallel(n_jobs=44)]: Using backend LokyBackend with 44 concurrent workers.
+[Parallel(n_jobs=44)]: Done   4 out of  41 | elapsed:  1.7min remaining: 15.7min
+[Parallel(n_jobs=44)]: Done   9 out of  41 | elapsed:  2.7min remaining:  9.6min
+[Parallel(n_jobs=44)]: Done  14 out of  41 | elapsed:  3.1min remaining:  6.0min
+[Parallel(n_jobs=44)]: Done  19 out of  41 | elapsed:  5.8min remaining:  6.7min
+[Parallel(n_jobs=44)]: Done  24 out of  41 | elapsed:  6.5min remaining:  4.6min
+[Parallel(n_jobs=44)]: Done  29 out of  41 | elapsed:  7.1min remaining:  2.9min
+[Parallel(n_jobs=44)]: Done  34 out of  41 | elapsed:  7.6min remaining:  1.6min
+[Parallel(n_jobs=44)]: Done  39 out of  41 | elapsed: 10.4min remaining:   32.0s
+[Parallel(n_jobs=44)]: Done  41 out of  41 | elapsed: 11.3min finished
+    [INFO] Inner evaluation complete. Selecting best architecture...
+[rdkit2d3d_fp] Fold 7/15 -> best=ET+LGBM+kNN | R2_outer=0.7840 | MAE_outer=0.4671 | features=1245/2275 | 755.9s
+
+    [INFO] Starting evaluation of 41 architectures in parallel for fold 8...
+[Parallel(n_jobs=44)]: Using backend LokyBackend with 44 concurrent workers.
+[Parallel(n_jobs=44)]: Done   4 out of  41 | elapsed:  1.7min remaining: 15.7min
+[Parallel(n_jobs=44)]: Done   9 out of  41 | elapsed:  2.4min remaining:  8.4min
+[Parallel(n_jobs=44)]: Done  14 out of  41 | elapsed:  3.0min remaining:  5.9min
+[Parallel(n_jobs=44)]: Done  19 out of  41 | elapsed:  6.2min remaining:  7.2min
+[Parallel(n_jobs=44)]: Done  24 out of  41 | elapsed:  6.4min remaining:  4.5min
+[Parallel(n_jobs=44)]: Done  29 out of  41 | elapsed:  7.1min remaining:  2.9min
+[Parallel(n_jobs=44)]: Done  34 out of  41 | elapsed:  7.4min remaining:  1.5min
+[Parallel(n_jobs=44)]: Done  39 out of  41 | elapsed: 10.3min remaining:   31.6s
+[Parallel(n_jobs=44)]: Done  41 out of  41 | elapsed: 11.1min finished
+    [INFO] Inner evaluation complete. Selecting best architecture...
+[rdkit2d3d_fp] Fold 8/15 -> best=ET+LGBM+SVM | R2_outer=0.7650 | MAE_outer=0.4830 | features=1260/2275 | 741.5s
+
+    [INFO] Starting evaluation of 41 architectures in parallel for fold 9...
+[Parallel(n_jobs=44)]: Using backend LokyBackend with 44 concurrent workers.
+[Parallel(n_jobs=44)]: Done   4 out of  41 | elapsed:  1.7min remaining: 15.6min
+[Parallel(n_jobs=44)]: Done   9 out of  41 | elapsed:  2.7min remaining:  9.6min
+[Parallel(n_jobs=44)]: Done  14 out of  41 | elapsed:  3.4min remaining:  6.6min
+[Parallel(n_jobs=44)]: Done  19 out of  41 | elapsed:  5.6min remaining:  6.5min
+[Parallel(n_jobs=44)]: Done  24 out of  41 | elapsed:  6.4min remaining:  4.6min
+[Parallel(n_jobs=44)]: Done  29 out of  41 | elapsed:  7.0min remaining:  2.9min
+[Parallel(n_jobs=44)]: Done  34 out of  41 | elapsed:  7.7min remaining:  1.6min
+[Parallel(n_jobs=44)]: Done  39 out of  41 | elapsed: 10.8min remaining:   33.3s
+[Parallel(n_jobs=44)]: Done  41 out of  41 | elapsed: 11.2min finished
+    [INFO] Inner evaluation complete. Selecting best architecture...
+[rdkit2d3d_fp] Fold 9/15 -> best=ET+LGBM | R2_outer=0.7869 | MAE_outer=0.4036 | features=1264/2275 | 747.8s
+
+    [INFO] Starting evaluation of 41 architectures in parallel for fold 10...
+[Parallel(n_jobs=44)]: Using backend LokyBackend with 44 concurrent workers.
+[Parallel(n_jobs=44)]: Done   4 out of  41 | elapsed:  1.8min remaining: 16.6min
+[Parallel(n_jobs=44)]: Done   9 out of  41 | elapsed:  2.3min remaining:  8.2min
+[Parallel(n_jobs=44)]: Done  14 out of  41 | elapsed:  3.1min remaining:  6.0min
+[Parallel(n_jobs=44)]: Done  19 out of  41 | elapsed:  6.0min remaining:  6.9min
+[Parallel(n_jobs=44)]: Done  24 out of  41 | elapsed:  6.5min remaining:  4.6min
+[Parallel(n_jobs=44)]: Done  29 out of  41 | elapsed:  7.0min remaining:  2.9min
+[Parallel(n_jobs=44)]: Done  34 out of  41 | elapsed:  7.6min remaining:  1.6min
+[Parallel(n_jobs=44)]: Done  39 out of  41 | elapsed: 10.3min remaining:   31.6s
+[Parallel(n_jobs=44)]: Done  41 out of  41 | elapsed: 11.5min finished
+    [INFO] Inner evaluation complete. Selecting best architecture...
+[rdkit2d3d_fp] Fold 10/15 -> best=ET+LGBM | R2_outer=0.5496 | MAE_outer=0.5638 | features=1242/2275 | 765.0s
+
+    [INFO] Starting evaluation of 41 architectures in parallel for fold 11...
+[Parallel(n_jobs=44)]: Using backend LokyBackend with 44 concurrent workers.
+[Parallel(n_jobs=44)]: Done   4 out of  41 | elapsed:  1.7min remaining: 15.9min
+[Parallel(n_jobs=44)]: Done   9 out of  41 | elapsed:  2.3min remaining:  8.1min
+[Parallel(n_jobs=44)]: Done  14 out of  41 | elapsed:  2.9min remaining:  5.6min
+[Parallel(n_jobs=44)]: Done  19 out of  41 | elapsed:  6.2min remaining:  7.1min
+[Parallel(n_jobs=44)]: Done  24 out of  41 | elapsed:  6.6min remaining:  4.7min
+[Parallel(n_jobs=44)]: Done  29 out of  41 | elapsed:  6.9min remaining:  2.8min
+[Parallel(n_jobs=44)]: Done  34 out of  41 | elapsed:  7.7min remaining:  1.6min
+[Parallel(n_jobs=44)]: Done  39 out of  41 | elapsed: 10.2min remaining:   31.4s
+[Parallel(n_jobs=44)]: Done  41 out of  41 | elapsed: 10.7min finished
+    [INFO] Inner evaluation complete. Selecting best architecture...
+[rdkit2d3d_fp] Fold 11/15 -> best=ET+LGBM+kNN | R2_outer=0.7439 | MAE_outer=0.5174 | features=1263/2275 | 721.5s
+
+    [INFO] Starting evaluation of 41 architectures in parallel for fold 12...
+[Parallel(n_jobs=44)]: Using backend LokyBackend with 44 concurrent workers.
+[Parallel(n_jobs=44)]: Done   4 out of  41 | elapsed:  1.7min remaining: 15.7min
+[Parallel(n_jobs=44)]: Done   9 out of  41 | elapsed:  2.3min remaining:  8.3min
+[Parallel(n_jobs=44)]: Done  14 out of  41 | elapsed:  3.2min remaining:  6.1min
+[Parallel(n_jobs=44)]: Done  19 out of  41 | elapsed:  5.9min remaining:  6.9min
+[Parallel(n_jobs=44)]: Done  24 out of  41 | elapsed:  6.6min remaining:  4.7min
+[Parallel(n_jobs=44)]: Done  29 out of  41 | elapsed:  6.9min remaining:  2.9min
+[Parallel(n_jobs=44)]: Done  34 out of  41 | elapsed:  7.7min remaining:  1.6min
+[Parallel(n_jobs=44)]: Done  39 out of  41 | elapsed: 10.1min remaining:   30.9s
+[Parallel(n_jobs=44)]: Done  41 out of  41 | elapsed: 10.7min finished
+    [INFO] Inner evaluation complete. Selecting best architecture...
+[rdkit2d3d_fp] Fold 12/15 -> best=ET+LGBM+SVM | R2_outer=0.7901 | MAE_outer=0.4467 | features=1257/2275 | 718.6s
+
+    [INFO] Starting evaluation of 41 architectures in parallel for fold 13...
+[Parallel(n_jobs=44)]: Using backend LokyBackend with 44 concurrent workers.
+[Parallel(n_jobs=44)]: Done   4 out of  41 | elapsed:  1.6min remaining: 15.2min
+[Parallel(n_jobs=44)]: Done   9 out of  41 | elapsed:  2.2min remaining:  7.7min
+[Parallel(n_jobs=44)]: Done  14 out of  41 | elapsed:  3.2min remaining:  6.2min
+[Parallel(n_jobs=44)]: Done  19 out of  41 | elapsed:  6.0min remaining:  6.9min
+[Parallel(n_jobs=44)]: Done  24 out of  41 | elapsed:  6.6min remaining:  4.7min
+[Parallel(n_jobs=44)]: Done  29 out of  41 | elapsed:  7.0min remaining:  2.9min
+[Parallel(n_jobs=44)]: Done  34 out of  41 | elapsed:  7.4min remaining:  1.5min
+[Parallel(n_jobs=44)]: Done  39 out of  41 | elapsed: 10.5min remaining:   32.4s
+[Parallel(n_jobs=44)]: Done  41 out of  41 | elapsed: 10.9min finished
+    [INFO] Inner evaluation complete. Selecting best architecture...
+[rdkit2d3d_fp] Fold 13/15 -> best=ET+SVM+kNN | R2_outer=0.7268 | MAE_outer=0.4464 | features=1266/2275 | 730.0s
+
+    [INFO] Starting evaluation of 41 architectures in parallel for fold 14...
+[Parallel(n_jobs=44)]: Using backend LokyBackend with 44 concurrent workers.
+[Parallel(n_jobs=44)]: Done   4 out of  41 | elapsed:  1.6min remaining: 14.6min
+[Parallel(n_jobs=44)]: Done   9 out of  41 | elapsed:  2.3min remaining:  8.1min
+[Parallel(n_jobs=44)]: Done  14 out of  41 | elapsed:  3.3min remaining:  6.4min
+[Parallel(n_jobs=44)]: Done  19 out of  41 | elapsed:  6.1min remaining:  7.0min
+[Parallel(n_jobs=44)]: Done  24 out of  41 | elapsed:  6.4min remaining:  4.5min
+[Parallel(n_jobs=44)]: Done  29 out of  41 | elapsed:  6.9min remaining:  2.9min
+[Parallel(n_jobs=44)]: Done  34 out of  41 | elapsed:  7.7min remaining:  1.6min
+[Parallel(n_jobs=44)]: Done  39 out of  41 | elapsed: 10.3min remaining:   31.8s
+[Parallel(n_jobs=44)]: Done  41 out of  41 | elapsed: 11.3min finished
+    [INFO] Inner evaluation complete. Selecting best architecture...
+[rdkit2d3d_fp] Fold 14/15 -> best=ET+LGBM+SVM | R2_outer=0.7672 | MAE_outer=0.4389 | features=1255/2275 | 757.0s
+
+    [INFO] Starting evaluation of 41 architectures in parallel for fold 15...
+[Parallel(n_jobs=44)]: Using backend LokyBackend with 44 concurrent workers.
+[Parallel(n_jobs=44)]: Done   4 out of  41 | elapsed:  1.7min remaining: 15.9min
+[Parallel(n_jobs=44)]: Done   9 out of  41 | elapsed:  2.6min remaining:  9.4min
+[Parallel(n_jobs=44)]: Done  14 out of  41 | elapsed:  3.3min remaining:  6.4min
+[Parallel(n_jobs=44)]: Done  19 out of  41 | elapsed:  6.2min remaining:  7.1min
+[Parallel(n_jobs=44)]: Done  24 out of  41 | elapsed:  6.4min remaining:  4.6min
+[Parallel(n_jobs=44)]: Done  29 out of  41 | elapsed:  7.1min remaining:  2.9min
+[Parallel(n_jobs=44)]: Done  34 out of  41 | elapsed:  7.6min remaining:  1.6min
+[Parallel(n_jobs=44)]: Done  39 out of  41 | elapsed:  9.9min remaining:   30.4s
+[Parallel(n_jobs=44)]: Done  41 out of  41 | elapsed: 10.6min finished
+    [INFO] Inner evaluation complete. Selecting best architecture...
+[rdkit2d3d_fp] Fold 15/15 -> best=ET+LGBM | R2_outer=0.6626 | MAE_outer=0.5596 | features=1274/2275 | 711.0s
+
+----------------------------------------------------------------------------------------------------
+SUMMARY [rdkit2d3d_fp] — ready to paste into Results
+----------------------------------------------------------------------------------------------------
+- R2 (nested CV, 15 outer folds): mean=0.7387, std=0.0655, min=0.5496, max=0.7978
+- MAE (nested CV): mean=0.4766, std=0.0443
+- Most frequently selected architecture: 'ET+LGBM+SVM' (won in 5/15 folds = 33.3% selection stability)
+- Other architectures selected at least once: {'ET+LGBM': 4, 'ET+LGBM+kNN': 3, 'ET+LGBM+XGB': 1, 'RF+LGBM+SVM': 1, 'ET+SVM+kNN': 1}
+----------------------------------------------------------------------------------------------------
+
+====================================================================================================
+RESULTS (copy/adapt directly into the manuscript's Results section)
+====================================================================================================
+
+Table 1. R2 by molecular representation (nested cross-validation)
+        Mode     mean      std  count
+      morgan 0.740675 0.053063     15
+rdkit2d3d_fp 0.738693 0.067789     15
+  rdkit2d_fp 0.732222 0.064242     15
+     rdkit2d 0.679819 0.068637     15
+
+----------------------------------------------------------------------------------------------------
+Table 2. One-sample t-test: does our R2 differ from the values reported in the paper?
+----------------------------------------------------------------------------------------------------
+        Mode Paper_reference_label  Paper_R2  Our_R2_mean  Our_R2_std    t_stat      p_value  Significant_p<0.05
+      morgan         PaperBaseline      0.75     0.740675    0.051263 -0.680653 5.071925e-01               False
+      morgan         PaperSelected      0.82     0.740675    0.051263 -5.789868 4.685472e-05                True
+      morgan            PaperFinal      0.85     0.740675    0.051263 -7.979532 1.410893e-06                True
+     rdkit2d         PaperBaseline      0.75     0.679819    0.066310 -3.960085 1.423284e-03                True
+     rdkit2d         PaperSelected      0.82     0.679819    0.066310 -7.909972 1.561906e-06                True
+     rdkit2d            PaperFinal      0.85     0.679819    0.066310 -9.602781 1.539648e-07                True
+  rdkit2d_fp         PaperBaseline      0.75     0.732222    0.062064 -1.071780 3.019476e-01               False
+  rdkit2d_fp         PaperSelected      0.82     0.732222    0.062064 -5.291885 1.138345e-04                True
+  rdkit2d_fp            PaperFinal      0.85     0.732222    0.062064 -7.100502 5.332792e-06                True
+rdkit2d3d_fp         PaperBaseline      0.75     0.738693    0.065491 -0.646025 5.287114e-01               False
+rdkit2d3d_fp         PaperSelected      0.82     0.738693    0.065491 -4.645321 3.784284e-04                True
+rdkit2d3d_fp            PaperFinal      0.85     0.738693    0.065491 -6.359306 1.770586e-05                True
+
+----------------------------------------------------------------------------------------------------
+Table 3. Paired comparison between the two best representations (same outer folds)
+----------------------------------------------------------------------------------------------------
+morgan (R2=0.7407) vs rdkit2d3d_fp (R2=0.7387)
+  Paired t-test : t=0.234, p=0.8183
+  Wilcoxon      : W=57.000, p=0.8904
+[FIGURE] Saved r2_by_representation_boxplot.png
+
+====================================================================================================
+EXECUTIVE SUMMARY (read top to bottom — written to drop straight into Results/Discussion)
+====================================================================================================
+1. The best molecular representation was 'morgan' (Morgan fingerprints (ECFP4, 2048 bits) — no physicochemical descriptors), with R2 = 0.7407 +/- 0.0531 across 15 independent outer folds (nested cross-validation).
+2. The most frequently selected architecture within that representation was 'LGBM+XGB+SVM', chosen in 13.3% of outer folds (low selection stability).
+3.1 Compared to '2D/3D/FP model, no feature selection' (R2=0.75): our result is below (delta=-0.0093), t=-0.681, p=0.5072 -> NO statistically significant difference (p>=0.05).
+3.2 Compared to 'After importance-based feature selection (no augmentation)' (R2=0.82): our result is below (delta=-0.0793), t=-5.790, p=0.0000 -> YES, statistically significant difference (p<0.05).
+3.3 Compared to 'Data augmentation + DNN ensemble (paper final result)' (R2=0.85): our result is below (delta=-0.1093), t=-7.980, p=0.0000 -> YES, statistically significant difference (p<0.05).
+4. Between the two best representations (morgan vs rdkit2d3d_fp), the R2 difference is not distinguishable statistically (paired t-test p=0.8183).
+5. Candidate sentence for the Discussion: "a classical stacking ensemble of LGBM+XGB+SVM on morgan features reaches R2=0.741+/-0.053 under nested cross-validation, a statistically significant difference from the data-augmented DNN ensemble reported in the original study (R2=0.85), which tempers the initial over-engineering critique."
+====================================================================================================
+
+[LATEX] Variables exported to paper_variables.tex
+        In your main document: \input{paper_variables.tex}  (in the preamble)
+        Then in the text, e.g.: \WinnerModeRTwoMean, \PaperFinalRTwo, etc.
+
+
+
+// --- ./logs/1AUGMENT_output.txt ---
+
+(vina_env) (base) andrey@raul-HP-Z820-Workstation:~/Projects/analysispaperKarimova2025$ python 1AUGMENT.py
+====================================================================================================
+1AUGMENT.py — Feature Selection + Gaussian Augmentation Benchmark
+Mirrors the paper pipeline (Sections 3.4 and 3.5) for classical ML
+====================================================================================================
+
+[DATA] 756 compounds loaded.
+[SPLIT] Dev=642 | Test held-out=114 (never used for selection)
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+EXPERIMENT A: ML stacking baseline (no feature selection, no augmentation)
+────────────────────────────────────────────────────────────────────────────────────────────────────
+  R2=0.8072 | MAE=0.4881 | 95%CI [0.7275, 0.8624] | 245.2s
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+EXPERIMENT B: + Permutation Importance feature selection (mirrors paper Section 3.4)
+────────────────────────────────────────────────────────────────────────────────────────────────────
+  [PI] Fitting model for Permutation Importance calculation...
+  [PI] Computing Permutation Importance (n_repeats=5)...
+  [PI] Features selected (importance > 0): 1212/2048
+  R2=0.8089 | MAE=0.4857 | 95%CI [0.7303, 0.8646] | 558.5s
+  Paper analogue: R2=0.82 after PI selection
+  [SAVED] selected_features_mask.npy
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+EXPERIMENT C: + Gaussian augmentation (mirrors paper Section 3.5)
+────────────────────────────────────────────────────────────────────────────────────────────────────
+  [AUG] Dataset size: 642 -> 1926 (noise levels: [0.01, 0.001])
+  R2=0.7819 | MAE=0.5293 | 95%CI [0.6892, 0.8467] | 6355.2s
+  Paper analogue: R2=0.85 after augmentation + DNN ensemble
+
+====================================================================================================
+EXECUTIVE SUMMARY — read top to bottom to draft Results/Discussion
+====================================================================================================
+
+Exp A (baseline): R2=0.8072 | MAE=0.4881 | 95%CI [0.7275, 0.8624]
+  vs 2D/3D/FP, no feature selection (R2=0.75): above by 0.0572 | t=67.557, p=0.0000 -> SIGNIFICANT (p<0.05)
+  vs After Permutation Importance feature selection (R2=0.82): below by 0.0128 | t=-21.716, p=0.0000 -> SIGNIFICANT (p<0.05)
+  vs Data augmentation + DNN ensemble (R2=0.85): below by 0.0428 | t=-59.975, p=0.0000 -> SIGNIFICANT (p<0.05)
+
+Exp B (+feat.sel.): R2=0.8089 | MAE=0.4857 | 95%CI [0.7303, 0.8646]
+  vs 2D/3D/FP, no feature selection (R2=0.75): above by 0.0589 | t=70.544, p=0.0000 -> SIGNIFICANT (p<0.05)
+  vs After Permutation Importance feature selection (R2=0.82): below by 0.0111 | t=-19.925, p=0.0000 -> SIGNIFICANT (p<0.05)
+  vs Data augmentation + DNN ensemble (R2=0.85): below by 0.0411 | t=-58.697, p=0.0000 -> SIGNIFICANT (p<0.05)
+
+Exp C (+augment.): R2=0.7819 | MAE=0.5293 | 95%CI [0.6892, 0.8467]
+  vs 2D/3D/FP, no feature selection (R2=0.75): above by 0.0319 | t=28.504, p=0.0000 -> SIGNIFICANT (p<0.05)
+  vs After Permutation Importance feature selection (R2=0.82): below by 0.0381 | t=-48.031, p=0.0000 -> SIGNIFICANT (p<0.05)
+  vs Data augmentation + DNN ensemble (R2=0.85): below by 0.0681 | t=-80.832, p=0.0000 -> SIGNIFICANT (p<0.05)
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+KEY FINDING FOR THE DISCUSSION:
+  Augmentation gain (Exp A -> Exp C): delta R2=-0.0254 (paired t=-57.578, p=0.0000)
+  Exp C vs paper final (R2=0.85): significantly different from (t=-80.832, p=0.0000)
+
+  CANDIDATE SENTENCE (Discussion):
+  "Despite applying identical augmentation, the classical stacking ensemble reached R2=0.782 vs the DNN's R2=0.85 (p=0.0000), suggesting that architectural factors beyond data volume contribute to the DNN advantage for this dataset size."
+====================================================================================================
+
+[SAVE] Fitting final model on full dev set (augmented) for 2FDA.py...
+[SAVE] best_model.joblib saved (used by 2FDA.py)
+
+[LATEX] Variables exported to augment_variables.tex
+[FIGURE] Saved augment_r2_comparison.png
+
+[DONE] 1AUGMENT.py complete.
+
+
+
+// --- ./logs/2FDA_output.txt ---
+
+(vina_env) (base) andrey@raul-HP-Z820-Workstation:~/Projects/analysispaperKarimova2025$ python 2FDA.py
+====================================================================================================
+2FDA.py — FDA Drug Screening with Winner Classical ML Model
+====================================================================================================
+
+[1] Loading model from best_model.joblib...
+[1] Feature mask loaded: 1212 / 2048 features selected
+
+[2] Building training fingerprint matrix for outlier detection...
+[2] Isolation Forest fitted on 756 training compounds
+
+[3] Loading FDA dataset from PubChem_FDA-approved_NoInorganics.csv...
+[3] Raw FDA compounds: 3378
+[3] After atom/MW filter: 2516 compounds
+[3] After Isolation Forest (contamination=0.05): 1701 compounds
+
+[4] Predicting pIC50 for all filtered FDA candidates...
+[4] Predictions done (1.4s)
+
+================================================================================
+REPORT 1 — Accuracy validation against known TgDHFR inhibitors
+================================================================================
+Drug               | Experimental | Predicted | Abs Error | Status
+----------------------------------------------------------------------
+Pyrimethamine      |         6.56 |    6.4226 |    0.1374 | EXCELLENT
+Trimethoprim       |         5.57 |    5.6590 |    0.0890 | EXCELLENT
+
+====================================================================================================
+REPORT 2 — Top 10 predicted TgDHFR inhibitors (classical ML model)
+====================================================================================================
+Rank  Name                             pIC50     LE     BEI    LLE    SEI
+----------------------------------------------------------------------
+1     Folic Acid                      8.1913   0.35   18.56   8.24   3.84
+2     Methotrexate                    7.7540   0.32   17.06   7.49   3.68
+3     Pralatrexate                    7.6354   0.30   15.99   6.65   3.68
+4     Triamterene                     6.8599   0.49   27.09   6.03   5.29
+5     CID 336805                      6.8052   0.23   12.08   7.35   2.69
+6     Trimetrexate Glucuronate        6.8052   0.23   12.08   7.35   2.69
+7     Bendamustine Hydrochloride      6.6463   0.38   16.84   2.96  11.39
+8     Sumatriptan Succinate           6.4329   0.31   15.56   5.18   4.60
+9     Pyrimethamine                   6.4226   0.52   25.82   3.90   8.25
+10    Chlorambucil                    6.3704   0.46   20.94   2.99  15.71
+
+====================================================================================================
+REPORT 3 — Paper top candidates predicted by our classical ML model
+(Do our top-10 agree with the paper's top-10?)
+====================================================================================================
+Name                           pIC50 (ours) Paper rank
+-------------------------------------------------------
+Methotrexate                         7.7540          2
+Triamterene                          6.8599          4
+Pyrimethamine                        6.4226          9
+Finerenone                           5.7722        430
+Trimethoprim                         5.6590        596
+Trimethoprim Hydrochloride           5.6590        597
+Sulfamethoxazole; Trimethopr         5.5729        730
+Trimethoprim sulfate                 5.5278        818
+Bisacodyl                            5.2511       1252
+Etodolac                             5.2029       1320
+
+[EXPORT] 17 candidates saved to FDA_Candidates_For_Docking.csv (for 3DOCKING.py)
+[DONE] 2FDA.py complete.
+
+
+
+// --- ./logs/3DOCKING_output.txt ---
+
+(vina_env) (base) andrey@raul-HP-Z820-Workstation:~/Projects/analysispaperKarimova2025$ python 3DOCKING.py
+==========================================================================================
+3DOCKING.py — Hybrid ML + Physics Validation (AutoDock Vina)
+Receptor: receptor.pdbqt
+Active site center: [17.394, 68.757, -68.051]
+Box: 20.0A | Exhaustiveness: 32
+==========================================================================================
+
+[INFO] 17 candidates selected for docking
+Computing Vina grid ... done.
+
+Compound                       | Status               | Best pose (kcal/mol)
+----------------------------------------------------------------------
+/home/andrey/anaconda3/envs/vina_env/lib/python3.14/site-packages/meeko/preparation.py:693: DeprecationWarning: MoleculePreparation.write_pdbqt_string() is deprecated in Meeko v0.5. Pass the MoleculeSetup instance to PDBQTWriterLegacy.write_string(). MoleculePreparation.prepare() returns a list of MoleculeSetup instances.
+  warnings.warn(msg, DeprecationWarning)
+/home/andrey/anaconda3/envs/vina_env/lib/python3.14/site-packages/meeko/preparation.py:467: DeprecationWarning: MoleculePreparation.setup is deprecated in Meeko v0.5. MoleculePreparation.prepare() returns a list of MoleculeSetup instances.
+  warnings.warn(msg, DeprecationWarning)
+WARNING: At low exhaustiveness, it may be impossible to utilize all CPUs.
+Performing docking (random seed: -1109610579) ...
+0%   10   20   30   40   50   60   70   80   90   100%
+|----|----|----|----|----|----|----|----|----|----|
+***************************************************
+
+mode |   affinity | dist from best mode
+     | (kcal/mol) | rmsd l.b.| rmsd u.b.
+-----+------------+----------+----------
+   1       -5.548          0          0
+   2       -5.469      1.725      2.424
+   3        15.54      17.07      20.02
+Folic Acid                     | OK                   | -5.55
+WARNING: At low exhaustiveness, it may be impossible to utilize all CPUs.
+Performing docking (random seed: -1109610579) ...
+0%   10   20   30   40   50   60   70   80   90   100%
+|----|----|----|----|----|----|----|----|----|----|
+***************************************************
+
+mode |   affinity | dist from best mode
+     | (kcal/mol) | rmsd l.b.| rmsd u.b.
+-----+------------+----------+----------
+   1       -5.471          0          0
+   2        -5.45      16.78      19.11
+   3       -5.333       4.96      11.56
+Methotrexate                   | OK                   | -5.47
+WARNING: At low exhaustiveness, it may be impossible to utilize all CPUs.
+Performing docking (random seed: -1109610579) ...
+0%   10   20   30   40   50   60   70   80   90   100%
+|----|----|----|----|----|----|----|----|----|----|
+***************************************************
+
+mode |   affinity | dist from best mode
+     | (kcal/mol) | rmsd l.b.| rmsd u.b.
+-----+------------+----------+----------
+   1       -5.541          0          0
+   2       -5.457      5.213       10.3
+   3        -5.36      1.578      1.855
+Pralatrexate                   | OK                   | -5.54
+WARNING: At low exhaustiveness, it may be impossible to utilize all CPUs.
+Performing docking (random seed: -1109610579) ...
+0%   10   20   30   40   50   60   70   80   90   100%
+|----|----|----|----|----|----|----|----|----|----|
+***************************************************
+
+mode |   affinity | dist from best mode
+     | (kcal/mol) | rmsd l.b.| rmsd u.b.
+-----+------------+----------+----------
+   1       -4.757          0          0
+   2       -4.745       16.3      17.63
+   3       -4.628      3.874      5.888
+Triamterene                    | OK                   | -4.76
+CID 336805                     | 3D prep failed       |
+Trimetrexate Glucuronate       | 3D prep failed       |
+Bendamustine Hydrochloride     | 3D prep failed       |
+Sumatriptan Succinate          | 3D prep failed       |
+WARNING: At low exhaustiveness, it may be impossible to utilize all CPUs.
+Performing docking (random seed: -1109610579) ...
+0%   10   20   30   40   50   60   70   80   90   100%
+|----|----|----|----|----|----|----|----|----|----|
+***************************************************
+
+mode |   affinity | dist from best mode
+     | (kcal/mol) | rmsd l.b.| rmsd u.b.
+-----+------------+----------+----------
+   1       -4.126          0          0
+   2       -4.085      2.428      3.409
+   3        -3.86     0.9377      2.694
+Pyrimethamine                  | OK                   | -4.13
+WARNING: At low exhaustiveness, it may be impossible to utilize all CPUs.
+Performing docking (random seed: -1109610579) ...
+0%   10   20   30   40   50   60   70   80   90   100%
+|----|----|----|----|----|----|----|----|----|----|
+***************************************************
+
+mode |   affinity | dist from best mode
+     | (kcal/mol) | rmsd l.b.| rmsd u.b.
+-----+------------+----------+----------
+   1       -3.963          0          0
+   2        -3.95     0.9539      2.482
+   3       -3.824      4.474       7.03
+Chlorambucil                   | OK                   | -3.96
+WARNING: At low exhaustiveness, it may be impossible to utilize all CPUs.
+Performing docking (random seed: -1109610579) ...
+0%   10   20   30   40   50   60   70   80   90   100%
+|----|----|----|----|----|----|----|----|----|----|
+***************************************************
+
+mode |   affinity | dist from best mode
+     | (kcal/mol) | rmsd l.b.| rmsd u.b.
+-----+------------+----------+----------
+   1       -4.364          0          0
+   2       -4.337      7.125      9.702
+   3       -4.211      3.846      6.189
+Finerenone                     | OK                   | -4.36
+WARNING: At low exhaustiveness, it may be impossible to utilize all CPUs.
+Performing docking (random seed: -1109610579) ...
+0%   10   20   30   40   50   60   70   80   90   100%
+|----|----|----|----|----|----|----|----|----|----|
+***************************************************
+
+mode |   affinity | dist from best mode
+     | (kcal/mol) | rmsd l.b.| rmsd u.b.
+-----+------------+----------+----------
+   1       -3.934          0          0
+   2       -3.932      4.064      6.302
+   3       -3.914      4.162      6.111
+Trimethoprim                   | OK                   | -3.93
+Trimethoprim Hydrochloride     | 3D prep failed       |
+Sulfamethoxazole; Trimethopr   | 3D prep failed       |
+Trimethoprim sulfate           | 3D prep failed       |
+WARNING: At low exhaustiveness, it may be impossible to utilize all CPUs.
+Performing docking (random seed: -1109610579) ...
+0%   10   20   30   40   50   60   70   80   90   100%
+|----|----|----|----|----|----|----|----|----|----|
+***************************************************
+
+mode |   affinity | dist from best mode
+     | (kcal/mol) | rmsd l.b.| rmsd u.b.
+-----+------------+----------+----------
+   1       -4.985          0          0
+   2       -4.854      2.912      8.553
+   3       -4.853      16.07      17.77
+Bisacodyl                      | OK                   | -4.99
+WARNING: At low exhaustiveness, it may be impossible to utilize all CPUs.
+Performing docking (random seed: -1109610579) ...
+0%   10   20   30   40   50   60   70   80   90   100%
+|----|----|----|----|----|----|----|----|----|----|
+***************************************************
+
+mode |   affinity | dist from best mode
+     | (kcal/mol) | rmsd l.b.| rmsd u.b.
+-----+------------+----------+----------
+   1       -4.675          0          0
+   2       -4.482      2.716      5.605
+   3       -4.472      5.614      8.387
+Etodolac                       | OK                   | -4.67
+
+====================================================================================================
+FINAL RESULTS — ML prediction vs. Physics (AutoDock Vina)
+====================================================================================================
+Compound                       |  ML pIC50 | Vina (kcal/mol) | Agreement
+--------------------------------------------------------------------------------
+Folic Acid                     |    8.1913 |           -5.55 | ML FALSE POSITIVE
+Pralatrexate                   |    7.6354 |           -5.54 | ML FALSE POSITIVE
+Methotrexate                   |    7.7540 |           -5.47 | ML FALSE POSITIVE
+Bisacodyl                      |    5.2511 |           -4.99 | VALIDATED (-)
+Triamterene                    |    6.8599 |           -4.76 | ML FALSE POSITIVE
+Etodolac                       |    5.2029 |           -4.67 | VALIDATED (-)
+Finerenone                     |    5.7722 |           -4.36 | VALIDATED (-)
+Pyrimethamine                  |    6.4226 |           -4.13 | Neutral
+Chlorambucil                   |    6.3704 |           -3.96 | Neutral
+Trimethoprim                   |    5.6590 |           -3.93 | VALIDATED (-)
+
+Pearson correlation (ML pIC50 vs Docking Score): r=-0.662, p=0.0371
+(Negative r expected: higher pIC50 should correlate with more negative docking energy)
+
+====================================================================================================
+EXECUTIVE SUMMARY — paste into Results/Discussion
+====================================================================================================
+- 0/10 compounds show ML-physics agreement (pIC50>6.5 AND docking<-8.0 kcal/mol)
+- 4 compounds flagged as potential ML false positives (high pIC50 but weak docking score)
+- Best docking candidate: Folic Acid (ML pIC50=8.1913, Vina=-5.55 kcal/mol)
+- Pearson r(ML, docking)=-0.662 (p=0.0371) — significant correlation
+
+[EXPORT] Results saved to Final_Validation_Hybrid.csv
+[LATEX] Docking variables exported to docking_variables.tex
+[DONE] 3DOCKING.py complete.
+
+
+
+// --- ./reorganize.sh ---
+
+#!/bin/bash
+# =========================================================
+# reorganize.sh — Project folder restructuring script
+# Run from the project root: bash reorganize.sh
+# =========================================================
+
+set -e  # stop on any error
+
+echo "=================================================="
+echo "Reorganizing project structure..."
+echo "=================================================="
+
+# Create directories
+mkdir -p data receptor scripts results latex figures logs archive
+
+# ── DATA ──────────────────────────────────────────────
+mv -v V2-df_ic50_chmbl_CID_myFill.csv data/ 2>/dev/null || true
+mv -v PubChem_FDA-approved_NoInorganics.csv data/ 2>/dev/null || true
+
+# ── RECEPTOR ──────────────────────────────────────────
+mv -v receptor.pdb receptor.pdbqt receptor/ 2>/dev/null || true
+mv -v crystal_ligand.pdb crystal_ligand.pdbqt receptor/ 2>/dev/null || true
+
+# ── SCRIPTS (active) ──────────────────────────────────
+mv -v 0STACK.py scripts/ 2>/dev/null || true
+mv -v 1AUGMENT.py scripts/ 2>/dev/null || true
+mv -v 2FDA.py scripts/ 2>/dev/null || true
+mv -v 3DOCKING.py scripts/ 2>/dev/null || true
+mv -v 4REDOCKING_VALIDATION.py scripts/ 2>/dev/null || true
+mv -v prep_receptor.py scripts/ 2>/dev/null || true
+
+# ── SCRIPTS (old versions → archive) ──────────────────
+mv -v 1FDA.py archive/ 2>/dev/null || true
+mv -v 2DOCKING.py archive/ 2>/dev/null || true
+mv -v 4W_REDOCKING_VALIDATION.py archive/ 2>/dev/null || true
+
+# ── RESULTS ───────────────────────────────────────────
+mv -v nested_cv_checkpoint.csv results/ 2>/dev/null || true
+mv -v nested_cv_final_results.csv results/ 2>/dev/null || true
+mv -v nested_cv_final_results_ttests.csv results/ 2>/dev/null || true
+mv -v nested_cv_selection_log.csv results/ 2>/dev/null || true
+mv -v FDA_Candidates_For_Docking.csv results/ 2>/dev/null || true
+mv -v FDA_Detailed_Votes_Full.csv results/ 2>/dev/null || true
+mv -v Final_Validation_Hybrid.csv results/ 2>/dev/null || true
+mv -v best_model.joblib results/ 2>/dev/null || true
+mv -v selected_features_mask.npy results/ 2>/dev/null || true
+
+# ── LATEX ─────────────────────────────────────────────
+mv -v paper_variables.tex latex/ 2>/dev/null || true
+mv -v augment_variables.tex latex/ 2>/dev/null || true
+mv -v docking_variables.tex latex/ 2>/dev/null || true
+mv -v redocking_variables.tex latex/ 2>/dev/null || true
+mv -v fda_variables.tex latex/ 2>/dev/null || true
+
+# ── FIGURES ───────────────────────────────────────────
+mv -v augment_r2_comparison.png figures/ 2>/dev/null || true
+mv -v r2_by_representation_boxplot.png figures/ 2>/dev/null || true
+
+# ── LOGS ──────────────────────────────────────────────
+mv -v 1AUGMENT_output.txt logs/ 2>/dev/null || true
+mv -v 1FDA_output.txt logs/ 2>/dev/null || true
+mv -v 2FDA_output.txt logs/ 2>/dev/null || true
+mv -v 3DOCKING_output.txt logs/ 2>/dev/null || true
+
+echo ""
+echo "=================================================="
+echo "Done. New structure:"
+echo "=================================================="
+tree . --dirsfirst 2>/dev/null || find . -type f | sort
+
+
+
+// --- ./requirements.txt ---
+
+# ── Core data science ──────────────────────────────────
+numpy==2.3.5
+pandas==2.3.3
+scipy==1.16.3
+scikit-learn==1.8.0
+joblib==1.5.2
+
+# ── ML models ──────────────────────────────────────────
+lightgbm==4.6.0
+xgboost==3.1.2
+
+# ── GNN baselines (5GNNBASELINE.py) ───────────────────
+torch>=2.0.0
+chemprop>=2.0.0
+dgl
+dgllife
+torchdata==0.7.1
+
+# ── Cheminformatics & ADMET (2.5_ADMET.py) ─────────────
+rdkit==2025.9.3
+PubChemPy==1.0.5
+PyTDC>=0.4.1
+
+# ── Docking (3DOCKING.py, 4REDOCKING_VALIDATION.py) ───
+vina
+meeko
+gemmi
+
+# ── Visualization ──────────────────────────────────────
+matplotlib==3.10.8
+pillow==12.0.0
+contourpy==1.3.3
+cycler==0.12.1
+fonttools==4.61.0
+kiwisolver==1.4.9
+pyparsing==3.2.5
+
+# ── Utilities ──────────────────────────────────────────
+packaging==25.0
+python-dateutil==2.9.0.post0
+pytz==2025.2
+six==1.17.0
+threadpoolctl==3.6.0
+tzdata==2025.2
+nvidia-nccl-cu12==2.28.9
+
+
+
+// --- ./scripts/0.1Wilcoxon.py ---
+
+import os
+import sys
+import pandas as pd
+from scipy import stats
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from paths_config import CHECKPOINT_FILE, LATEX_DIR
+WILCOXON_LATEX_FILE = os.path.join(LATEX_DIR, 'wilcoxon_variables.tex')
+
+def main():
+    """..."""
+if __name__ == '__main__':
+    main()
+
+
+// --- ./scripts/0STACK.py ---
+
+import os
+os.environ['OMP_NUM_THREADS'] = '1'
+os.environ['MKL_NUM_THREADS'] = '1'
+os.environ['OPENBLAS_NUM_THREADS'] = '1'
+os.environ['VECLIB_MAXIMUM_THREADS'] = '1'
+os.environ['NUMEXPR_NUM_THREADS'] = '1'
+import time
+import warnings
+from paths_config import *
+import itertools
+import numpy as np
+import pandas as pd
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+from joblib import Parallel, delayed
+from scipy import stats
+from rdkit import Chem, RDLogger
+from rdkit.Chem import AllChem, Descriptors, Descriptors3D
+from rdkit.Chem import rdFingerprintGenerator
+from sklearn.ensemble import RandomForestRegressor, ExtraTreesRegressor, StackingRegressor
+from sklearn.svm import SVR
+from sklearn.neighbors import KNeighborsRegressor
+from sklearn.cross_decomposition import PLSRegression
+from sklearn.linear_model import RidgeCV
+from sklearn.base import BaseEstimator, RegressorMixin, clone
+import lightgbm as lgb
+from xgboost import XGBRegressor
+from sklearn.model_selection import RepeatedKFold, KFold, cross_validate
+from sklearn.metrics import r2_score, mean_absolute_error, make_scorer
+from sklearn.pipeline import Pipeline
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import StandardScaler
+from sklearn.feature_selection import SelectFromModel
+RDLogger.DisableLog('rdApp.*')
+warnings.filterwarnings('ignore')
+warnings.filterwarnings('ignore', message='X does not have valid feature names')
+PROFILE = 'workstation'
+PROFILES = {'laptop': dict(N_JOBS=2, FEATURE_MODES=['morgan'], MAX_COMBO_SIZE=2, OUTER_N_SPLITS=3, OUTER_N_REPEATS=1, INNER_N_SPLITS=3, N_ESTIMATORS_TREES=50), 'workstation': dict(N_JOBS=46, FEATURE_MODES=['morgan', 'rdkit2d', 'rdkit2d_fp', 'rdkit2d3d_fp'], MAX_COMBO_SIZE=3, OUTER_N_SPLITS=5, OUTER_N_REPEATS=3, INNER_N_SPLITS=5, N_ESTIMATORS_TREES=200)}
+CFG = PROFILES[PROFILE]
+RANDOM_STATE = 42
+LATEX_OUTPUT_FILE = LATEX_PAPER
+FIGURE_FILE = FIGURE_NESTED_CV
+CLIP_MARGIN = 3.0
+
+def get_clip_bounds(y_train, margin=CLIP_MARGIN):
+    """..."""
+
+def clip_predictions(y_pred, lo, hi):
+    """..."""
+NON_FEATURE_COLS = {'molecule chembl id', 'smiles', 'pic50 value', 'pic50', 'standard value', 'ic50', 'cid', 'name', 'id'}
+PAPER_R2 = {'PaperBaseline': ('2D/3D/FP model, no feature selection', 0.75), 'PaperSelected': ('After importance-based feature selection (no augmentation)', 0.82), 'PaperFinal': ('Data augmentation + DNN ensemble (paper final result)', 0.85)}
+MODE_LATEX_LABEL = {'morgan': 'Morgan', 'rdkit2d': 'RdkitTwoD', 'rdkit2d_fp': 'RdkitTwoDFp', 'rdkit2d3d_fp': 'RdkitTwoDThreeDFp', 'csv_descriptors': 'CsvDescriptors'}
+MODE_DESCRIPTION = {'morgan': 'Morgan fingerprints (ECFP4, 2048 bits) — no physicochemical descriptors', 'rdkit2d': f"""{len(Descriptors._descList)} RDKit 2D descriptors (analogous to the paper's "2D" model)""", 'rdkit2d_fp': 'RDKit 2D descriptors + Morgan FP (analogous to the paper\'s "2D/FP" model)', 'rdkit2d3d_fp': '2D + 3D (geometric, via ETKDGv3 embedding + MMFF94s optimization) descriptors + Morgan FP (analogous to the paper\'s best model, "2D/3D/FP")', 'csv_descriptors': 'Numeric columns already present in the training CSV (trivial reference only)'}
+_MORGAN_GEN = None
+
+def _get_morgan_generator():
+    """..."""
+
+def get_morgan_fp(smiles):
+    """..."""
+_RDKIT_2D_NAMES = [name for name, _ in Descriptors._descList]
+
+def get_rdkit_2d(smiles):
+    """..."""
+_RDKIT_3D_NAMES = ['Asphericity', 'Eccentricity', 'InertialShapeFactor', 'NPR1', 'NPR2', 'PMI1', 'PMI2', 'PMI3', 'RadiusOfGyration', 'SpherocityIndex']
+
+def get_rdkit_3d(smiles):
+    """..."""
+
+def compute_parallel(smiles_list, fn, n_jobs):
+    """..."""
+
+def sanitize_matrix(X):
+    """..."""
+
+def detect_descriptor_columns(df):
+    """..."""
+
+def build_feature_matrix(df, mode, n_jobs):
+    """..."""
+
+class PLSRegressor1D(RegressorMixin, BaseEstimator):
+    """..."""
+
+def build_base_models(n_jobs_model=1, n_estimators=200):
+    """..."""
+
+def build_core_estimator(combo_dict):
+    """..."""
+
+def build_pipeline(combo_dict, is_binary):
+    """..."""
+
+def evaluate_combo_inner(combo, X_tr, y_tr, inner_splits, is_binary):
+    """..."""
+
+def load_done_folds(mode):
+    """..."""
+
+def append_checkpoint(row):
+    """..."""
+
+def append_selection_log(df_inner, mode, fold_idx):
+    """..."""
+
+def print_methods_intro(df_clean):
+    """..."""
+
+def print_mode_summary(mode, df_mode):
+    """..."""
+
+def nested_cv_for_mode(mode, df_clean, cfg):
+    """..."""
+
+def latex_safe_combo(combo_id):
+    """..."""
+
+def newcommand(f, name, value):
+    """..."""
+
+def generate_latex_file(df_all, summary, df_ttest, top2_modes, paired_stats):
+    """..."""
+
+def generate_figure(df_all, summary):
+    """..."""
+
+def summarize_and_test():
+    """..."""
+
+def run_benchmark():
+    """..."""
+if __name__ == '__main__':
+    run_benchmark()
+
+
+// --- ./scripts/1AUGMENT.py ---
+
+import os
+os.environ['OMP_NUM_THREADS'] = '1'
+os.environ['MKL_NUM_THREADS'] = '1'
+os.environ['OPENBLAS_NUM_THREADS'] = '1'
+os.environ['VECLIB_MAXIMUM_THREADS'] = '1'
+os.environ['NUMEXPR_NUM_THREADS'] = '1'
+import time
+import warnings
+from paths_config import *
+import numpy as np
+import pandas as pd
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+from joblib import Parallel, delayed
+from scipy import stats
+from rdkit import Chem, RDLogger
+from rdkit.Chem import AllChem, Descriptors, Descriptors3D
+from rdkit.Chem import rdFingerprintGenerator
+from sklearn.ensemble import RandomForestRegressor, ExtraTreesRegressor, StackingRegressor
+from sklearn.svm import SVR
+from sklearn.neighbors import KNeighborsRegressor
+from sklearn.cross_decomposition import PLSRegression
+from sklearn.linear_model import RidgeCV
+from sklearn.base import BaseEstimator, RegressorMixin, clone
+import lightgbm as lgb
+from xgboost import XGBRegressor
+from sklearn.model_selection import KFold, cross_validate, train_test_split
+from sklearn.metrics import r2_score, mean_absolute_error
+from sklearn.inspection import permutation_importance
+from sklearn.pipeline import Pipeline
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import StandardScaler
+RDLogger.DisableLog('rdApp.*')
+warnings.filterwarnings('ignore')
+TRAIN_FILE = TRAIN_FILE
+RANDOM_STATE = 42
+N_JOBS = 44
+N_ESTIMATORS = 200
+TEST_SIZE = 0.15
+N_ENSEMBLE_RUNS = 5
+N_BOOTSTRAP = 2000
+LATEX_FILE = LATEX_AUGMENT
+FIGURE_FILE = FIGURE_AUGMENT
+NOISE_LEVELS = [0.01, 0.001]
+PAPER_R2 = {'PaperBaseline': ('2D/3D/FP, no feature selection', 0.75), 'PaperSelected': ('After Permutation Importance feature selection', 0.82), 'PaperFinal': ('Data augmentation + DNN ensemble', 0.85)}
+STACK_MEMBERS = [('rf', RandomForestRegressor(n_estimators=N_ESTIMATORS, random_state=RANDOM_STATE, n_jobs=1)), ('xgb', XGBRegressor(n_estimators=N_ESTIMATORS, random_state=RANDOM_STATE, n_jobs=1, verbosity=0)), ('svm', SVR(kernel='rbf', C=10, gamma='scale', epsilon=0.1))]
+_MORGAN_GEN = None
+
+def _get_morgan_generator():
+    """..."""
+
+def get_morgan_fp(smiles):
+    """..."""
+
+def build_X(smiles_list):
+    """..."""
+
+def build_model():
+    """..."""
+
+def select_features_by_permutation_importance(X, y, model, n_repeats=5):
+    """..."""
+
+def augment_data(X_train, y_train, noise_levels=None, seed=RANDOM_STATE):
+    """..."""
+
+def bootstrap_r2_ci(y_true, y_pred, n_boot=N_BOOTSTRAP, ci=0.95):
+    """..."""
+
+def ensemble_predict(X_train, y_train, X_test, n_runs=N_ENSEMBLE_RUNS):
+    """..."""
+
+def newcommand(f, name, value):
+    """..."""
+
+def export_latex(results_dict):
+    """..."""
+
+def export_figure(results_dict):
+    """..."""
+
+def run():
+    """..."""
+if __name__ == '__main__':
+    run()
+
+
+// --- ./scripts/2FDA.py ---
+
+import os
+os.environ['OMP_NUM_THREADS'] = '1'
+os.environ['MKL_NUM_THREADS'] = '1'
+os.environ['OPENBLAS_NUM_THREADS'] = '1'
+import warnings
+from paths_config import *
+import time
+import numpy as np
+import pandas as pd
+import joblib
+from rdkit import Chem, RDLogger
+from rdkit.Chem import Descriptors, rdFingerprintGenerator
+from sklearn.ensemble import IsolationForest
+RDLogger.DisableLog('rdApp.*')
+warnings.filterwarnings('ignore')
+TRAIN_FILE = TRAIN_FILE
+FDA_FILE = FDA_FILE
+MODEL_FILE = MODEL_FILE
+MASK_FILE = MASK_FILE
+OUTPUT_CSV = FDA_CANDIDATES_CSV
+RANDOM_STATE = 42
+ISO_CONTAMINATION = 0.05
+MAX_MW = 1000.0
+ALLOWED_ATOMS = {1, 6, 7, 8, 9, 15, 16, 17, 35, 53}
+KNOWN_VALUES = {'Pyrimethamine': 6.56, 'Trimethoprim': 5.57}
+PAPER_TOP = ['Bisacodyl', 'Etodolac', 'Triamterene', 'Lorlatinib', 'Finerenone', 'Methotrexate', 'Pyrimethamine', 'Trimethoprim']
+_MORGAN_GEN = None
+
+def _get_generator():
+    """..."""
+
+def get_morgan_fp(mol):
+    """..."""
+
+def check_atoms(mol):
+    """..."""
+
+def ligand_efficiency(pic50, smiles):
+    """..."""
+
+def run():
+    """..."""
+if __name__ == '__main__':
+    run()
+
+
+// --- ./scripts/3.5_ADMET.py ---
+
+import concurrent.futures
+import os
+import sys
+from paths_config import *
+import numpy as np
+import pandas as pd
+from rdkit import Chem
+from rdkit.Chem import AllChem, Descriptors, rdFingerprintGenerator
+from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
+from tdc.single_pred import ADME, Tox
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from paths_config import FDA_ADMET_CANDIDATES_CSV, FDA_RAW_CANDIDATES_CSV
+INPUT_PATH = DOCKING_RESULTS_CSV
+OUTPUT_PATH = FDA_ADMET_CANDIDATES_CSV
+CORES = 48
+
+def lipinski_pass(smiles):
+    """..."""
+
+def evaluate_smiles(row):
+    """..."""
+
+def smiles_to_fps(smiles_list, radius=2, n_bits=2048):
+    """..."""
+
+def main():
+    """..."""
+if __name__ == '__main__':
+    main()
+
+
+// --- ./scripts/3DOCKING.py ---
+
+import os
+import warnings
+from paths_config import *
+import numpy as np
+import pandas as pd
+from rdkit import Chem, RDLogger
+from rdkit.Chem import AllChem
+from scipy import stats
+warnings.filterwarnings('ignore')
+RDLogger.DisableLog('rdApp.*')
+RECEPTOR_FILE = RECEPTOR_PDBQT
+INPUT_CSV = FDA_CANDIDATES_CSV
+OUTPUT_CSV = DOCKING_RESULTS_CSV
+LATEX_FILE = LATEX_DOCKING
+CENTER_X, CENTER_Y, CENTER_Z = (3.689, 39.992, -62.818)
+BOX_SIZE = 20.0
+EXHAUSTIVENESS = 32
+N_POSES = 3
+ML_ACTIVE_THRESH = 6.5
+DOCK_ACTIVE_THRESH = -8.0
+
+def prepare_ligand_pdbqt(smiles, name):
+    """..."""
+
+def newcommand(f, name, value):
+    """..."""
+
+def export_latex(df_results):
+    """..."""
+
+def run():
+    """..."""
+if __name__ == '__main__':
+    run()
+
+
+// --- ./scripts/4REDOCKING_VALIDATION.py ---
+
+import os
+import warnings
+from paths_config import *
+import numpy as np
+from rdkit import Chem, RDLogger
+from rdkit.Chem import AllChem
+warnings.filterwarnings('ignore')
+RDLogger.DisableLog('rdApp.*')
+PDB_FILE = RECEPTOR_PDB
+RECEPTOR_FILE = RECEPTOR_PDBQT
+LIGAND_CODE = 'CP6'
+CHAIN = 'B'
+EXHAUSTIVENESS = 32
+RMSD_THRESHOLD = 2.0
+BOX_SIZE = 20.0
+
+def extract_crystal_ligand(pdb_file, ligand_code, chain):
+    """..."""
+
+def write_ligand_pdb(ligand_lines, out_path='crystal_ligand.pdb'):
+    """..."""
+
+def convert_ligand_to_pdbqt(ligand_pdb, out_pdbqt='crystal_ligand.pdbqt'):
+    """..."""
+
+def compute_rmsd_centroid(coords_ref, coords_docked):
+    """..."""
+
+def parse_vina_output_coords(vina_pdbqt_string):
+    """..."""
+
+def run_redocking_validation():
+    """..."""
+if __name__ == '__main__':
+    run_redocking_validation()
+
+
+// --- ./scripts/5GNNBASELINE.py ---
+
+import os
+os.environ['OMP_NUM_THREADS'] = '1'
+os.environ['MKL_NUM_THREADS'] = '1'
+os.environ['OPENBLAS_NUM_THREADS'] = '1'
+import warnings
+import time
+import numpy as np
+import pandas as pd
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+from scipy import stats
+warnings.filterwarnings('ignore')
+TRAIN_FILE = 'data/V2-df_ic50_chmbl_CID_myFill.csv'
+RESULTS_DIR = 'results'
+LATEX_DIR = 'latex'
+FIGURES_DIR = 'figures'
+RANDOM_STATE = 42
+N_BOOTSTRAP = 2000
+TEST_SIZE = 0.15
+PAPER_R2 = {'PaperBaseline': ('2D/3D/FP, no feature selection', 0.75), 'PaperSelected': ('After Permutation Importance selection', 0.82), 'PaperFinal': ('Data augmentation + DNN ensemble', 0.85)}
+CLASSICAL_R2 = {'Morgan FP (RF+XGB+SVM)': 0.7407, 'RDKit 2D+FP (best)': 0.7322}
+os.makedirs(RESULTS_DIR, exist_ok=True)
+os.makedirs(LATEX_DIR, exist_ok=True)
+os.makedirs(FIGURES_DIR, exist_ok=True)
+
+def run_chemprop(smiles, y, test_idx, train_idx):
+    """..."""
+
+def check_chemprop():
+    """..."""
+
+def check_dgllife():
+    """..."""
+
+def check_torch():
+    """..."""
+
+def load_data():
+    """..."""
+
+def bootstrap_r2_ci(y_true, y_pred, n_boot=N_BOOTSTRAP, ci=0.95):
+    """..."""
+
+def run_attentivefp(smiles, y, test_idx, train_idx):
+    """..."""
+
+def newcommand(f, name, value):
+    """..."""
+
+def export_latex(results):
+    """..."""
+
+def export_figure(results):
+    """..."""
+
+def print_summary(results):
+    """..."""
+
+def run():
+    """..."""
+if __name__ == '__main__':
+    run()
+
+
+// --- ./scripts/paths_config.py ---
+
+import os
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DATA_DIR = os.path.join(ROOT, 'data')
+RECEPTOR_DIR = os.path.join(ROOT, 'receptor')
+RESULTS_DIR = os.path.join(ROOT, 'results')
+LATEX_DIR = os.path.join(ROOT, 'latex')
+FIGURES_DIR = os.path.join(ROOT, 'figures')
+LOGS_DIR = os.path.join(ROOT, 'logs')
+TRAIN_FILE = os.path.join(DATA_DIR, 'V2-df_ic50_chmbl_CID_myFill.csv')
+FDA_FILE = os.path.join(DATA_DIR, 'PubChem_FDA-approved_NoInorganics.csv')
+RECEPTOR_PDB = os.path.join(RECEPTOR_DIR, 'receptor.pdb')
+RECEPTOR_PDBQT = os.path.join(RECEPTOR_DIR, 'receptor.pdbqt')
+CHECKPOINT_FILE = os.path.join(RESULTS_DIR, 'nested_cv_checkpoint.csv')
+SELECTION_LOG_FILE = os.path.join(RESULTS_DIR, 'nested_cv_selection_log.csv')
+FINAL_RESULTS_FILE = os.path.join(RESULTS_DIR, 'nested_cv_final_results.csv')
+MODEL_FILE = os.path.join(RESULTS_DIR, 'best_model.joblib')
+MASK_FILE = os.path.join(RESULTS_DIR, 'selected_features_mask.npy')
+FDA_RAW_CANDIDATES_CSV = os.path.join(RESULTS_DIR, 'FDA_Candidates_For_Docking.csv')
+FDA_ADMET_CANDIDATES_CSV = os.path.join(RESULTS_DIR, 'ADMET_CANDIDATES_For_Docking.csv')
+FDA_CANDIDATES_CSV = os.path.join(RESULTS_DIR, 'FDA_Candidates_For_Docking.csv')
+DOCKING_RESULTS_CSV = os.path.join(RESULTS_DIR, 'Final_Validation_Hybrid.csv')
+LATEX_PAPER = os.path.join(LATEX_DIR, 'paper_variables.tex')
+LATEX_AUGMENT = os.path.join(LATEX_DIR, 'augment_variables.tex')
+LATEX_FDA = os.path.join(LATEX_DIR, 'fda_variables.tex')
+LATEX_DOCKING = os.path.join(LATEX_DIR, 'docking_variables.tex')
+LATEX_REDOCKING = os.path.join(LATEX_DIR, 'redocking_variables.tex')
+FIGURE_NESTED_CV = os.path.join(FIGURES_DIR, 'r2_by_representation_boxplot.png')
+FIGURE_AUGMENT = os.path.join(FIGURES_DIR, 'augment_r2_comparison.png')
+for d in [RESULTS_DIR, LATEX_DIR, FIGURES_DIR, LOGS_DIR]:
+    os.makedirs(d, exist_ok=True)
+
+
+// --- ./scripts/prep_receptor.py ---
+
+from paths_config import *
+import os
+import numpy as np
+
+def prepare_receptor(pdb_file, ligand_code='CP6'):
+    """..."""
+if __name__ == '__main__':
+    center = prepare_receptor(RECEPTOR_PDB, ligand_code='CP6')
+    if center is not None:
+        print('\n=== DATOS PARA EL DOCKING ===')
+        print(f'center_x = {center[0]:.3f}')
+        print(f'center_y = {center[1]:.3f}')
+        print(f'center_z = {center[2]:.3f}')
+        print('size_x = 20.0\nsize_y = 20.0\nsize_z = 20.0')
+
+
+// --- ./scripts/update_paths.py ---
+
+"""
+update_paths.py — Run this once after reorganize.sh to patch all scripts.
+Place this in the scripts/ folder and run: python update_paths.py
+"""
+import os
+import re
+REPLACEMENTS = [('"./V2-df_ic50_chmbl_CID_myFill\\.csv"', 'TRAIN_FILE'), ("'./V2-df_ic50_chmbl_CID_myFill\\.csv'", 'TRAIN_FILE'), ('"PubChem_FDA-approved_NoInorganics\\.csv"', 'FDA_FILE'), ("'PubChem_FDA-approved_NoInorganics\\.csv'", 'FDA_FILE'), ('"receptor\\.pdbqt"', 'RECEPTOR_PDBQT'), ("'receptor\\.pdbqt'", 'RECEPTOR_PDBQT'), ('"receptor\\.pdb"', 'RECEPTOR_PDB'), ("'receptor\\.pdb'", 'RECEPTOR_PDB'), ('"nested_cv_checkpoint\\.csv"', 'CHECKPOINT_FILE'), ("'nested_cv_checkpoint\\.csv'", 'CHECKPOINT_FILE'), ('"nested_cv_selection_log\\.csv"', 'SELECTION_LOG_FILE'), ("'nested_cv_selection_log\\.csv'", 'SELECTION_LOG_FILE'), ('"nested_cv_final_results\\.csv"', 'FINAL_RESULTS_FILE'), ("'nested_cv_final_results\\.csv'", 'FINAL_RESULTS_FILE'), ('"best_model\\.joblib"', 'MODEL_FILE'), ("'best_model\\.joblib'", 'MODEL_FILE'), ('"selected_features_mask\\.npy"', 'MASK_FILE'), ("'selected_features_mask\\.npy'", 'MASK_FILE'), ('"FDA_Candidates_For_Docking\\.csv"', 'FDA_CANDIDATES_CSV'), ("'FDA_Candidates_For_Docking\\.csv'", 'FDA_CANDIDATES_CSV'), ('"Final_Validation_Hybrid\\.csv"', 'DOCKING_RESULTS_CSV'), ("'Final_Validation_Hybrid\\.csv'", 'DOCKING_RESULTS_CSV'), ('"paper_variables\\.tex"', 'LATEX_PAPER'), ("'paper_variables\\.tex'", 'LATEX_PAPER'), ('"augment_variables\\.tex"', 'LATEX_AUGMENT'), ("'augment_variables\\.tex'", 'LATEX_AUGMENT'), ('"fda_variables\\.tex"', 'LATEX_FDA'), ("'fda_variables\\.tex'", 'LATEX_FDA'), ('"docking_variables\\.tex"', 'LATEX_DOCKING'), ("'docking_variables\\.tex'", 'LATEX_DOCKING'), ('"redocking_variables\\.tex"', 'LATEX_REDOCKING'), ("'redocking_variables\\.tex'", 'LATEX_REDOCKING'), ('"r2_by_representation_boxplot\\.png"', 'FIGURE_NESTED_CV'), ("'r2_by_representation_boxplot\\.png'", 'FIGURE_NESTED_CV'), ('"augment_r2_comparison\\.png"', 'FIGURE_AUGMENT'), ("'augment_r2_comparison\\.png'", 'FIGURE_AUGMENT')]
+IMPORT_LINE = 'from paths_config import *\n'
+SCRIPTS = ['0STACK.py', '1AUGMENT.py', '2FDA.py', '3DOCKING.py', '4REDOCKING_VALIDATION.py', 'prep_receptor.py']
+
+def patch_script(filename):
+    """..."""
+if __name__ == '__main__':
+    print('=' * 60)
+    print('update_paths.py — Patching scripts with paths_config')
+    print('=' * 60)
+    for script in SCRIPTS:
+        patch_script(script)
+    print('\n[DONE] All scripts updated.')
+    print("Verify with: grep -n 'TRAIN_FILE\\|FDA_FILE\\|RECEPTOR' *.py")
