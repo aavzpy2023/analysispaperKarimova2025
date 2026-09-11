@@ -122,7 +122,7 @@ def run_chemprop_15fold(smiles, y, n_splits=15, random_state=42):
 
     print(f"  [ChemProp Result] R2={mean_r2:.4f} ± {std_r2:.4f} | MAE={mean_mae:.4f} | 95% CI [{ci_lo:.4f}, {ci_hi:.4f}]")
 
-    return dict(model='ChemProp (D-MPNN 15-Fold)', r2=mean_r2, mae=mean_mae, ci_lo=ci_lo, ci_hi=ci_hi, boots=fold_r2s, y_test=y, y_pred=oof_predictions)
+    return dict(model='ChemProp (D-MPNN 15-Fold)', r2=mean_r2, std=std_r2, mae=mean_mae, ci_lo=ci_lo, ci_hi=ci_hi, boots=fold_r2s, y_test=y, y_pred=oof_predictions)
 
 
 # =========================================================
@@ -213,7 +213,8 @@ def run_attentivefp(smiles, y, test_idx, train_idx):
     ci_hi = float(np.percentile(boots, 97.5))
 
     print(f"  [AttentiveFP] R2={r2:.4f} | MAE={mae:.4f} | 95% CI [{ci_lo:.4f}, {ci_hi:.4f}]")
-    return dict(model='AttentiveFP', r2=r2, mae=mae, ci_lo=ci_lo, ci_hi=ci_hi, boots=boots, y_test=y_test_arr, y_pred=y_pred_arr)
+    std_r2 = float(np.std(boots)) # Calculate std from bootstrap
+    return dict(model='AttentiveFP', r2=r2, std=std_r2, mae=mae, ci_lo=ci_lo, ci_hi=ci_hi, boots=boots, y_test=y_test_arr, y_pred=y_pred_arr)
 
 
 # =========================================================
@@ -229,9 +230,19 @@ def export_latex(results):
     with open(path, 'w') as f:
         for res in results:
             if res is None: continue
+            # Clean model name for LaTeX variable
             label = res['model'].replace(' ', '').replace('(', '').replace(')', '').replace('-', '')
+
+            # Export Mean R2 and MAE
             f.write(f"\\newcommand{{\\{label}RTwoMean}}{{{res['r2']:.4f}}}\n")
             f.write(f"\\newcommand{{\\{label}Mae}}{{{res['mae']:.4f}}}\n")
+
+            # Export Standard Deviation and Confidence Intervals
+            if 'std' in res:
+                f.write(f"\\newcommand{{\\{label}RTwoStd}}{{{res['std']:.4f}}}\n")
+            if 'ci_lo' in res and 'ci_hi' in res:
+                f.write(f"\\newcommand{{\\{label}CILow}}{{{res['ci_lo']:.4f}}}\n")
+                f.write(f"\\newcommand{{\\{label}CIHigh}}{{{res['ci_hi']:.4f}}}\n")
 
 def export_figure(results):
     fig, axes = plt.subplots(1, 2, figsize=(14, 5))
