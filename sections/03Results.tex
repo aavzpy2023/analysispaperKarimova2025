@@ -1,5 +1,8 @@
 \section{Results}
 
+% ==========================================
+% 3. SECTION 3.1
+% ==========================================
 \subsection{Comparative Performance of Classical ML Across Feature Spaces}
 
 To establish a rigorous baseline for TgDHFR inhibitor prediction, we evaluated classical machine learning ensembles across four distinct molecular representations using a \TotalOuterFolds-fold nested cross-validation framework. The purely structural representation utilizing Morgan fingerprints (ECFP4, \MorganNFeaturesTotal\ bits), devoid of additional physicochemical descriptors, yielded the highest predictive performance ($R^2 = \MorganRTwoMean \pm \MorganRTwoStd$, MAE = \MorganMaeMean). Within this feature space, a stacked ensemble comprising \MorganBestArchitecture\ emerged as the most frequently selected architecture during the inner cross-validation phase.
@@ -43,6 +46,9 @@ Crucially, the plateau of this advanced representation learning algorithm provid
 	\label{fig:gnn_comparison}
 \end{figure}
 
+% ==========================================
+% 3. SECTION 3.3
+% ==========================================
 \subsection{Virtual Screening and Prioritization of FDA-Approved Candidates}
 
 To identify potential repurposing candidates, the optimized classical machine learning model was deployed to screen a filtered library of FDA-approved drugs. The predictive reliability of the model was first validated against known TgDHFR inhibitors present in the dataset. The model demonstrated excellent agreement with experimental values, predicting a pIC$_{50}$ of 6.4226 for pyrimethamine (experimental: 6.56, absolute error: 0.1374) and 5.6590 for trimethoprim (experimental: 5.57, absolute error: 0.0890). 
@@ -73,11 +79,14 @@ When evaluated through the lens of heavy-atom efficiency, smaller molecules demo
 	\end{tabular}
 \end{table}
 
+% ==========================================
+% 3. SECTION 3.4
+% ==========================================
 \subsection{Integrated ML-Docking Consensus Filtering and False-Positive Mitigation}
 
-To mitigate the false-positive rates inherent to standalone virtual screening methodologies, we implemented an orthogonal consensus filtering pipeline that integrates ligand-based machine learning predictions with physics-based molecular docking. We assessed the global agreement between the ML-predicted $pIC_{50}$ values and AutoDock Vina binding energies across the prioritized subset, yielding a Pearson correlation coefficient of $r = \DockPearsonR$ ($p = \DockPearsonP$). 
+To mitigate the false-positive rates inherent to standalone virtual screening methodologies, we implemented an orthogonal consensus filtering pipeline that integrates ligand-based machine learning predictions with physics-based molecular docking. To assess the global agreement between the ML-predicted $pIC_{50}$ values and AutoDock Vina binding energies across the prioritized subset ($N = \DockNTotal$), we deliberately employed Spearman's rank correlation coefficient ($\rho = \DockSpearmanRho$, $p = \DockSpearmanP$). Unlike parametric tests, Spearman's non-parametric approach is highly robust to outliers in restricted sample sizes and correctly evaluates monotonic trends without falsely assuming a linear relationship between topological bioactivity interpolation and thermodynamic scoring.
 
-While the negative correlation correctly indicates that higher predicted potencies generally trend with stronger (more negative) binding energies, the lack of statistical significance ($p > 0.05$) across this highly restricted subset ($N = \DockNTotal$) is both expected and methodologically revealing. It underscores that 2D ligand-based machine learning and 3D physics-based docking capture fundamentally orthogonal aspects of molecular interaction. The ML ensemble interpolates bioactivity based on topological patterns learned from the training distribution, whereas Vina calculates thermodynamic stability based on spatial complementarity and electrostatic interactions. Consequently, relying on either method in isolation leaves the screening process highly susceptible to distinct classes of false positives. 
+While the negative correlation correctly indicates that higher predicted potencies generally trend with stronger (more negative) binding energies, the lack of statistical significance ($p > 0.05$) is both expected and methodologically revealing. It demonstrates that 2D ligand-based machine learning and 3D physics-based docking capture fundamentally orthogonal aspects of molecular interaction. The ML ensemble interpolates bioactivity based on topological patterns learned from the training distribution, whereas Vina calculates thermodynamic stability based on spatial complementarity and electrostatic interactions. Consequently, relying on either method in isolation leaves the screening process highly susceptible to distinct classes of false positives. 
 
 Crucially, our consensus approach effectively identified and eliminated these methodological artifacts. For example, compounds such as bisacodyl exhibited strong thermodynamic binding energies during structural validation ($\Delta G < -8.0\text{ kcal/mol}$), representing classic structure-based false positives often driven by the spurious accommodation of flexible, hydrophobic scaffolds within the binding pocket. However, our classical ML model correctly assigned a low predicted affinity to this compound, effectively vetoing it. By requiring dual validation, the integrated filter prevents the misallocation of experimental resources toward artifacts generated by single-method screening.
 

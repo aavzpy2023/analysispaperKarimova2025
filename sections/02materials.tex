@@ -3,6 +3,10 @@
 
 An overview of the multi-tier virtual screening pipeline implemented in this study is illustrated in Figure~\ref{fig:pipeline_flowchart}.
 
+% ==========================================
+% 2. SECTION 2.1
+% ==========================================
+
 \subsection{Bioactivity Benchmark Dataset and Curation}
 
 The dataset used in this study was derived from a previously published benchmark on \textit{Toxoplasma gondii} dihydrofolate reductase (TgDHFR) enzyme inhibitors \cite{karimova2025}. The provenance of these data relies on the integration of primary public repositories to ensure chemical and bioactivity representativeness, aligning with foundational QSAR guidelines that mandate rigorous data preparation \cite{tropsha2010}. By utilizing the exact baseline dataset compiled by Karimova and Senanayake \cite{karimova2025}, we establish a strict control framework. For the primary comparative benchmark, this methodological choice allows us to isolate and evaluate the true predictive power of classical machine learning algorithms against computationally heavy statistical techniques, deliberately omitting synthetic data augmentation to assess performance strictly on empirical ground-truth data.
@@ -15,6 +19,10 @@ This rigorous curation protocol yielded a final, highly curated benchmark of $N 
 
 Finally, to explicitly quantify the performance impact of synthetic data generation reported in the original study, an isolated data augmentation protocol was implemented exclusively for post-benchmark ablation studies. Following a strict 15\% hold-out partition to prevent data leakage, the training features (excluding the target variable) were perturbed using additive Gaussian noise. Applying two distinct noise levels (standard deviations of $\sigma = 0.01$ and $\sigma = 0.001$) generated two synthetic variants per original molecule, effectively triplicating the training space while maintaining strict isolation of the empirical test set.
 
+% ==========================================
+% 2. SECTION 2.2
+% ==========================================
+
 \subsection{Representation Spaces: Molecular Fingerprints and Conformational Descriptors}
 
 To systematically evaluate the structure-activity relationship, four distinct molecular representation spaces were programmatically generated using the open-source cheminformatics library RDKit \cite{landrum2025}. The baseline purely structural representation utilized Morgan fingerprints (ECFP4), computed with a radius of 2 and folded into a fixed-length vector of \MorganNFeaturesTotal\ bits. Extended-connectivity fingerprints (ECFPs) were specifically developed for structure-activity modeling because they can be calculated rapidly and represent an essentially infinite number of distinct molecular features, including stereochemical information \cite{rogers2010}. Furthermore, classical 2D fingerprint-based models have been demonstrated to perform as well as state-of-the-art 3D structure-based models for bioactivity predictions relying solely on ligand information \cite{gao2020}.
@@ -22,6 +30,10 @@ To systematically evaluate the structure-activity relationship, four distinct mo
 To establish a quantitative physicochemical baseline, a comprehensive set of \RdkitTwoDNFeaturesTotal\ conventional two-dimensional topological representations was extracted. Well-curated 2D molecular representations are highly robust, and recent studies have shown they can maintain scaffold-robust advantages over 3D alternatives in various permeability and property prediction tasks \cite{tiwari2026}. To evaluate the synergistic effect of combining structural and physicochemical data, a third representation space was constructed by concatenating the \RdkitTwoDNFeaturesTotal\ 2D descriptors with the \MorganNFeaturesTotal-bit Morgan fingerprints.
 
 Finally, to assess the predictive value of spatial geometry, a fourth hybrid representation was generated incorporating 3D conformational descriptors. Three-dimensional conformers were generated employing the distance geometry approach (ETKDGv3) implemented in RDKit \cite{riniker2015}. Because purely distance-based constraints tend to lead to distorted aromatic rings and $sp^2$ centers, this methodology utilizes experimental torsion-angle preferences obtained from small-molecule crystallographic data to improve conformation generation \cite{riniker2015}. Following embedding, the conformers were subjected to rigorous energy minimization using the MMFF94s force field to ensure thermodynamic stability prior to the extraction of 3D spatial descriptors. Although recent evaluations indicate that 3D conformer descriptors may provide limited incremental predictive value over curated 2D representations in specific tabular benchmark algorithms \cite{tiwari2026}, integrating spatial information remains highly relevant for molecular image-based modeling \cite{matsu2023} and geometry-augmented representation learning \cite{yanan2024}.
+
+% ==========================================
+% 2. SECTION 2.3
+% ==========================================
 
 \subsection{Strict 15-Fold Nested Cross-Validation Protocol}
 
@@ -46,7 +58,9 @@ Prior to training, the continuous $pIC_{50}$ targets required internal normaliza
 
 The internal loss function optimized during training was Root Mean Square Error (RMSE). Out-of-sample performance was quantified using the coefficient of determination ($R^2$) and Mean Absolute Error (MAE) averaged across all \TotalOuterFolds\ folds. This rigorous statistical protocol yielded a final cross-validated test performance of $R^2 = \ChemPropDMPNNFoldRTwoMean \pm \ChemPropDMPNNFoldRTwoStd$ and an MAE of \ChemPropDMPNNFoldMae, establishing a highly robust, variance-aware deep learning baseline for subsequent comparative analysis.
 
-
+% ==========================================
+% 2. SECTION 2.5
+% ==========================================
 \subsection{Virtual Screening Protocol and Ligand Efficiency Profiling}
 
 To systematically prioritize viable lead candidates from an FDA-approved compound library, we deployed an automated virtual screening pipeline driven by the highest-performing classical machine learning ensemble (\WinnerMode, nested CV $R^2 = \WinnerRTwoMean$). Rather than relying solely on raw predicted bioactivity, the evaluation framework integrated strict applicability domain enforcement with multi-objective ligand efficiency profiling and predictive pharmacokinetics. This approach mitigates the risk of prioritizing ``molecularly obese" compounds that exhibit high theoretical potency but possess unfavorable physicochemical properties for downstream development \cite{hopkins2004}.
@@ -67,6 +81,10 @@ Furthermore, to balance potency against lipophilicity and mitigate the risk of n
 
 The virtual screening protocol concluded with a comprehensive predictive pharmacokinetic (ADMET) assessment to reduce late-stage attrition risks. Candidates were first evaluated against Lipinski's Rule of Five criteria, strictly filtering out molecules exceeding 5 hydrogen bond donors, 10 hydrogen bond acceptors, or a calculated LogP of 5. To assess critical toxicity and absorption endpoints, custom machine learning models were trained using curated datasets from the Therapeutics Data Commons (TDC). Molecular structures were encoded as 2048-bit Morgan fingerprints (radius 2) and processed through Random Forest architectures comprising 100 estimators. A \texttt{RandomForestClassifier} trained on the TDC hERG dataset evaluated cardiac toxicity risk, advancing only compounds with a low probability of hERG channel blockade ($P < 0.5$). Concurrently, a \texttt{RandomForestRegressor} trained on the Caco2-Wang dataset predicted intestinal absorption, requiring candidates to demonstrate moderate-to-high permeability ($\log P_{app} > -5.15\text{ cm/s}$). This final ADMET profiling ensured that the prioritized FDA candidates represent not only highly efficient binders but also structurally validated, orally bioavailable starting points for subsequent molecular docking.
 
+% ==========================================
+% 2. SECTION 2.6
+% ==========================================
+
 \subsection{Orthogonal Physics-Based Validation via Molecular Docking}
 
 To complement the ligand-based machine learning predictions, we implemented an orthogonal structure-based evaluation using AutoDock Vina v1.2.0 \cite{rajesh2026, trott2009}. This physical validation translates abstract chemical representations into spatial coordinates, mitigating the risk of false positives induced by algorithmic scaffold memorization. By ensuring genuine structural complementarity, the docking protocol acts as a thermodynamic filter. Vina employs an Iterated Local Search optimizer and a hybrid scoring function, calibrated against PDBbind data, to guide flexible ligands into optimal binding conformations \cite{eberhardt2021}.
@@ -75,7 +93,7 @@ Three-dimensional receptor coordinates were retrieved from the Protein Data Bank
 
 Prior to screening the machine learning candidates, the docking protocol underwent rigorous validation via re-docking of the co-crystallized \RedockLigand ligand into the TgDHFR active site. The protocol successfully reproduced the native crystallographic binding mode, yielding a top-ranked pose with a centroid distance of $\RedockRMSD\text{ \AA}$. This deviation falls well below the universally accepted $\RedockThreshold\text{ \AA}$ RMSD threshold, confirming the structural fidelity of the grid parameters and the reliability of the scoring function for this specific target.
 
-Following validation, Vina evaluated the 3D conformers of the \DockNTotal prioritized FDA candidates, ranking poses based on the predicted Gibbs free energy of binding ($\Delta G$) in kcal/mol, where lower energies denote stronger thermodynamic stability \cite{feng2023}. To systematically evaluate the consensus between the ligand-based and structure-based approaches, we established strict quantitative thresholds. Compounds were classified as validated consensus hits only if they exhibited both high ML-predicted potency ($pIC_{50} > 6.5$) and strong docking affinity ($\Delta G < -8.0\text{ kcal/mol}$). Compounds meeting the ML threshold but failing the docking criteria were flagged as potential ML false positives. Finally, to statistically quantify the global agreement between the two orthogonal methods, a Pearson correlation analysis was conducted between the continuous $pIC_{50}$ predictions and the Vina docking scores ($r = \DockPearsonR$, $p = \DockPearsonP$).
+Following validation, Vina evaluated the 3D conformers of the \DockNTotal\ prioritized FDA candidates, ranking poses based on the predicted Gibbs free energy of binding ($\Delta G$) in kcal/mol, where lower energies denote stronger thermodynamic stability \cite{feng2023}. To systematically evaluate the consensus between the ligand-based and structure-based approaches, we established strict quantitative thresholds. Compounds were classified as validated consensus hits only if they exhibited both high ML-predicted potency ($pIC_{50} > 6.5$) and strong docking affinity ($\Delta G < -8.0\text{ kcal/mol}$). Compounds meeting the ML threshold but failing the docking criteria were flagged as potential ML false positives. Finally, to statistically quantify the monotonic agreement between the two orthogonal methods without assuming linearity, a Spearman rank correlation analysis was conducted between the continuous $pIC_{50}$ predictions and the Vina docking scores ($\rho = \DockSpearmanRho$, $p = \DockSpearmanP$).
 
 \subsection{Computational Environment and Reproducibility}
 
