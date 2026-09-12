@@ -88,11 +88,11 @@ def export_latex(df_results):
         newcommand(f, "DockCenterY",     f"{CENTER_Y:.3f}")
         newcommand(f, "DockCenterZ",     f"{CENTER_Z:.3f}")
 
-        # Pearson correlation ML pIC50 vs Docking score
+        # Spearman correlation ML pIC50 vs Docking score
         if len(df_results) >= 3:
-            r, p = stats.pearsonr(df_results['ML_pIC50'], df_results['Docking_Score'])
-            newcommand(f, "DockPearsonR", f"{r:.3f}")
-            newcommand(f, "DockPearsonP", f"{p:.4f}")
+            rho, p = stats.spearmanr(df_results['ML_pIC50'], df_results['Docking_Score'])
+            newcommand(f, "DockSpearmanRho", f"{rho:.3f}")
+            newcommand(f, "DockSpearmanP", f"{p:.4f}")
 
         # Best candidate
         best = df_results.sort_values('Docking_Score').iloc[0]
@@ -213,9 +213,9 @@ def run():
 
     # ── Correlation ───────────────────────────────────────────────────────────
     if len(df_res) >= 3:
-        r_val, p_val = stats.pearsonr(df_res['ML_pIC50'], df_res['Docking_Score'])
-        print(f"\nPearson correlation (ML pIC50 vs Docking Score): r={r_val:.3f}, p={p_val:.4f}")
-        print("(Negative r expected: higher pIC50 should correlate with more negative docking energy)")
+        rho_val, p_val = stats.spearmanr(df_res['ML_pIC50'], df_res['Docking_Score'])
+        print(f"\nSpearman correlation (ML pIC50 vs Docking Score): rho={rho_val:.3f}, p={p_val:.4f}")
+        print("(Negative rho expected: higher pIC50 should correlate with more negative docking energy)")
 
     # ── Executive summary ─────────────────────────────────────────────────────
     n_validated  = len(df_res[(df_res['ML_pIC50'] > ML_ACTIVE_THRESH) &
@@ -234,7 +234,7 @@ def run():
     print(f"- Best docking candidate: {best['Name']} "
           f"(ML pIC50={best['ML_pIC50']:.4f}, Vina={best['Docking_Score']:.2f} kcal/mol)")
     if len(df_res) >= 3:
-        print(f"- Pearson r(ML, docking)={r_val:.3f} (p={p_val:.4f}) — "
+        print(f"- Spearman rho(ML, docking)={rho_val:.3f} (p={p_val:.4f}) — "
               f"{'significant' if p_val < 0.05 else 'not significant'} correlation")
 
     df_res.to_csv(OUTPUT_CSV, index=False)

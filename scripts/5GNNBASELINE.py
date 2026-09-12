@@ -230,8 +230,8 @@ def export_latex(results):
     with open(path, 'w') as f:
         for res in results:
             if res is None: continue
-            # Clean model name for LaTeX variable
-            label = res['model'].replace(' ', '').replace('(', '').replace(')', '').replace('-', '')
+
+            label = re.sub(r'[^A-Za-z]', '', res['model'])
 
             # Export Mean R2 and MAE
             f.write(f"\\newcommand{{\\{label}RTwoMean}}{{{res['r2']:.4f}}}\n")
