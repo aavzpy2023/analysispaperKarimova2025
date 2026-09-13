@@ -23,6 +23,7 @@ CENTER_X, CENTER_Y, CENTER_Z = 3.689, 39.992, -62.818
 BOX_SIZE       = 20.0   # Angstroms
 EXHAUSTIVENESS = 32     # Higher = more thorough (8 is standard, 32 is publication quality)
 N_POSES        = 3      # Save top 3 poses per ligand
+VINA_SEED      = 42     # Guaranteed reproducibility for Q1 validation
 
 # Thresholds for ML+physics agreement interpretation
 ML_ACTIVE_THRESH   = 6.5   # pIC50 > this = predicted active
@@ -55,9 +56,6 @@ def prepare_ligand_pdbqt(smiles, name):
         return None
 
 
-# =========================================================
-# LATEX EXPORT
-# =========================================================
 # =========================================================
 # LATEX EXPORT
 # =========================================================
@@ -98,7 +96,7 @@ def export_latex(df_results):
         best = df_results.sort_values('Docking_Score').iloc[0]
         name_safe = "".join(c for c in str(best['Name']) if c.isalpha())[:20]
         newcommand(f, "DockBestCandidate",    name_safe)
-        newcommand(f, "DockBestMLpIC",        f"{best['ML_pIC50']:.4f}") # Fixed macro name to match LaTeX
+        newcommand(f, "DockBestMLpIC",        f"{best['ML_pIC50']:.4f}")
         newcommand(f, "DockBestDockScore",    f"{best['Docking_Score']:.2f}")
 
         # Dynamic extraction for true negative example (Chlorambucil)
@@ -109,6 +107,7 @@ def export_latex(df_results):
             newcommand(f, "ChlorambucilDockScore", f"{c_row['Docking_Score']:.2f}")
 
     print(f"[LATEX] Docking variables exported to {LATEX_FILE}")
+
 
 # =========================================================
 # MAIN
@@ -169,7 +168,10 @@ def run():
 
         try:
             v.set_ligand_from_string(pdbqt)
-            v.dock(exhaustiveness=EXHAUSTIVENESS, n_poses=N_POSES)
+
+            # CRITICAL FIX: Added explicit seed for reproducibility
+            v.dock(exhaustiveness=EXHAUSTIVENESS, n_poses=N_POSES, seed=VINA_SEED)
+
             energies = v.energies(n_poses=N_POSES)
             best_energy = energies[0][0]
             all_energies = [e[0] for e in energies]
@@ -185,8 +187,8 @@ def run():
                 'Docking_Pose3': all_energies[2] if len(all_energies) > 2 else np.nan,
                 'Type':         row.get('Type', ''),
             })
-        except Exception:
-            print(f"{name:<30} | Vina error            |")
+        except Exception as e:
+            print(f"{name:<30} | Vina error ({str(e)[:10]}) |")
 
     if not results:
         print("[ERROR] No successful docking results.")

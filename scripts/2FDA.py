@@ -23,7 +23,7 @@ warnings.filterwarnings("ignore")
 TRAIN_FILE       = TRAIN_FILE
 FDA_FILE         = FDA_FILE
 MODEL_FILE       = MODEL_FILE        # saved by 1AUGMENT.py
-MASK_FILE        = MASK_FILE  # saved by 1AUGMENT.py
+MASK_FILE        = MASK_FILE         # saved by 1AUGMENT.py
 OUTPUT_CSV       = FDA_CANDIDATES_CSV
 RANDOM_STATE     = 42
 ISO_CONTAMINATION = 0.05
@@ -38,10 +38,9 @@ KNOWN_VALUES = {
     'Trimethoprim':  5.57,
 }
 
-# Paper top candidates (used as reference rows in output)
-PAPER_TOP = ['Bisacodyl', 'Etodolac', 'Triamterene', 'Lorlatinib',
-             'Finerenone', 'Methotrexate', 'Pyrimethamine', 'Trimethoprim']
-
+# Paper top candidates (used as reference rows in output, matching Table 2 EXACTLY)
+PAPER_TOP = ['Bisacodyl', 'Etodolac', 'Triamterene', 'Finerenone',
+             'Methotrexate', 'Pyrimethamine', 'Trimethoprim']
 
 # =========================================================
 # MOLECULAR REPRESENTATION  (Morgan FP — same as 0STACK + 1AUGMENT)
@@ -67,7 +66,6 @@ def check_atoms(mol):
         return False
     return all(a.GetAtomicNum() in ALLOWED_ATOMS for a in mol.GetAtoms())
 
-
 # =========================================================
 # LIGAND EFFICIENCY METRICS  (identical to paper Equations 5-8)
 # =========================================================
@@ -84,7 +82,6 @@ def ligand_efficiency(pic50, smiles):
     lle  = pic50 - logp
     sei  = pic50 / psa * 100  if psa > 0 else np.nan
     return dict(LE=round(le,2), BEI=round(bei,2), LLE=round(lle,2), SEI=round(sei,2))
-
 
 # =========================================================
 # MAIN
@@ -225,10 +222,11 @@ def run():
     refs = df_res[paper_top_mask].copy()
     refs['Type'] = '[REF]'
     combined = pd.concat([top10, refs]).drop_duplicates('CID').sort_values('pIC50_pred', ascending=False)
-    combined.to_csv(OUTPUT_CSV, index=False)
-    print(f"\n[EXPORT] {len(combined)} candidates saved to {OUTPUT_CSV} (for 3DOCKING.py)")
-    print("[DONE] 2FDA.py complete.")
 
+    # Save to CSV
+    combined.to_csv(OUTPUT_CSV, index=False)
+    print(f"\n[EXPORT] {len(combined)} candidates (Top-10 + References) saved to {OUTPUT_CSV}")
+    print("[DONE] 2FDA.py complete.")
 
 if __name__ == "__main__":
     run()
