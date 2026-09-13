@@ -1,5 +1,9 @@
 \section{Discussion}
 
+% ==========================================
+% 4. SECTION 4.1 
+% ==========================================
+
 \subsection{The Role of Explicit Inductive Bias in Small-Scale Molecular Datasets}
 
 Graph Neural Networks theoretically offer superior representational capacity by learning molecular features directly from graph topology, thereby bypassing the need for manual feature engineering. However, this architectural flexibility demands extensive training data to converge on generalizable chemical representations. In the context of the TgDHFR dataset, which comprises only \NCompounds\ compounds, the GNN architecture failed to leverage its theoretical superiority, plateauing at a predictive performance statistically indistinguishable from classical machine learning approaches. 
@@ -8,6 +12,10 @@ This convergence failure highlights the critical role of explicit inductive bias
 
 Classical tree-based ensembles operating on pre-computed Morgan fingerprints bypass the need for end-to-end representation learning by utilizing fixed, domain-specific descriptors. These fingerprints encode established chemical heuristics—specifically, circular topological substructures—directly into the feature space. For small-scale datasets, this explicit pre-computation acts as a natural regularizer, rigidly constraining the hypothesis space and preventing the model from memorizing noise. Our results explicitly demonstrate that exploiting the inductive bias inherent to traditional structural fingerprints entirely eliminates the necessity for computationally burdensome data augmentation. When data volume is insufficient to natively train deep graph convolutions and populate a dense latent space, deterministic feature engineering remains a vastly more reliable, parsimonious, and elegant strategy for molecular property prediction.
 
+% ==========================================
+% 4. SECTION 4.2
+% ==========================================
+
 \subsection{Dimensionality, Conformational Overhead, and Model Efficiency}
 
 Beyond predictive accuracy, the computational efficiency of molecular representations dictates their practical utility in high-throughput virtual screening. Incorporating 3D geometric descriptors necessitates extensive conformational sampling and energy minimization (e.g., via ETKDGv3 embedding and MMFF94s optimization). This requirement introduces a substantial computational bottleneck, termed conformational overhead, which scales prohibitively as screening libraries expand into the millions of compounds.
@@ -15,6 +23,10 @@ Beyond predictive accuracy, the computational efficiency of molecular representa
 Our empirical evaluation revealed that this added computational cost failed to yield commensurate predictive gains. The highly engineered 2D/3D/FP representation achieved an $R^2$ of \RdkitTwoDThreeDFpRTwoMean, a performance statistically indistinguishable from the purely structural Morgan fingerprint model ($R^2 = \MorganRTwoMean$, $p = \PairedTTestP$). This parity indicates that the relevant pharmacophoric features governing TgDHFR inhibition are adequately captured by 2D topological connectivity alone. 
 
 We frame this result as the advantage of parsimony. By deliberately omitting complex 3D descriptors and synthetic data augmentation, the optimized classical pipeline circumvents severe computational expenditures during feature preprocessing and model training. Deploying computationally expensive 3D descriptors for this specific target introduces unnecessary dimensionality and processing latency without any tangible improvement in model fidelity. These findings reinforce the utility of lightweight, 2D fingerprint-based ensembles as an efficient, highly scalable paradigm for virtual screening in low-data environments.
+
+% ==========================================
+% 4. SECTION 4.3
+% ==========================================
 
 \subsection{Methodological Scope, Limitations, and Translational Potential}
 

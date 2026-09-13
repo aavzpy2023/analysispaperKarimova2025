@@ -26,7 +26,7 @@
 
 %\usepackage[numbers]{natbib}
 %\usepackage[authoryear]{natbib}
-\usepackage[authoryear,longnamesfirst]{natbib}
+\usepackage[authoryear]{natbib}
 \usepackage{amssymb}
 %% The amsmath package provides various useful equation environments.
 \usepackage{amsmath}
@@ -51,6 +51,8 @@
 \tsc{WGM}
 \tsc{QE}
 %%%
+\newcommand{\mycite}[1]{\cite*{#1}}
+
 
 \input{latex/augment_variables.tex}
 \input{latex/docking_variables.tex}
@@ -65,7 +67,6 @@
 %\newdefinition{rmk}{Remark}
 %\newproof{pf}{Proof}
 %\newproof{pot}{Proof of Theorem \ref{thm}}
-\newcommand{\mycite}[1]{\cite{#1}} 
 
 \begin{document}
 	\let\WriteBookmarks\relax
