@@ -188,16 +188,27 @@ def load_data():
     return df['Smiles'].tolist(), df['pIC50 Value'].values
 
 def export_latex(results):
-    with open(os.path.join(LATEX_DIR, "gnn_variables.tex"), 'w') as f:
-        for res in results:
-            if res is None: continue
+    # Filtrar resultados válidos primero
+    valid_results = [r for r in results if r is not None]
+
+    if not valid_results:
+        print("\n  [ADVERTENCIA] No hay resultados válidos. El archivo gnn_variables.tex no se modificará para evitar vaciarlo.")
+        return
+
+    # Solo abrir y sobrescribir si hay datos reales que exportar
+    filepath = os.path.join(LATEX_DIR, "gnn_variables.tex")
+    with open(filepath, 'w') as f:
+        for res in valid_results:
             label = re.sub(r'[^A-Za-z]', '', res['model'])
             f.write(f"\\newcommand{{\\{label}RTwoMean}}{{{res['r2']:.4f}}}\n")
             f.write(f"\\newcommand{{\\{label}Mae}}{{{res['mae']:.4f}}}\n")
-            if 'std' in res: f.write(f"\\newcommand{{\\{label}RTwoStd}}{{{res['std']:.4f}}}\n")
+            if 'std' in res:
+                f.write(f"\\newcommand{{\\{label}RTwoStd}}{{{res['std']:.4f}}}\n")
             if 'ci_lo' in res and 'ci_hi' in res:
                 f.write(f"\\newcommand{{\\{label}CILow}}{{{res['ci_lo']:.4f}}}\n")
                 f.write(f"\\newcommand{{\\{label}CIHigh}}{{{res['ci_hi']:.4f}}}\n")
+
+    print(f"  [LaTeX] Variables exportadas correctamente a {filepath}")
 
 def export_figure(results):
     fig, axes = plt.subplots(1, 2, figsize=(14, 5))
