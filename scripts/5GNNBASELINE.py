@@ -108,7 +108,7 @@ def run_chemprop_cv(smiles, y, n_splits=5, n_repeats=5, random_state=42):
     # Promediar predicciones OOF a lo largo de las repeticiones para plot/export
     final_oof = np.mean(oof_predictions, axis=1)
 
-    return dict(model='ChemProp (D-MPNN 5x5 CV)', r2=mean_r2, std=std_r2, mae=mean_mae, ci_lo=ci_lo, ci_hi=ci_hi, boots=fold_r2s, y_test=y, y_pred=final_oof)
+    return dict(model='ChemProp (D-MPNN Fold)', r2=mean_r2, std=std_r2, mae=mean_mae, ci_lo=ci_lo, ci_hi=ci_hi, boots=fold_r2s, y_test=y, y_pred=final_oof)
 
 # =========================================================
 # MODELO 2: AttentiveFP (Mantenido como referencia Single-Split)
