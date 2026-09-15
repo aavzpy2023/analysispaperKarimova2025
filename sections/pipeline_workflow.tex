@@ -1,12 +1,11 @@
-\newcommand{\boxheight}{4cm}
-\begin{figure*}[t]
+\newcommand{\boxheight}{3.85cm}
+\begin{figure}[!h]
 	\centering
 	\resizebox{\textwidth}{!}{%
 		\begin{tikzpicture}[
 			font=\sffamily\scriptsize,
 			>=Stealth,
 			node distance=0.45cm,
-			% Estilo base geométrico unificado y centrado
 			basebox/.style={
 				thick,
 				rounded corners=4pt,
@@ -22,71 +21,71 @@
 			arrowline/.style={->, ultra thick, draw=gray!65}
 			]
 			
-			% FASE 1: ML BENCHMARKING (Centrado)
+			% FASE 1: ML BENCHMARKING (5x5 Repeated NCV)
 			\node[phase1] (box1) {
 				\begin{minipage}[t][\boxheight][t]{3.15cm}
 					\centering
-					\textbf{\footnotesize Phase 1: ML Modeling} \par\vspace{2pt}\hrule\vspace{8pt}
-					\textbf{Training Set:} \\$N = \NCompounds$ TgDHFR \par\vspace{5pt}
-					\textbf{Validation:} \\$5 \times 3$ Nested CV \par\vspace{5pt}
-					\textbf{Descriptors:} \\ECFP4, 2D, 2D/3D \par\vspace{5pt}
-					\textbf{Ensemble:} \\Stacking + RidgeCV \par\vspace{5pt}
+					\textbf{\footnotesize Phase 1: ML Modeling} \par\vspace{2pt}\hrule\vspace{7pt}
+					\textbf{Training Set:} \\$N = \NCompounds$ TgDHFR \par\vspace{4pt}
+					\textbf{Validation:} \\$5 \times 5$ Repeated NCV \par\vspace{4pt}
+					\textbf{Descriptors:} \\ECFP4, 2D, 2D/3D \par\vspace{4pt}
+					\textbf{Ensemble:} \\Stacking + RidgeCV \par\vspace{4pt}
 					\textbf{Ablation:} \\PI + Gaussian Noise
 				\end{minipage}
 			};
 			
-			% FASE 2: FDA SCREENING (Centrado)
+			% FASE 2: FDA SCREENING
 			\node[phase2, right=of box1] (box2) {
 				\begin{minipage}[t][\boxheight][t]{3.15cm}
 					\centering
-					\textbf{\footnotesize Phase 2: Virtual Screen} \par\vspace{2pt}\hrule\vspace{8pt}
-					\textbf{Target Space:} \\FDA Approved \par\vspace{5pt}
-					\textbf{Library Size:} \\$N \approx 1,700$ \par\vspace{5pt}
-					\textbf{PhysChem:} MW \\$\le 1000$\,Da \par\vspace{5pt}
-					\textbf{Applicability:} \\Isolation Forest \par\vspace{5pt}
-					\textbf{Filtered Hits:} \\$N = 17$ prioritized
+					\textbf{\footnotesize Phase 2: Virtual Screen} \par\vspace{2pt}\hrule\vspace{7pt}
+					\textbf{Target Space:} \\FDA Approved \par\vspace{4pt}
+					\textbf{Library Size:} \\$N \approx 1,700$ \par\vspace{4pt}
+					\textbf{PhysChem:} MW \\$\le 1000$\,Da \par\vspace{4pt}
+					\textbf{Applicability:} \\Isolation Forest \par\vspace{4pt}
+					\textbf{Prioritized Set:} \\$N = 17$ candidates
 				\end{minipage}
 			};
 			
-			% FASE 3: MOLECULAR DOCKING (Centrado)
+			% FASE 3: MOLECULAR DOCKING
 			\node[phase3, right=of box2] (box3) {
 				\begin{minipage}[t][\boxheight][t]{3.15cm}
 					\centering
-					\textbf{\footnotesize Phase 3: 3D Consensus} \par\vspace{2pt}\hrule\vspace{8pt}
-					\textbf{Receptor:} \\TgDHFR (6AOG, Ch.~B) \par\vspace{5pt}
-					\textbf{Engine:} \\AutoDock Vina \par\vspace{5pt}
-					\textbf{Exhaustiveness:}\\ \DockExhaustiveness \par\vspace{5pt}
-					\textbf{Redock Fidelity:} \\RMSD = \RedockRMSD\,\AA \par\vspace{5pt}
+					\textbf{\footnotesize Phase 3: 3D Consensus} \par\vspace{2pt}\hrule\vspace{7pt}
+					\textbf{Receptor:} \\TgDHFR (6AOG, Ch.~\RedockChain{}) \par\vspace{4pt}
+					\textbf{Engine:} \\AutoDock Vina \par\vspace{4pt}
+					\textbf{Exhaustiveness:}\\ \DockExhaustiveness{} \par\vspace{4pt}
+					\textbf{Redock Fidelity:} \\RMSD = \RedockRMSD{}\,\AA \par\vspace{4pt}
 					\textbf{Consensus:} \\ML--Physics overlap
 				\end{minipage}
 			};
 			
-			% FASE 4: ADMET PROFILING (Centrado)
+			% FASE 4: ADMET PROFILING
 			\node[phase4, right=of box3] (box4) {
 				\begin{minipage}[t][\boxheight][t]{3.15cm}
 					\centering
-					\textbf{\footnotesize Phase 4: ADMET Filter} \par\vspace{2pt}\hrule\vspace{8pt}
-					\textbf{Input:} \\Docking consensus set \par\vspace{5pt}
-					\textbf{Druggability:} \\Lipinski Rule of 5 \par\vspace{5pt}
-					\textbf{Absorption:} \\Caco-2 ($> -5.15$) \par\vspace{5pt}
-					\textbf{Safety:} \\hERG ($P_\mathrm{block} < 0.5$) \par\vspace{5pt}
+					\textbf{\footnotesize Phase 4: ADMET Filter} \par\vspace{2pt}\hrule\vspace{7pt}
+					\textbf{Input:} \\Docking consensus set \par\vspace{4pt}
+					\textbf{Druggability:} \\Lipinski Rule of 5 \par\vspace{4pt}
+					\textbf{Absorption:} \\Caco-2 ($> -5.15$) \par\vspace{4pt}
+					\textbf{Safety:} \\hERG ($P_\mathrm{block} < 0.5$) \par\vspace{4pt}
 					\textbf{Framework:} \\TDC Benchmarks
 				\end{minipage}
 			};
 			
-			% OUTCOME / FINAL CANDIDATE (Centrado)
+			% OUTCOME / FINAL CANDIDATES
 			\node[phase5, right=of box4] (box5) {
 				\begin{minipage}[t][\boxheight][t]{3.15cm}
 					\centering
-					\textbf{\footnotesize Validated Candidates} \par\vspace{2pt}\hrule\vspace{6pt}
+					\textbf{\footnotesize Validated Candidates} \par\vspace{2pt}\hrule\vspace{5pt}
+					\textbf{Pralatrexate} \par\vspace{1pt}
+					\textit{Top Consensus Lead} \par
+					$p\mathrm{IC}_{50} = \DockBestMLpIC$ \\$\DockBestDockScore$\,kcal/mol \par\vspace{4pt}
 					\textbf{Pyrimethamine} \par\vspace{1pt}
-					\textit{Repurposed Lead Hit} \par\vspace{2pt}
-					$p\mathrm{IC}_{50} = 6.42$ \quad $-7.31$\,kcal/mol \par\vspace{8pt}
-					\textbf{Trimethoprim} \par\vspace{1pt}
-					\textit{Active Reference Control} \par\vspace{2pt}
-					$p\mathrm{IC}_{50} = 5.66$ \quad $-7.28$\,kcal/mol \par\vspace{6pt}
-					\hrule\vspace{4pt}
-					\textit{Structurally \& ADMET verified}
+					\textit{High-Efficiency Lead} \par
+					$p\mathrm{IC}_{50} = 6.42$ \\$-7.34$\,kcal/mol \par\vspace{4pt}
+					\hrule\vspace{3pt}
+					\textit{\DockNValidated{} Hits Structurally Verified}
 				\end{minipage}
 			};
 			
@@ -101,4 +100,5 @@
 	\caption{\textbf{Schematic overview of the multi-tier computational repurposing and validation pipeline.} 
 		The hierarchical funnel integrates: (1) 2D ligand-based representation benchmarking under nested cross-validation, (2) applicability domain-constrained screening of FDA-approved compounds, (3) orthogonal physics-based consensus validation via molecular docking (AutoDock Vina), and (4) in silico ADMET profiling (Caco-2 permeability and hERG cardiotoxicity) to isolate clinically viable TgDHFR candidates.}
 	\label{fig:pipeline_flowchart}
-\end{figure*}
+	\vspace{-10pt}
+\end{figure}

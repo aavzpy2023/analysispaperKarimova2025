@@ -37,6 +37,110 @@ Unique-ID = {WOS:000941807300001},
     eprint = {https://academic.oup.com/bioinformatics/article-pdf/36/10/3093/48990620/btaa046.pdf},
 }
 
+@inproceedings{nadeau1999,
+ author = {Nadeau, Claude and Bengio, Yoshua},
+ booktitle = {Advances in Neural Information Processing Systems},
+ editor = {S. Solla and T. Leen and K. M\"{u}ller},
+ pages = {},
+ publisher = {MIT Press},
+ title = {Inference for the Generalization Error},
+ url = {https://proceedings.neurips.cc/paper_files/paper/1999/file/7d12b66d3df6af8d429c1a357d8b9e1a-Paper.pdf},
+ volume = {12},
+ year = {1999}
+}
+
+
+@article{pedregosa2011sklearn,
+  title={Scikit-learn: Machine learning in Python},
+  author={Pedregosa, Fabian and Varoquaux, Ga{\"e}l and Gramfort, Alexandre and Michel, Vincent and Thirion, Bertrand and Grisel, Olivier and Blondel, Mathieu and Prettenhofer, Peter and Weiss, Ron and Dubourg, Vincent and others},
+  journal={the Journal of machine Learning research},
+  volume={12},
+  pages={2825--2830},
+  year={2011},
+  publisher={JMLR. org}
+}
+
+@inproceedings{chengeustrin2016XGBoost,
+author = {Chen, Tianqi and Guestrin, Carlos},
+title = {XGBoost: A Scalable Tree Boosting System},
+year = {2016},
+isbn = {9781450342322},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/2939672.2939785},
+doi = {10.1145/2939672.2939785},
+abstract = {Tree boosting is a highly effective and widely used machine learning method. In this paper, we describe a scalable end-to-end tree boosting system called XGBoost, which is used widely by data scientists to achieve state-of-the-art results on many machine learning challenges. We propose a novel sparsity-aware algorithm for sparse data and weighted quantile sketch for approximate tree learning. More importantly, we provide insights on cache access patterns, data compression and sharding to build a scalable tree boosting system. By combining these insights, XGBoost scales beyond billions of examples using far fewer resources than existing systems.},
+booktitle = {Proceedings of the 22nd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining},
+pages = {785–794},
+numpages = {10},
+keywords = {large-scale machine learning},
+location = {San Francisco, California, USA},
+series = {KDD '16}
+}
+
+@inproceedings{kemeng2017LightGBM,
+ author = {Ke, Guolin and Meng, Qi and Finley, Thomas and Wang, Taifeng and Chen, Wei and Ma, Weidong and Ye, Qiwei and Liu, Tie-Yan},
+ booktitle = {Advances in Neural Information Processing Systems},
+ editor = {I. Guyon and U. Von Luxburg and S. Bengio and H. Wallach and R. Fergus and S. Vishwanathan and R. Garnett},
+ pages = {},
+ publisher = {Curran Associates, Inc.},
+ title = {LightGBM: A Highly Efficient Gradient Boosting Decision Tree},
+ url = {https://proceedings.neurips.cc/paper_files/paper/2017/file/6449f44a102fde848669bdd9eb6b76fa-Paper.pdf},
+ volume = {30},
+ year = {2017}
+}
+
+@inproceedings{akiba2019Optuna,
+author = {Akiba, Takuya and Sano, Shotaro and Yanase, Toshihiko and Ohta, Takeru and Koyama, Masanori},
+title = {Optuna: A Next-generation Hyperparameter Optimization Framework},
+year = {2019},
+isbn = {9781450362016},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/3292500.3330701},
+doi = {10.1145/3292500.3330701},
+abstract = {The purpose of this study is to introduce new design-criteria for next-generation hyperparameter optimization software. The criteria we propose include (1) define-by-run API that allows users to construct the parameter search space dynamically, (2) efficient implementation of both searching and pruning strategies, and (3) easy-to-setup, versatile architecture that can be deployed for various purposes, ranging from scalable distributed computing to light-weight experiment conducted via interactive interface. In order to prove our point, we will introduce Optuna, an optimization software which is a culmination of our effort in the development of a next generation optimization software. As an optimization software designed with define-by-run principle, Optuna is particularly the first of its kind. We will present the design-techniques that became necessary in the development of the software that meets the above criteria, and demonstrate the power of our new design through experimental results and real world applications. Our software is available under the MIT license (https://github.com/pfnet/optuna/).},
+booktitle = {Proceedings of the 25th ACM SIGKDD International Conference on Knowledge Discovery \& Data Mining},
+pages = {2623–2631},
+numpages = {9},
+keywords = {machine learning system, hyperparameter optimization, black-box optimization, Bayesian optimization},
+location = {Anchorage, AK, USA},
+series = {KDD '19}
+}
+
+@article{mckinney2010pandas,
+  title={Data structures for statistical computing in Python.},
+  author={McKinney, Wes and others},
+  journal={scipy},
+  volume={445},
+  number={1},
+  pages={51--56},
+  year={2010}
+}
+
+@article{harris2020numpy,
+  title={Array programming with NumPy},
+  author={Harris, Charles R and Millman, K Jarrod and Van Der Walt, St{\'e}fan J and Gommers, Ralf and Virtanen, Pauli and Cournapeau, David and Wieser, Eric and Taylor, Julian and Berg, Sebastian and Smith, Nathaniel J and others},
+  journal={nature},
+  volume={585},
+  number={7825},
+  pages={357--362},
+  year={2020},
+  publisher={Nature Publishing Group UK London}
+}
+
+@inproceedings{paszke2019pytorch,
+ author = {Paszke, Adam and Gross, Sam and Massa, Francisco and Lerer, Adam and Bradbury, James and Chanan, Gregory and Killeen, Trevor and Lin, Zeming and Gimelshein, Natalia and Antiga, Luca and Desmaison, Alban and Kopf, Andreas and Yang, Edward and DeVito, Zachary and Raison, Martin and Tejani, Alykhan and Chilamkurthy, Sasank and Steiner, Benoit and Fang, Lu and Bai, Junjie and Chintala, Soumith},
+ booktitle = {Advances in Neural Information Processing Systems},
+ editor = {H. Wallach and H. Larochelle and A. Beygelzimer and F. d\textquotesingle Alch\'{e}-Buc and E. Fox and R. Garnett},
+ pages = {},
+ publisher = {Curran Associates, Inc.},
+ title = {PyTorch: An Imperative Style, High-Performance Deep Learning Library},
+ url = {https://proceedings.neurips.cc/paper_files/paper/2019/file/bdbca288fee7f92f2bfa9f7012727740-Paper.pdf},
+ volume = {32},
+ year = {2019}
+}
+
 @article{varma2006,
   title={Bias in error estimation when using cross-validation for model selection},
   author={Varma, Sudhir and Simon, Richard},
