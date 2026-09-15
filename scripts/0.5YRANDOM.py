@@ -1,9 +1,13 @@
 import os
 import sys
 import time
+import warnings
 import numpy as np
 import pandas as pd
 from joblib import Parallel, delayed
+
+# Suppress scikit-learn feature name mismatch UserWarnings
+warnings.filterwarnings("ignore", category=UserWarning)
 
 # Import centralized configurations
 try:
@@ -117,13 +121,16 @@ def main():
     df = df.dropna(subset=['Smiles', 'pIC50 Value']).reset_index(drop=True)
     y_true = df['pIC50 Value'].values
 
-    # 2. Generate Feature Matrix X based on the winning mode (Simplified example for Morgan)
+    # 2. Generate Feature Matrix X based on the winning mode
     print(f"[INFO] Calculating feature matrix for mode '{best_mode}'...")
     if 'morgan' in best_mode.lower():
-        X = np.array([get_morgan_fp(s) for s in df['Smiles']])
+        X_raw = np.array([get_morgan_fp(s) for s in df['Smiles']])
     else:
         print("[WARNING] Current Y-Randomization is optimized for Morgan-like representations. Adapt X calculation if necessary.")
-        X = np.array([get_morgan_fp(s) for s in df['Smiles']]) # Fallback
+        X_raw = np.array([get_morgan_fp(s) for s in df['Smiles']]) # Fallback
+
+    # Convert X_raw array into DataFrame with column names to avoid LGBM feature name warning
+    X = pd.DataFrame(X_raw, columns=[f"fp_{i}" for i in range(X_raw.shape[1])])
 
     model = build_dynamic_model(best_architecture)
 
