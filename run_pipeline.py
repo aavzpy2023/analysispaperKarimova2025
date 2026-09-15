@@ -11,7 +11,7 @@ PIPELINE_SCRIPTS = [
     "scripts/3DOCKING.py",
     "scripts/3.5_ADMET.py",
     "scripts/4REDOCKING_VALIDATION.py",
-    "scripts/5GNNBASELINE_2.py"
+    "scripts/5GNNBASELINE.py"
 ]
 
 def main():
