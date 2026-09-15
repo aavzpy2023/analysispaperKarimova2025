@@ -2,7 +2,6 @@ import subprocess
 import sys
 import time
 
-Python
 # =========================================================
 # PIPELINE EXECUTION ORDER (Q1 Standard Validated)
 # =========================================================
