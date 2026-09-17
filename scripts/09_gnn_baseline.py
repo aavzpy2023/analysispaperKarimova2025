@@ -1,7 +1,16 @@
+import logging
+
+class TipFilter(logging.Filter):
+    def filter(self, record):
+        return " Tip" not in record.getMessage()
+
+logging.getLogger('lightning.pytorch.utilities.rank_zero').addFilter(TipFilter())
+
 import os
 import re
 import warnings
 import time
+from datetime import datetime 
 import numpy as np
 import pandas as pd
 import matplotlib
@@ -49,7 +58,7 @@ def run_chemprop_cv(smiles, y, n_splits=5, n_repeats=5, random_state=42):
         import torch
         from lightning import pytorch as pl
         from chemprop import data as cpdata, models, nn as cpnn
-        torch.set_num_threads(48)
+        torch.set_num_threads(24)
     except ImportError as e:
         print(f"  [ChemProp] Error de importación: {e}", flush=True)
         return None
@@ -64,7 +73,8 @@ def run_chemprop_cv(smiles, y, n_splits=5, n_repeats=5, random_state=42):
     smiles_arr = np.array(smiles)
 
     for fold, (train_idx, val_idx) in enumerate(rkf.split(smiles_arr)):
-        print(f"  --> Entrenando Fold {fold+1}/{total_folds}...", end="\r", flush=True)
+        t_fold = time.time()
+	print(f"  --> [{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Entrenando Fold {fold+1}/{total_folds}...", flush=True)
 
         smiles_train, y_train = smiles_arr[train_idx].tolist(), y[train_idx].reshape(-1, 1).tolist()
         smiles_val, y_val_vals = smiles_arr[val_idx].tolist(), y[val_idx].reshape(-1, 1).tolist()
@@ -93,6 +103,10 @@ def run_chemprop_cv(smiles, y, n_splits=5, n_repeats=5, random_state=42):
         f_r2, f_mae = r2_score(y[val_idx], y_pred), mean_absolute_error(y[val_idx], y_pred)
         fold_r2s.append(f_r2)
         fold_maes.append(f_mae)
+        elapsed = time.time() - t_fold
+        print(f"  --> [{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] "
+              f"Fold {fold+1}/{total_folds} OK | R2={f_r2:.4f} | MAE={f_mae:.4f} "
+              f"| {elapsed:.1f}s", flush=True)
 
         repeat_idx = fold // n_splits
         oof_predictions[val_idx, repeat_idx] = y_pred
