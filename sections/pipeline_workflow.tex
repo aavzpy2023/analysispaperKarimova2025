@@ -43,7 +43,7 @@
 					\textbf{Library Size:} \\$N \approx 1,700$ \par\vspace{4pt}
 					\textbf{PhysChem:} MW \\$\le 1000$\,Da \par\vspace{4pt}
 					\textbf{Applicability:} \\Isolation Forest \par\vspace{4pt}
-					\textbf{Prioritized Set:} \\$N = 17$ candidates
+					\textbf{Prioritized Set:} \\$N = 19$ candidates
 				\end{minipage}
 			};
 			
@@ -64,11 +64,11 @@
 			\node[phase4, right=of box3] (box4) {
 				\begin{minipage}[t][\boxheight][t]{3.15cm}
 					\centering
-					\textbf{\footnotesize Phase 4: ADMET Filter} \par\vspace{2pt}\hrule\vspace{7pt}
+					\textbf{\footnotesize Phase 4: ADMET Profiling} \par\vspace{2pt}\hrule\vspace{7pt}
 					\textbf{Input:} \\Docking consensus set \par\vspace{4pt}
 					\textbf{Druggability:} \\Lipinski Rule of 5 \par\vspace{4pt}
-					\textbf{Absorption:} \\Caco-2 ($> -5.15$) \par\vspace{4pt}
-					\textbf{Safety:} \\hERG ($P_\mathrm{block} < 0.5$) \par\vspace{4pt}
+					\textbf{Route Profiling:} \\Caco-2 (Oral vs. IV) \par\vspace{4pt}
+					\textbf{Safety Filter:} \\hERG ($P_\mathrm{block} < 0.5$) \par\vspace{4pt}
 					\textbf{Framework:} \\TDC Benchmarks
 				\end{minipage}
 			};
@@ -98,7 +98,7 @@
 		\end{tikzpicture}%
 	}
 	\caption{\textbf{Schematic overview of the multi-tier computational repurposing and validation pipeline.} 
-		The hierarchical funnel integrates: (1) 2D ligand-based representation benchmarking under nested cross-validation, (2) applicability domain-constrained screening of FDA-approved compounds, (3) orthogonal physics-based consensus validation via molecular docking (AutoDock Vina), and (4) in silico ADMET profiling (Caco-2 permeability and hERG cardiotoxicity) to isolate clinically viable TgDHFR candidates.}
+		The hierarchical funnel integrates: (1) 2D ligand-based representation benchmarking under nested cross-validation, (2) applicability domain-constrained screening of FDA-approved compounds, (3) orthogonal physics-based consensus validation via molecular docking (AutoDock Vina), and (4) in silico ADMET profiling (Caco-2 permeability route categorization and hERG cardiotoxicity filtering) to isolate clinically viable TgDHFR candidates.}
 	\label{fig:pipeline_flowchart}
 	\vspace{-10pt}
 \end{figure}

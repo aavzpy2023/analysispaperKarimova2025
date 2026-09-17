@@ -261,7 +261,7 @@ def export_latex(results_dict):
 
         f.write("% --- Reference Benchmarks ---\n")
         for label, (_, val) in PAPER_R2.items():
-            newcommand(f, f"{label}RTwo", f"{val:.2f}")
+            f.write(f"\\providecommand{{\\{label}RTwo}}{{{val:.2f}}}\n")
         f.write("\n")
 
         f.write("% --- Rigorous Statistical Evaluations vs Benchmarks ---\n")
