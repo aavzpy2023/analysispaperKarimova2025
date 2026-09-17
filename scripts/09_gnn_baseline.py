@@ -20,7 +20,7 @@ TRAIN_FILE    = "data/V2-df_ic50_chmbl_CID_myFill.csv"
 RESULTS_DIR   = "results"
 LATEX_DIR     = "latex"
 FIGURES_DIR   = "figures"
-
+n_workers = 0
 RANDOM_STATE  = 42
 N_BOOTSTRAP   = 2000
 TEST_SIZE     = 0.15
@@ -49,13 +49,13 @@ def run_chemprop_cv(smiles, y, n_splits=5, n_repeats=5, random_state=42):
         import torch
         from lightning import pytorch as pl
         from chemprop import data as cpdata, models, nn as cpnn
-        torch.set_num_threads(24)
+        torch.set_num_threads(48)
     except ImportError as e:
-        print(f"  [ChemProp] Error de importación: {e}")
+        print(f"  [ChemProp] Error de importación: {e}", flush=True)
         return None
 
     total_folds = n_splits * n_repeats
-    print(f"\n  [ChemProp] Iniciando {n_splits}x{n_repeats} CV (N={len(smiles)} compuestos)...")
+    print(f"\n  [ChemProp] Iniciando {n_splits}x{n_repeats} CV (N={len(smiles)} compuestos)...", flush=True)
 
     rkf = RepeatedKFold(n_splits=n_splits, n_repeats=n_repeats, random_state=random_state)
     oof_predictions = np.zeros((len(y), n_repeats)) # Guardar predicciones por repetición
@@ -64,7 +64,7 @@ def run_chemprop_cv(smiles, y, n_splits=5, n_repeats=5, random_state=42):
     smiles_arr = np.array(smiles)
 
     for fold, (train_idx, val_idx) in enumerate(rkf.split(smiles_arr)):
-        print(f"  --> Entrenando Fold {fold+1}/{total_folds}...", end="\r")
+        print(f"  --> Entrenando Fold {fold+1}/{total_folds}...", end="\r", flush=True)
 
         smiles_train, y_train = smiles_arr[train_idx].tolist(), y[train_idx].reshape(-1, 1).tolist()
         smiles_val, y_val_vals = smiles_arr[val_idx].tolist(), y[val_idx].reshape(-1, 1).tolist()
@@ -75,8 +75,8 @@ def run_chemprop_cv(smiles, y, n_splits=5, n_repeats=5, random_state=42):
         featurizer = chemprop.featurizers.SimpleMoleculeMolGraphFeaturizer()
         train_dset, val_dset = cpdata.MoleculeDataset(train_data, featurizer), cpdata.MoleculeDataset(val_data, featurizer)
 
-        train_loader = cpdata.build_dataloader(train_dset, shuffle=True, num_workers=8)
-        val_loader   = cpdata.build_dataloader(val_dset, shuffle=False, num_workers=8)
+        train_loader = cpdata.build_dataloader(train_dset, shuffle=True, num_workers=n_workers)
+        val_loader   = cpdata.build_dataloader(val_dset, shuffle=False, num_workers=n_workers)
 
         scaler = train_dset.normalize_targets()
         val_dset.normalize_targets(scaler)
@@ -97,13 +97,13 @@ def run_chemprop_cv(smiles, y, n_splits=5, n_repeats=5, random_state=42):
         repeat_idx = fold // n_splits
         oof_predictions[val_idx, repeat_idx] = y_pred
 
-    print("\n  [ChemProp] 5x5 CV Completado.")
+    print("\n  [ChemProp] 5x5 CV Completado.", flush=True)
 
     mean_r2, std_r2 = float(np.mean(fold_r2s)), float(np.std(fold_r2s))
     mean_mae = float(np.mean(fold_maes))
     ci_lo, ci_hi = mean_r2 - 1.96 * (std_r2 / np.sqrt(total_folds)), mean_r2 + 1.96 * (std_r2 / np.sqrt(total_folds))
 
-    print(f"  [ChemProp Result] R2={mean_r2:.4f} ± {std_r2:.4f} | MAE={mean_mae:.4f} | 95% CI [{ci_lo:.4f}, {ci_hi:.4f}]")
+    print(f"  [ChemProp Result] R2={mean_r2:.4f} ± {std_r2:.4f} | MAE={mean_mae:.4f} | 95% CI [{ci_lo:.4f}, {ci_hi:.4f}]", flush=True)
 
     # Promediar predicciones OOF a lo largo de las repeticiones para plot/export
     final_oof = np.mean(oof_predictions, axis=1)
@@ -123,10 +123,10 @@ def run_attentivefp(smiles, y, test_idx, train_idx):
         from torch.utils.data import DataLoader, Dataset
         torch.set_num_threads(24)
     except Exception as e:
-        print(f"  [AttentiveFP] No se pudo inicializar DGL ({e}), omitiendo.")
+        print(f"  [AttentiveFP] No se pudo inicializar DGL ({e}), omitiendo.", flush=True)
         return None
 
-    print("\n  [AttentiveFP] Iniciando modelo (ADVERTENCIA: Single Split, no comparable con 5x5 CV)...")
+    print("\n  [AttentiveFP] Iniciando modelo (ADVERTENCIA: Single Split, no comparable con 5x5 CV)...", flush=True)
     atom_featurizer, bond_featurizer = AttentiveFPAtomFeaturizer(atom_data_field='hv'), AttentiveFPBondFeaturizer(bond_data_field='he')
 
     def smiles_to_graph(smi):
@@ -145,8 +145,8 @@ def run_attentivefp(smiles, y, test_idx, train_idx):
         gs, ls = zip(*batch)
         return dgl.batch(gs), torch.stack(ls)
 
-    train_dl = DataLoader(MolDataset([smiles[i] for i in train_idx], y[train_idx]), batch_size=32, shuffle=True, collate_fn=collate, num_workers=8)
-    test_dl  = DataLoader(MolDataset([smiles[i] for i in test_idx], y[test_idx]), batch_size=32, shuffle=False, collate_fn=collate, num_workers=8)
+    train_dl = DataLoader(MolDataset([smiles[i] for i in train_idx], y[train_idx]), batch_size=32, shuffle=True, collate_fn=collate, num_workers=n_workers)
+    test_dl  = DataLoader(MolDataset([smiles[i] for i in test_idx], y[test_idx]), batch_size=32, shuffle=False, collate_fn=collate, num_workers=n_workers)
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = AttentiveFPPredictor(node_feat_size=atom_featurizer.feat_size('hv'), edge_feat_size=bond_featurizer.feat_size('he'), num_layers=2, num_timesteps=2, graph_feat_size=200, n_tasks=1, dropout=0.2).to(device)
@@ -177,7 +177,7 @@ def run_attentivefp(smiles, y, test_idx, train_idx):
     boots = [r2_score(y_test_arr[idx := rng.randint(0, len(y_test_arr), len(y_test_arr))], y_pred_arr[idx]) for _ in range(N_BOOTSTRAP)]
     ci_lo, ci_hi, std_r2 = float(np.percentile(boots, 2.5)), float(np.percentile(boots, 97.5)), float(np.std(boots))
 
-    print(f"  [AttentiveFP] R2={r2:.4f} | MAE={mae:.4f} | 95% CI [{ci_lo:.4f}, {ci_hi:.4f}]")
+    print(f"  [AttentiveFP] R2={r2:.4f} | MAE={mae:.4f} | 95% CI [{ci_lo:.4f}, {ci_hi:.4f}]", flush=True)
     return dict(model='AttentiveFP (Single-Split)', r2=r2, std=std_r2, mae=mae, ci_lo=ci_lo, ci_hi=ci_hi, boots=boots, y_test=y_test_arr, y_pred=y_pred_arr)
 
 # =========================================================
@@ -192,7 +192,7 @@ def export_latex(results):
     valid_results = [r for r in results if r is not None]
 
     if not valid_results:
-        print("\n  [ADVERTENCIA] No hay resultados válidos. El archivo gnn_variables.tex no se modificará para evitar vaciarlo.")
+        print("\n  [ADVERTENCIA] No hay resultados válidos. El archivo gnn_variables.tex no se modificará para evitar vaciarlo.", flush=True)
         return
 
     # Solo abrir y sobrescribir si hay datos reales que exportar
@@ -208,7 +208,7 @@ def export_latex(results):
                 f.write(f"\\newcommand{{\\{label}CILow}}{{{res['ci_lo']:.4f}}}\n")
                 f.write(f"\\newcommand{{\\{label}CIHigh}}{{{res['ci_hi']:.4f}}}\n")
 
-    print(f"  [LaTeX] Variables exportadas correctamente a {filepath}")
+    print(f"  [LaTeX] Variables exportadas correctamente a {filepath}", flush=True)
 
 def export_figure(results):
     fig, axes = plt.subplots(1, 2, figsize=(14, 5))
@@ -243,7 +243,7 @@ def export_figure(results):
     plt.close(fig)
 
 def run():
-    print("Iniciando 5GNNBASELINE_2.py con paridad 5x5 CV...")
+    print("Iniciando 5GNNBASELINE_2.py con paridad 5x5 CV...", flush=True)
     smiles, y = load_data()
     train_idx, test_idx = train_test_split(np.arange(len(smiles)), test_size=TEST_SIZE, random_state=RANDOM_STATE)
 
