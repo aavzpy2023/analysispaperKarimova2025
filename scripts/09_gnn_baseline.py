@@ -74,7 +74,7 @@ def run_chemprop_cv(smiles, y, n_splits=5, n_repeats=5, random_state=42):
 
     for fold, (train_idx, val_idx) in enumerate(rkf.split(smiles_arr)):
         t_fold = time.time()
-	print(f"  --> [{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Entrenando Fold {fold+1}/{total_folds}...", flush=True)
+        print(f"  --> [{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Entrenando Fold {fold+1}/{total_folds}...", flush=True)
 
         smiles_train, y_train = smiles_arr[train_idx].tolist(), y[train_idx].reshape(-1, 1).tolist()
         smiles_val, y_val_vals = smiles_arr[val_idx].tolist(), y[val_idx].reshape(-1, 1).tolist()
