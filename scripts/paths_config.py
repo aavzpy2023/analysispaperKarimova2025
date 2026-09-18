@@ -47,6 +47,41 @@ LATEX_REDOCKING = os.path.join(LATEX_DIR, "redocking_variables.tex")
 FIGURE_NESTED_CV = os.path.join(FIGURES_DIR, "r2_by_representation_boxplot.png")
 FIGURE_AUGMENT   = os.path.join(FIGURES_DIR, "augment_r2_comparison.png")
 
+
+
+# =========================================================
+# PROFILES TO RUN (5x5 REPEATED NESTED CV)
+# =========================================================
+PROFILE = 'workstation'
+
+PROFILES = {
+    'laptop': dict(
+        N_JOBS=2,
+        FEATURE_MODES=['morgan'],
+        MAX_COMBO_SIZE=2,
+        OUTER_N_SPLITS=3,
+        OUTER_N_REPEATS=1,
+        INNER_N_SPLITS=3,
+        N_ESTIMATORS_TREES=50,
+    ),
+    'workstation': dict(
+        N_JOBS=46,
+        FEATURE_MODES=['morgan', 'rdkit2d', 'rdkit2d_fp', 'rdkit2d3d_fp'],
+        MAX_COMBO_SIZE=3,
+        OUTER_N_SPLITS=5,
+        OUTER_N_REPEATS=5,
+        INNER_N_SPLITS=5,
+        N_ESTIMATORS_TREES=200,
+    ),
+}
+CFG = PROFILES[PROFILE]
+
+RANDOM_STATE_NESTED_CV = 42
+
+
+
+
+
 # =========================================================
 # DOCKING & VINA EXPERIMENTAL PARAMETERS
 # =========================================================

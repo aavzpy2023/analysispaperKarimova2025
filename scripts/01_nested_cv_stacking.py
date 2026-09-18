@@ -1,5 +1,7 @@
 import os
-# Evitar que sublibrerías C/C++ generen hilos extra dentro de los procesos worker de joblib
+import sys
+
+# Prevent C/C++ sublibraries from generating extra threads inside joblib worker processes
 os.environ["OMP_NUM_THREADS"] = "1"
 os.environ["MKL_NUM_THREADS"] = "1"
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
@@ -17,18 +19,10 @@ import matplotlib.pyplot as plt
 from joblib import Parallel, delayed
 from scipy import stats
 
-try:
-    from paths_config import *
-except ImportError:
-    TRAIN_FILE = "data/V2-df_ic50_chmbl_CID_myFill.csv"
-    RESULTS_DIR = "results"
-    LATEX_DIR = "latex"
-    FIGURES_DIR = "figures"
-    CHECKPOINT_FILE = os.path.join(RESULTS_DIR, "nested_cv_checkpoint.csv")
-    SELECTION_LOG_FILE = os.path.join(RESULTS_DIR, "nested_cv_selection_log.csv")
-    FINAL_RESULTS_FILE = os.path.join(RESULTS_DIR, "nested_cv_results.csv")
-    LATEX_PAPER = os.path.join(LATEX_DIR, "nested_cv_variables.tex")
-    FIGURE_NESTED_CV = os.path.join(FIGURES_DIR, "nested_cv_r2_distribution.png")
+# Link root directory to import paths_config and logger_utils
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from paths_config import *
+from logger_utils import setup_logger
 
 from rdkit import Chem, RDLogger
 from rdkit.Chem import AllChem, Descriptors, Descriptors3D
@@ -53,52 +47,18 @@ RDLogger.DisableLog('rdApp.*')
 warnings.filterwarnings("ignore")
 warnings.filterwarnings("ignore", message="X does not have valid feature names")
 
-# =========================================================
-# PROFILES TO RUN (5x5 REPEATED NESTED CV)
-# =========================================================
-PROFILE = 'workstation'
-
-PROFILES = {
-    'laptop': dict(
-        N_JOBS=2,
-        FEATURE_MODES=['morgan'],
-        MAX_COMBO_SIZE=2,
-        OUTER_N_SPLITS=3,
-        OUTER_N_REPEATS=1,
-        INNER_N_SPLITS=3,
-        N_ESTIMATORS_TREES=50,
-    ),
-    'workstation': dict(
-        N_JOBS=46,
-        FEATURE_MODES=['morgan', 'rdkit2d', 'rdkit2d_fp', 'rdkit2d3d_fp'],
-        MAX_COMBO_SIZE=3,
-        OUTER_N_SPLITS=5,
-        OUTER_N_REPEATS=5,
-        INNER_N_SPLITS=5,
-        N_ESTIMATORS_TREES=200,
-    ),
-}
-CFG = PROFILES[PROFILE]
-
-RANDOM_STATE = 42
-LATEX_OUTPUT_FILE = LATEX_PAPER
-FIGURE_FILE = FIGURE_NESTED_CV
-
-os.makedirs(RESULTS_DIR, exist_ok=True)
-os.makedirs(LATEX_DIR, exist_ok=True)
-os.makedirs(FIGURES_DIR, exist_ok=True)
 
 # =========================================================
 # NADEAU-BENGIO CORRECTION
 # =========================================================
 def nadeau_bengio_ttest_1samp(sample, popmean, n_train_ratio=4.0):
     """
-    t-test de una muestra con corrección de varianza por solapamiento
-    en validación cruzada repetida (Nadeau & Bengio, 2003).
-    Para 5-fold CV, n_train/n_test = 4.0 (es decir, n_test/n_train = 0.25).
+    One-sample t-test with overlapping variance correction
+    in repeated cross-validation (Nadeau & Bengio, 2003).
+    For 5-fold CV, n_train/n_test = 4.0 (i.e., n_test/n_train = 0.25).
     """
     sample = np.asarray(sample, dtype=float)
-    n_obs = len(sample)  # K * R (25 para 5x5)
+    n_obs = len(sample)  # K * R (25 for 5x5)
     mean_diff = np.mean(sample) - popmean
     var_diff = np.var(sample, ddof=1)
 
@@ -116,17 +76,16 @@ def nadeau_bengio_ttest_1samp(sample, popmean, n_train_ratio=4.0):
 
 def nadeau_bengio_ttest_rel(sample_a, sample_b, n_train_ratio=4.0):
     """
-    t-test pareado con corrección de Nadeau-Bengio para CV repetido.
+    Paired t-test with Nadeau-Bengio correction for repeated CV.
     """
     diffs = np.asarray(sample_a, dtype=float) - np.asarray(sample_b, dtype=float)
     return nadeau_bengio_ttest_1samp(diffs, popmean=0.0, n_train_ratio=n_train_ratio)
 
 
 # =========================================================
-# (PREDICTION CLIPPING)
+# PREDICTION CLIPPING
 # =========================================================
-CLIP_MARGIN = 3.0  # Unidades de pIC50 fuera del rango [min, max] del conjunto de entrenamiento
-
+CLIP_MARGIN = 3.0  # pIC50 units outside the [min, max] range of the training set
 
 def get_clip_bounds(y_train, margin=CLIP_MARGIN):
     return float(np.min(y_train) - margin), float(np.max(y_train) + margin)
@@ -143,11 +102,7 @@ NON_FEATURE_COLS = {
     'standard value', 'ic50', 'cid', 'name', 'id',
 }
 
-PAPER_R2 = {
-    'PaperBaseline': ('2D/3D/FP model, no feature selection', 0.75),
-    'PaperSelected': ('After importance-based feature selection (no augmentation)', 0.82),
-    'PaperFinal':    ('Data augmentation + DNN ensemble (paper final result)', 0.85),
-}
+# The reference PAPER_R2 is imported from paths_config.py
 
 MODE_LATEX_LABEL = {
     'morgan': 'Morgan',
@@ -166,7 +121,7 @@ MODE_DESCRIPTION = {
 }
 
 # =========================================================
-# DESCRIPTORS GENERATION
+# DESCRIPTOR GENERATION
 # =========================================================
 _MORGAN_GEN = None
 
@@ -276,7 +231,7 @@ def build_feature_matrix(df, mode, n_jobs):
         return X, list(_RDKIT_2D_NAMES) + [f'morgan_{i}' for i in range(Xfp.shape[1])], False
 
     if mode == 'rdkit2d3d_fp':
-        print("    [INFO] Generando conformeros 3D (ETKDGv3 + MMFF)...")
+        print("    [INFO] Generating 3D conformers (ETKDGv3 + MMFF)...", flush=True)
         X2d = sanitize_matrix(compute_parallel(smiles, get_rdkit_2d, n_jobs))
         X3d = sanitize_matrix(compute_parallel(smiles, get_rdkit_3d, n_jobs))
         Xfp = compute_parallel(smiles, get_morgan_fp, n_jobs)
@@ -289,18 +244,18 @@ def build_feature_matrix(df, mode, n_jobs):
         X = df[cols].apply(pd.to_numeric, errors='coerce').values
         return X, cols, False
 
-    raise ValueError(f"Modo de representacion desconocido: {mode}")
+    raise ValueError(f"Unknown representation mode: {mode}")
 
 
 # =========================================================
-# MODELS Y PIPELINE
+# MODELS & PIPELINES
 # =========================================================
 def build_base_models(n_jobs_model=1, n_estimators=200):
     return {
-        'RF':   RandomForestRegressor(n_estimators=n_estimators, random_state=RANDOM_STATE, n_jobs=n_jobs_model),
-        'ET':   ExtraTreesRegressor(n_estimators=n_estimators, random_state=RANDOM_STATE, n_jobs=n_jobs_model),
-        'LGBM': lgb.LGBMRegressor(n_estimators=n_estimators, random_state=RANDOM_STATE, verbosity=-1, n_jobs=n_jobs_model),
-        'XGB':  XGBRegressor(n_estimators=n_estimators, random_state=RANDOM_STATE, n_jobs=n_jobs_model, verbosity=0),
+        'RF':   RandomForestRegressor(n_estimators=n_estimators, random_state=RANDOM_STATE_NESTED_CV, n_jobs=n_jobs_model),
+        'ET':   ExtraTreesRegressor(n_estimators=n_estimators, random_state=RANDOM_STATE_NESTED_CV, n_jobs=n_jobs_model),
+        'LGBM': lgb.LGBMRegressor(n_estimators=n_estimators, random_state=RANDOM_STATE_NESTED_CV, verbosity=-1, n_jobs=n_jobs_model),
+        'XGB':  XGBRegressor(n_estimators=n_estimators, random_state=RANDOM_STATE_NESTED_CV, n_jobs=n_jobs_model, verbosity=0),
         'SVM':  SVR(kernel='rbf', C=10, gamma='scale', epsilon=0.1),
         'kNN':  KNeighborsRegressor(n_neighbors=5, metric='cosine', n_jobs=n_jobs_model),
     }
@@ -326,7 +281,7 @@ def build_pipeline(combo_dict, is_binary):
         ('impute', SimpleImputer(strategy='median')),
         ('scale', StandardScaler()),
         ('select', SelectFromModel(
-            RandomForestRegressor(n_estimators=CFG['N_ESTIMATORS_TREES'], random_state=RANDOM_STATE, n_jobs=1),
+            RandomForestRegressor(n_estimators=CFG['N_ESTIMATORS_TREES'], random_state=RANDOM_STATE_NESTED_CV, n_jobs=1),
             threshold=1e-9,
         )),
         ('model', core),
@@ -337,7 +292,7 @@ def evaluate_combo_inner(combo, X_tr, y_tr, inner_splits, is_binary):
     warnings.filterwarnings("ignore")
     combo_id = "+".join(combo.keys())
     pipe = build_pipeline(combo, is_binary)
-    kf = KFold(n_splits=inner_splits, shuffle=True, random_state=RANDOM_STATE)
+    kf = KFold(n_splits=inner_splits, shuffle=True, random_state=RANDOM_STATE_NESTED_CV)
 
     lo, hi = get_clip_bounds(y_tr)
 
@@ -363,7 +318,7 @@ def evaluate_combo_inner(combo, X_tr, y_tr, inner_splits, is_binary):
 
 
 # =========================================================
-# CHECKPOINTING AND SELECTION REGISTRY
+# CHECKPOINTING & SELECTION REGISTRY
 # =========================================================
 def load_done_folds(mode):
     if not os.path.exists(CHECKPOINT_FILE):
@@ -389,9 +344,9 @@ def append_selection_log(df_inner, mode, fold_idx):
 # =========================================================
 def nested_cv_for_mode(mode, df_clean, cfg):
     total_folds = cfg['OUTER_N_SPLITS'] * cfg['OUTER_N_REPEATS']
-    print("\n" + "#" * 100)
-    print(f"# NESTED CV ({cfg['OUTER_N_SPLITS']}x{cfg['OUTER_N_REPEATS']}={total_folds} Folds) — REPRESENTACIÓN: {mode}")
-    print("#" * 100)
+    print("\n" + "#" * 100, flush=True)
+    print(f"# NESTED CV ({cfg['OUTER_N_SPLITS']}x{cfg['OUTER_N_REPEATS']}={total_folds} Folds) — REPRESENTATION: {mode}", flush=True)
+    print("#" * 100, flush=True)
 
     X, feat_names, is_binary = build_feature_matrix(df_clean, mode, cfg['N_JOBS'])
     y = df_clean['pIC50 Value'].values
@@ -403,11 +358,11 @@ def nested_cv_for_mode(mode, df_clean, cfg):
         for combo in itertools.combinations(base_models.items(), k):
             all_combos.append(dict(combo))
 
-    outer_cv = RepeatedKFold(n_splits=cfg['OUTER_N_SPLITS'], n_repeats=cfg['OUTER_N_REPEATS'], random_state=RANDOM_STATE)
+    outer_cv = RepeatedKFold(n_splits=cfg['OUTER_N_SPLITS'], n_repeats=cfg['OUTER_N_REPEATS'], random_state=RANDOM_STATE_NESTED_CV)
     done_folds = load_done_folds(mode)
 
     if done_folds:
-        print(f"[CHECKPOINT] {len(done_folds)}/{total_folds} folds ya completados para '{mode}', reanudando...")
+        print(f"[CHECKPOINT] {len(done_folds)}/{total_folds} folds already completed for '{mode}', resuming...", flush=True)
 
     for fold_idx, (train_idx, test_idx) in enumerate(outer_cv.split(X)):
         if fold_idx in done_folds:
@@ -457,7 +412,7 @@ def nested_cv_for_mode(mode, df_clean, cfg):
             'Time_s': elapsed,
         }
         append_checkpoint(row)
-        print(f"[{mode}] Fold {fold_idx + 1}/{total_folds} -> Best: {best_combo_id:<15} | R2_outer: {r2_outer:.4f} | MAE: {mae_outer:.4f} ({elapsed:.1f}s)")
+        print(f"[{mode}] Fold {fold_idx + 1}/{total_folds} -> Best: {best_combo_id:<15} | R2_outer: {r2_outer:.4f} | MAE: {mae_outer:.4f} ({elapsed:.1f}s)", flush=True)
 
 
 # =========================================================
@@ -472,7 +427,7 @@ def newcommand(f, name, value):
 
 
 def generate_latex_file(df_all, summary, df_ttest, top2_modes, paired_stats):
-    with open(LATEX_OUTPUT_FILE, 'w', encoding='utf-8') as f:
+    with open(LATEX_PAPER, 'w', encoding='utf-8') as f:
         f.write("% =====================================================\n")
         f.write("% Nested CV Benchmark Variables (Auto-generated)\n")
         f.write("% =====================================================\n\n")
@@ -533,7 +488,7 @@ def generate_latex_file(df_all, summary, df_ttest, top2_modes, paired_stats):
         newcommand(f, "WinnerRTwoMean", f"{best_row['mean']:.4f}")
         newcommand(f, "WinnerRTwoStd", f"{best_row['std']:.4f}")
 
-    print(f"[LATEX] Variables exportadas correctamente a: {LATEX_OUTPUT_FILE}")
+    print(f"[LATEX] Variables successfully exported to: {LATEX_PAPER}", flush=True)
 
 
 def generate_figure(df_all, summary):
@@ -550,9 +505,9 @@ def generate_figure(df_all, summary):
     ax.legend(fontsize=8)
     plt.xticks(rotation=20)
     plt.tight_layout()
-    plt.savefig(FIGURE_FILE, dpi=300)
+    plt.savefig(FIGURE_NESTED_CV, dpi=300)
     plt.close(fig)
-    print(f"[FIGURA] Saved {FIGURE_FILE}")
+    print(f"[FIGURE] Saved {FIGURE_NESTED_CV}", flush=True)
 
 
 # =========================================================
@@ -561,16 +516,16 @@ def generate_figure(df_all, summary):
 def summarize_and_test():
     df = pd.read_csv(CHECKPOINT_FILE)
 
-    print("\n" + "=" * 100)
-    print("RESUMEN DE RESULTADOS (Nested CV 5x5)")
-    print("=" * 100)
+    print("\n" + "=" * 100, flush=True)
+    print("RESULTS SUMMARY (Nested CV 5x5)", flush=True)
+    print("=" * 100, flush=True)
 
     summary = df.groupby('Mode')['R2_outer'].agg(['mean', 'std', 'count']).reset_index()
     summary = summary.sort_values(by='mean', ascending=False)
-    print("\nTabla 1. R² por representación molecular:")
-    print(summary.to_string(index=False))
+    print("\nTable 1. R² by molecular representation:", flush=True)
+    print(summary.to_string(index=False), flush=True)
 
-    # 1. Pruebas t con corrección de Nadeau-Bengio vs Referencias
+    # 1. t-tests with Nadeau-Bengio correction vs Original Publication
     ttest_rows = []
     for mode in df['Mode'].unique():
         vals = df[df['Mode'] == mode]['R2_outer'].values
@@ -582,11 +537,10 @@ def summarize_and_test():
                 't_stat': t_stat, 'p_value': p_val, 'Significant_p<0.05': p_val < 0.05,
             })
     df_ttest = pd.DataFrame(ttest_rows)
-    print("\nTabla 2. t-tests (Nadeau-Bengio Corrected) vs Publicación Original:")
-    print(df_ttest.drop(columns=['Paper_reference_desc']).to_string(index=False))
+    print("\nTable 2. t-tests (Nadeau-Bengio Corrected) vs Original Publication:", flush=True)
+    print(df_ttest.drop(columns=['Paper_reference_desc']).to_string(index=False), flush=True)
 
-    # 2. Comparación pareada entre las 2 mejores representaciones
-    # 2. Paired comparisson between the 2 best representation
+    # 2. Paired comparison between the 2 best representations
     top2 = summary.head(2)['Mode'].tolist()
     paired_stats = None
     if len(top2) == 2:
@@ -595,15 +549,14 @@ def summarize_and_test():
         if len(a) == len(b) and len(a) > 1:
             t_stat, p_val = nadeau_bengio_ttest_rel(a, b, n_train_ratio=4.0)
             paired_stats = {'t_stat': t_stat, 't_p': p_val}
-            print(f"\nComparacion pareada (Nadeau-Bengio) entre {top2[0]} y {top2[1]}:")
-            print(f"  t = {t_stat:.3f}, p = {p_val:.4f}")
+            print(f"\nPaired comparison (Nadeau-Bengio) between {top2[0]} and {top2[1]}:", flush=True)
+            print(f"  t = {t_stat:.3f}, p = {p_val:.4f}", flush=True)
 
-    # Export main csv
+    # Export main results
     summary.to_csv(FINAL_RESULTS_FILE, index=False)
     df_ttest.to_csv(FINAL_RESULTS_FILE.replace('.csv', '_ttests.csv'), index=False)
 
-    # 3. Exportación de la Tabla Suplementaria S1 (Estabilidad de Selección de Arquitecturas)
-    # 3. Export to sumplenentary tabla  S1 (Stability of architetures seleccion)
+    # 3. Export to Supplementary Table S1 (Architecture Selection Frequency)
     if os.path.exists(SELECTION_LOG_FILE):
         log_df = pd.read_csv(SELECTION_LOG_FILE)
         if 'R2_inner_mean' in log_df.columns:
@@ -627,17 +580,20 @@ def summarize_and_test():
 
             out_path = os.path.join(RESULTS_DIR, 'architecture_selection_frequency.csv')
             freq_df.to_csv(out_path, index=False)
-            print(f"\n[SUPPLEMENTARY CSV] Frecuencia de seleccion exportada a: {out_path}")
+            print(f"\n[SUPPLEMENTARY CSV] Selection frequency exported to: {out_path}", flush=True)
 
-    # Exportación a LaTeX y Generación de Figura
-    # Export to LateX and generate figure
+    # Export to LaTeX and generate figure
     generate_latex_file(df, summary, df_ttest, top2, paired_stats)
     generate_figure(df, summary)
 
 
 def run_benchmark():
+    # Initialize unified logger
+    log_file_path = os.path.join(LOGS_DIR, "01_nested_cv_stacking.log")
+    setup_logger(log_file_path)
+
     total_folds = CFG['OUTER_N_SPLITS'] * CFG['OUTER_N_REPEATS']
-    print(f"[INFO] Perfil activo: {PROFILE} | N_JOBS={CFG['N_JOBS']} | Outer folds={CFG['OUTER_N_SPLITS']}x{CFG['OUTER_N_REPEATS']}={total_folds}")
+    print(f"[INFO] Active profile: {PROFILE} | N_JOBS={CFG['N_JOBS']} | Outer folds={CFG['OUTER_N_SPLITS']}x{CFG['OUTER_N_REPEATS']}={total_folds}", flush=True)
     df = pd.read_csv(TRAIN_FILE, on_bad_lines='skip')
     df_clean = df.dropna(subset=['Smiles', 'pIC50 Value']).reset_index(drop=True)
 
@@ -645,7 +601,7 @@ def run_benchmark():
         try:
             nested_cv_for_mode(mode, df_clean, CFG)
         except ValueError as e:
-            print(f"[WARNING] Omitiendo modo '{mode}': {e}")
+            print(f"[WARNING] Skipping mode '{mode}': {e}", flush=True)
 
     if os.path.exists(CHECKPOINT_FILE):
         summarize_and_test()
