@@ -252,10 +252,10 @@ def build_feature_matrix(df, mode, n_jobs):
 # =========================================================
 def build_base_models(n_jobs_model=1, n_estimators=200):
     return {
-        'RF':   RandomForestRegressor(n_estimators=n_estimators, random_state=RANDOM_STATE_NESTED_CV, n_jobs=n_jobs_model),
-        'ET':   ExtraTreesRegressor(n_estimators=n_estimators, random_state=RANDOM_STATE_NESTED_CV, n_jobs=n_jobs_model),
-        'LGBM': lgb.LGBMRegressor(n_estimators=n_estimators, random_state=RANDOM_STATE_NESTED_CV, verbosity=-1, n_jobs=n_jobs_model),
-        'XGB':  XGBRegressor(n_estimators=n_estimators, random_state=RANDOM_STATE_NESTED_CV, n_jobs=n_jobs_model, verbosity=0),
+        'RF':   RandomForestRegressor(n_estimators=n_estimators, random_state=RANDOM_STATE, n_jobs=n_jobs_model),
+        'ET':   ExtraTreesRegressor(n_estimators=n_estimators, random_state=RANDOM_STATE, n_jobs=n_jobs_model),
+        'LGBM': lgb.LGBMRegressor(n_estimators=n_estimators, random_state=RANDOM_STATE, verbosity=-1, n_jobs=n_jobs_model),
+        'XGB':  XGBRegressor(n_estimators=n_estimators, random_state=RANDOM_STATE, n_jobs=n_jobs_model, verbosity=0),
         'SVM':  SVR(kernel='rbf', C=10, gamma='scale', epsilon=0.1),
         'kNN':  KNeighborsRegressor(n_neighbors=5, metric='cosine', n_jobs=n_jobs_model),
     }
@@ -281,7 +281,7 @@ def build_pipeline(combo_dict, is_binary):
         ('impute', SimpleImputer(strategy='median')),
         ('scale', StandardScaler()),
         ('select', SelectFromModel(
-            RandomForestRegressor(n_estimators=CFG['N_ESTIMATORS_TREES'], random_state=RANDOM_STATE_NESTED_CV, n_jobs=1),
+            RandomForestRegressor(n_estimators=CFG['N_ESTIMATORS_TREES'], random_state=RANDOM_STATE, n_jobs=1),
             threshold=1e-9,
         )),
         ('model', core),
@@ -292,7 +292,7 @@ def evaluate_combo_inner(combo, X_tr, y_tr, inner_splits, is_binary):
     warnings.filterwarnings("ignore")
     combo_id = "+".join(combo.keys())
     pipe = build_pipeline(combo, is_binary)
-    kf = KFold(n_splits=inner_splits, shuffle=True, random_state=RANDOM_STATE_NESTED_CV)
+    kf = KFold(n_splits=inner_splits, shuffle=True, random_state=RANDOM_STATE)
 
     lo, hi = get_clip_bounds(y_tr)
 
@@ -358,7 +358,7 @@ def nested_cv_for_mode(mode, df_clean, cfg):
         for combo in itertools.combinations(base_models.items(), k):
             all_combos.append(dict(combo))
 
-    outer_cv = RepeatedKFold(n_splits=cfg['OUTER_N_SPLITS'], n_repeats=cfg['OUTER_N_REPEATS'], random_state=RANDOM_STATE_NESTED_CV)
+    outer_cv = RepeatedKFold(n_splits=cfg['OUTER_N_SPLITS'], n_repeats=cfg['OUTER_N_REPEATS'], random_state=RANDOM_STATE)
     done_folds = load_done_folds(mode)
 
     if done_folds:

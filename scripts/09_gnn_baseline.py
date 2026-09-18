@@ -184,7 +184,7 @@ def run_attentivefp(smiles, y, test_idx, train_idx):
     y_pred_arr, y_test_arr = np.vstack(all_preds).flatten(), np.vstack(all_labels).flatten()
     r2, mae = r2_score(y_test_arr, y_pred_arr), mean_absolute_error(y_test_arr, y_pred_arr)
 
-    rng = np.random.RandomState(RANDOM_STATE_GNN)
+    rng = np.random.RandomState(RANDOM_STATE)
     boots = [r2_score(y_test_arr[idx := rng.randint(0, len(y_test_arr), len(y_test_arr))], y_pred_arr[idx]) for _ in range(N_BOOTSTRAP_GNN)]
     ci_lo, ci_hi, std_r2 = float(np.percentile(boots, 2.5)), float(np.percentile(boots, 97.5)), float(np.std(boots))
 
@@ -278,11 +278,11 @@ def main():
     print(f"[1] Dataset loaded successfully: {len(smiles)} compounds.")
 
     train_idx, test_idx = train_test_split(
-        np.arange(len(smiles)), test_size=TEST_SIZE_GNN, random_state=RANDOM_STATE_GNN
+        np.arange(len(smiles)), test_size=TEST_SIZE_GNN, random_state=RANDOM_STATE
     )
 
     print("\n[2] Evaluating ChemProp (D-MPNN 5x5 CV)...")
-    res_chemprop = run_chemprop_cv(smiles, y, n_splits=5, n_repeats=5, random_state=RANDOM_STATE_GNN)
+    res_chemprop = run_chemprop_cv(smiles, y, n_splits=5, n_repeats=5, random_state=RANDOM_STATE)
 
     print("\n[3] Evaluating AttentiveFP (Single Split)...")
     res_attentive = run_attentivefp(smiles, y, test_idx, train_idx)
