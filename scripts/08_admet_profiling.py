@@ -8,28 +8,32 @@ from rdkit.Chem import Descriptors, rdFingerprintGenerator
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from tdc.single_pred import ADME, Tox
 
-# Link root directory to import paths_config
+# Link root directory to import paths_config and logger
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from paths_config import DOCKING_RESULTS_CSV, FDA_ADMET_CANDIDATES_CSV
+from paths_config import *
+from logger_utils import setup_logger
 
-INPUT_PATH = DOCKING_RESULTS_CSV
+# =========================================================
+# LOGGING SETUP
+# =========================================================
+log_file_path = os.path.join(LOGS_DIR, "08_admet_profiling.log")
+setup_logger(log_file_path)
+
+# =========================================================
+# CONFIG
+# =========================================================
+INPUT_PATH  = DOCKING_RESULTS_CSV
 OUTPUT_PATH = FDA_ADMET_CANDIDATES_CSV
-CORES = 48
-
-# Thresholds
-HERG_THRESH = 0.5         # Probability < 0.5 = Low cardiotoxicity risk
-CACO2_THRESH = -5.15      # Permeability > -5.15 log(cm/s) = Moderate/High Oral Permeability
-
 
 def lipinski_pass(smiles):
-    """Evaluates Lipinski's Rule of Five."""
+    """Evaluates Lipinski's Rule of Five dynamically."""
     mol = Chem.MolFromSmiles(smiles)
     if not mol:
         return False
     return (
-        Descriptors.NumHDonors(mol) <= 5
-        and Descriptors.NumHAcceptors(mol) <= 10
-        and Descriptors.MolLogP(mol) <= 5
+        Descriptors.NumHDonors(mol) <= LIPINSKI_MAX_HDONORS
+        and Descriptors.NumHAcceptors(mol) <= LIPINSKI_MAX_HACCEPTORS
+        and Descriptors.MolLogP(mol) <= LIPINSKI_MAX_LOGP
     )
 
 
@@ -56,7 +60,8 @@ def smiles_to_fps(smiles_list, radius=2, n_bits=2048):
 
 def main():
     print("=" * 90)
-    print("3.5_ADMET.py — ADMET Profiling & Toxicity Risk Assessment")
+    print("08_admet_profiling.py — ADMET Profiling & Toxicity Risk Assessment")
+    print(f"Log file: {log_file_path}")
     print("=" * 90)
 
     if not os.path.exists(INPUT_PATH):
@@ -65,11 +70,11 @@ def main():
 
     df = pd.read_csv(INPUT_PATH)
     print(f"[1] Total initial candidates from docking: {len(df)}")
-    print(f"[1] Evaluating Lipinski rule of five on {CORES} cores...")
+    print(f"[1] Evaluating Lipinski rule of five on {CORES_ADMET} cores...")
 
     # 1. Lipinski Filtering / Tagging
     valid_smiles = set()
-    with concurrent.futures.ProcessPoolExecutor(max_workers=CORES) as executor:
+    with concurrent.futures.ProcessPoolExecutor(max_workers=CORES_ADMET) as executor:
         results = executor.map(evaluate_smiles, [row for _, row in df.iterrows()])
         for res in results:
             if res is not None:
@@ -91,7 +96,7 @@ def main():
     X_train_herg = smiles_to_fps(herg_dataset["Drug"].tolist())
     y_train_herg = herg_dataset["Y"].values
 
-    rf_herg = RandomForestClassifier(n_estimators=100, random_state=42, n_jobs=CORES)
+    rf_herg = RandomForestClassifier(n_estimators=100, random_state=42, n_jobs=CORES_ADMET)
     rf_herg.fit(X_train_herg, y_train_herg)
     df_filtered["hERG_Blocker_Prob"] = rf_herg.predict_proba(X_cand)[:, 1]
 
@@ -101,14 +106,11 @@ def main():
     X_train_caco = smiles_to_fps(caco_dataset["Drug"].tolist())
     y_train_caco = caco_dataset["Y"].values
 
-    rf_caco = RandomForestRegressor(n_estimators=100, random_state=42, n_jobs=CORES)
+    rf_caco = RandomForestRegressor(n_estimators=100, random_state=42, n_jobs=CORES_ADMET)
     rf_caco.fit(X_train_caco, y_train_caco)
     df_filtered["Caco2_Permeability"] = rf_caco.predict(X_cand)
 
     # 4. ADMET Annotation & Non-Destructive Filtering
-    # - hERG Blocker Prob < 0.5 (Safety filter: excludes cardiotoxic risks)
-    # - Caco-2 Permeability used for Route Categorization (Oral vs Parenteral)
-
     df_filtered["hERG_Pass"] = df_filtered["hERG_Blocker_Prob"] < HERG_THRESH
     df_filtered["Caco2_Pass"] = df_filtered["Caco2_Permeability"] > CACO2_THRESH
 
@@ -125,11 +127,14 @@ def main():
     ]
     df_filtered["ADMET_Profile"] = np.select(conditions, choices, default="Unclassified")
 
-    # Filter out cardiotoxic compounds, but keep parenteral candidates (like Pralatrexate)
-    df_final = df_filtered[df_filtered["hERG_Pass"]].copy()
-
-    # Save to CSV
+    # SAVE 1: Full Dataset (Pre-Filter) for Analytics/Plotting
     os.makedirs(os.path.dirname(OUTPUT_PATH), exist_ok=True)
+    full_output_path = OUTPUT_PATH.replace(".csv", "_FULL_PRE_FILTER.csv")
+    df_filtered.to_csv(full_output_path, index=False)
+    print(f"\n[EXPORT] Full analytical dataset (for plotting) saved to {full_output_path}")
+
+    # SAVE 2: Filtered Dataset (Only Safe Candidates)
+    df_final = df_filtered[df_filtered["hERG_Pass"]].copy()
     df_final.to_csv(OUTPUT_PATH, index=False)
 
     print("\n" + "=" * 90)
@@ -139,8 +144,8 @@ def main():
         print(f"{str(r['Name']):<28} | hERG Prob: {r['hERG_Blocker_Prob']:.3f} | "
               f"Caco-2: {r['Caco2_Permeability']:.2f} | Profile: {r['ADMET_Profile']}")
 
-    print(f"\n[EXPORT] Processed dataset ({len(df_final)} compounds) saved to {OUTPUT_PATH}")
-    print("[DONE] 3.5_ADMET.py complete.")
+    print(f"\n[EXPORT] Safe candidates ({len(df_final)}) saved to {OUTPUT_PATH}")
+    print("[DONE] 08_admet_profiling.py complete.")
 
 
 if __name__ == "__main__":

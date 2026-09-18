@@ -77,6 +77,21 @@ LATEX_REF_COMPOUNDS = [
     ('Triamterene', 'Triamterene')
 ]
 
+# =========================================================
+# HARDWARE & ADMET EXPERIMENTAL PARAMETERS
+# =========================================================
+# Hardware
+CORES_ADMET = 48
+
+# ADMET Thresholds
+HERG_THRESH  = 0.5         # Probability < 0.5 = Low cardiotoxicity risk
+CACO2_THRESH = -5.15       # Permeability > -5.15 log(cm/s) = Moderate/High Oral Permeability
+
+# Lipinski Rule of Five Parameters
+LIPINSKI_MAX_HDONORS    = 5
+LIPINSKI_MAX_HACCEPTORS = 10
+LIPINSKI_MAX_LOGP       = 5.0
+
 # Ensure all output directories exist
 for d in [RESULTS_DIR, LATEX_DIR, FIGURES_DIR, LOGS_DIR]:
     os.makedirs(d, exist_ok=True)
