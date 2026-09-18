@@ -23,7 +23,6 @@ CENTER_X, CENTER_Y, CENTER_Z = 3.689, 39.992, -62.818
 BOX_SIZE       = 20.0   # Angstroms
 EXHAUSTIVENESS = 32     # Higher = more thorough (8 is standard, 32 is publication quality)
 N_POSES        = 3      # Save top 3 poses per ligand
-VINA_SEED      = 42     # Guaranteed reproducibility for Q1 validation
 
 # Thresholds for ML+physics agreement interpretation
 ML_ACTIVE_THRESH   = 6.5   # pIC50 > this = predicted active
@@ -31,15 +30,22 @@ DOCK_ACTIVE_THRESH = -8.0  # kcal/mol < this = docking confirms binding
 
 
 # =========================================================
-# LIGAND PREPARATION
+# LIGAND PREPARATION (UPDATED FOR MEEKO v0.5)
 # =========================================================
 def prepare_ligand_pdbqt(smiles, name):
     """SMILES -> 3D conformer (ETKDGv3 + MMFF94) -> PDBQT string via Meeko."""
     try:
         from meeko import MoleculePreparation
+        from meeko import PDBQTWriterLegacy
+
         mol = Chem.MolFromSmiles(smiles)
         if mol is None:
             return None
+
+        # Clean salts: Keep only the largest fragment (e.g., removes HCl)
+        frags = Chem.GetMolFrags(mol, asMols=True)
+        mol = max(frags, key=lambda f: f.GetNumAtoms())
+
         mol = Chem.AddHs(mol)
         params = AllChem.ETKDGv3()
         params.randomSeed = 42
@@ -49,25 +55,31 @@ def prepare_ligand_pdbqt(smiles, name):
             AllChem.MMFFOptimizeMolecule(mol)
         except Exception:
             pass
+
         prep = MoleculePreparation()
-        prep.prepare(mol)
-        return prep.write_pdbqt_string()
-    except Exception:
+        mol_setups = prep.prepare(mol)
+
+        # New Meeko syntax to avoid deprecation warnings
+        pdbqt_string, is_ok, err = PDBQTWriterLegacy.write_string(mol_setups[0])
+        if is_ok:
+            return pdbqt_string
+        else:
+            return None
+    except Exception as e:
         return None
 
 
 # =========================================================
-# LATEX EXPORT (VERSIÓN A PRUEBA DE BALAS)
+# LATEX EXPORT
 # =========================================================
 def newcommand(f_handle, name, value):
     f_handle.write(f"\\newcommand{{\\{name}}}{{{value}}}\n")
 
 def export_latex(df_results):
     abs_path = os.path.abspath(LATEX_FILE)
-    print(f"\n[LATEX] Intentando escribir archivo en: {abs_path}")
+    print(f"\n[LATEX] Attempting to write file to: {abs_path}")
 
     try:
-        # Asegurarse de que el directorio existe
         os.makedirs(os.path.dirname(abs_path), exist_ok=True)
 
         with open(abs_path, 'w', encoding='utf-8') as f:
@@ -104,12 +116,10 @@ def export_latex(df_results):
             newcommand(f, "DockBestMLpIC",        f"{best['ML_pIC50']:.4f}")
             newcommand(f, "DockBestDockScore",    f"{best['Docking_Score']:.2f}")
 
-            # Extracción dinámica con f_handle explícito para evitar problemas de scope
             def extract_compound_metrics(file_handle, df, name_substring, prefix):
                 match = df[df['Name'].str.contains(name_substring, case=False, na=False)]
                 if not match.empty:
                     row = match.iloc[0]
-                    # ML_pIC50 a 4 decimales para que coincida con el texto
                     newcommand(file_handle, f"{prefix}MLpIC", f"{row['ML_pIC50']:.4f}")
                     newcommand(file_handle, f"{prefix}DockScore", f"{row['Docking_Score']:.2f}")
 
@@ -120,10 +130,10 @@ def export_latex(df_results):
             extract_compound_metrics(f, df_results, 'Methotrexate', 'Methotrexate')
             extract_compound_metrics(f, df_results, 'Triamterene', 'Triamterene')
 
-        print(f"[LATEX] ¡ÉXITO! Variables exportadas correctamente a: {abs_path}")
+        print(f"[LATEX] SUCCESS! Variables exported to {abs_path}")
 
     except Exception as e:
-        print(f"[LATEX ERROR] Ocurrió un error al intentar escribir el archivo .tex: {e}")
+        print(f"[LATEX ERROR] Failed to write .tex file: {e}")
 
 
 # =========================================================
@@ -153,7 +163,6 @@ def run():
 
     df = pd.read_csv(INPUT_CSV)
 
-    # Select candidates: top 15 by pIC50 + paper reference drugs + Chlorambucil
     top = df.head(15).copy()
     ref_names = ['Pyrimethamine', 'Trimethoprim', 'Bisacodyl',
                  'Etodolac', 'Triamterene', 'Methotrexate', 'Chlorambucil']
@@ -161,7 +170,6 @@ def run():
     candidates = pd.concat([top, refs]).drop_duplicates('CID').reset_index(drop=True)
     print(f"\n[INFO] {len(candidates)} candidates selected for docking")
 
-    # Configure Vina
     v = Vina(sf_name='vina')
     v.set_receptor(RECEPTOR_FILE)
     v.compute_vina_maps(
@@ -186,8 +194,8 @@ def run():
         try:
             v.set_ligand_from_string(pdbqt)
 
-            # CRITICAL FIX: Added explicit seed for reproducibility
-            v.dock(exhaustiveness=EXHAUSTIVENESS, n_poses=N_POSES, seed=VINA_SEED)
+            # REMOVED seed parameter. Vina python API does not support it here.
+            v.dock(exhaustiveness=EXHAUSTIVENESS, n_poses=N_POSES)
 
             energies = v.energies(n_poses=N_POSES)
             best_energy = energies[0][0]
@@ -205,7 +213,8 @@ def run():
                 'Type':         row.get('Type', ''),
             })
         except Exception as e:
-            print(f"{name:<30} | Vina error ({str(e)[:10]}) |")
+            # Print the actual exception to debug if it fails again
+            print(f"{name:<30} | Error: {type(e).__name__} |")
 
     if not results:
         print("[ERROR] No successful docking results.")
@@ -213,7 +222,6 @@ def run():
 
     df_res = pd.DataFrame(results).sort_values('Docking_Score').reset_index(drop=True)
 
-    # ── Results table ─────────────────────────────────────────────────────────
     print("\n" + "=" * 100)
     print("FINAL RESULTS — ML prediction vs. Physics (AutoDock Vina)")
     print("=" * 100)
@@ -230,36 +238,10 @@ def run():
         else:                                                         status = "Neutral"
         print(f"{str(r['Name'])[:28]:<30} | {ml:>9.4f} | {dock:>15.2f} | {status}")
 
-    # ── Correlation ───────────────────────────────────────────────────────────
-    if len(df_res) >= 3:
-        rho_val, p_val = stats.spearmanr(df_res['ML_pIC50'], df_res['Docking_Score'])
-        print(f"\nSpearman correlation (ML pIC50 vs Docking Score): rho={rho_val:.3f}, p={p_val:.4f}")
-        print("(Negative rho expected: higher pIC50 should correlate with more negative docking energy)")
-
-    # ── Executive summary ─────────────────────────────────────────────────────
-    n_validated  = len(df_res[(df_res['ML_pIC50'] > ML_ACTIVE_THRESH) &
-                               (df_res['Docking_Score'] < DOCK_ACTIVE_THRESH)])
-    n_discordant = len(df_res[(df_res['ML_pIC50'] > ML_ACTIVE_THRESH) &
-                               (df_res['Docking_Score'] >= DOCK_ACTIVE_THRESH)])
-    best = df_res.iloc[0]
-
-    print("\n" + "=" * 100)
-    print("EXECUTIVE SUMMARY — paste into Results/Discussion")
-    print("=" * 100)
-    print(f"- {n_validated}/{len(df_res)} compounds show ML-physics agreement "
-          f"(pIC50>{ML_ACTIVE_THRESH} AND docking<{DOCK_ACTIVE_THRESH} kcal/mol)")
-    print(f"- {n_discordant} compounds flagged as potential ML false positives "
-          f"(high pIC50 but weak docking score)")
-    print(f"- Best docking candidate: {best['Name']} "
-          f"(ML pIC50={best['ML_pIC50']:.4f}, Vina={best['Docking_Score']:.2f} kcal/mol)")
-    if len(df_res) >= 3:
-        print(f"- Spearman rho(ML, docking)={rho_val:.3f} (p={p_val:.4f}) — "
-              f"{'significant' if p_val < 0.05 else 'not significant'} correlation")
-
     df_res.to_csv(OUTPUT_CSV, index=False)
     print(f"\n[EXPORT] Results saved to {OUTPUT_CSV}")
     export_latex(df_res)
-    print("[DONE] 3DOCKING.py complete.")
+    print("[DONE] 07_molecular_docking.py complete.")
 
 
 if __name__ == "__main__":
