@@ -103,6 +103,42 @@ NOISE_LEVELS = [0.01, 0.001]
 
 
 
+# =========================================================
+# CONFIGURATION FOR VIRTUAL SCREENING (5)
+# =========================================================
+# We directly use the variables exposed in paths_config.py
+ISO_CONTAMINATION = 0.05
+MAX_MW = 1000.0
+
+# Allowed atoms (identical to the original paper)
+ALLOWED_ATOMS = {1, 6, 7, 8, 9, 15, 16, 17, 35, 53}
+
+# References for internal precision validation
+KNOWN_VALUES = {
+    'Pyrimethamine': 6.56,
+    'Trimethoprim': 5.57,
+}
+
+# Candidates from the original paper (Table 2)
+PAPER_TOP = ['Bisacodyl', 'Etodolac', 'Triamterene', 'Finerenone',
+             'Methotrexate', 'Pyrimethamine', 'Trimethoprim']
+
+
+# =========================================================
+# REDOCKING CONFIGURATION (6)
+# =========================================================
+PDB_FILE = RECEPTOR_PDB
+RECEPTOR_FILE = RECEPTOR_PDBQT
+LIGAND_CODE = "CP6"
+CHAIN = "B"  # DHFR active site chain
+EXHAUSTIVENESS = 32
+RMSD_THRESHOLD = 2.0
+BOX_SIZE = 20.0
+
+
+
+
+
 
 
 
