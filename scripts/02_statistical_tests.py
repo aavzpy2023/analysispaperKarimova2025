@@ -1,88 +1,126 @@
-# =========================================================
-# 01NadeauBengio.py — Corrected t-test (Nadeau-Bengio) ONLY
-# Note: Standard Wilcoxon removed to prevent pseudoreplication
-# =========================================================
 import os
 import sys
+import logging
 import pandas as pd
 import numpy as np
 from scipy import stats
 
-# Link root directory to import paths_config
+# Link root directory to import paths_config and logger_utils
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from paths_config import CHECKPOINT_FILE, LATEX_DIR
+from paths_config import CHECKPOINT_FILE, LATEX_DIR, LOGS_DIR
+from logger_utils import setup_logger
 
-# --- RENOMBRADO: Archivo de salida ahora refleja la prueba real ---
 NADEAU_BENGIO_LATEX_FILE = os.path.join(LATEX_DIR, "nadeau_bengio_variables.tex")
 
-def main():
-    print("=" * 70)
-    print("01NadeauBengio.py — Nadeau-Bengio Variance Correction")
-    print("=" * 70)
 
+def main():
+    # Initialize detailed logger
+    log_file_path = os.path.join(LOGS_DIR, "02_statistical_tests.log")
+    setup_logger(log_file_path)
+    logger = logging.getLogger(__name__)
+
+    logger.info("=" * 80)
+    logger.info("02_statistical_tests.py — Nadeau-Bengio Variance Correction Test")
+    logger.info("=" * 80)
+
+    # Validate Checkpoint Data
     if not os.path.exists(CHECKPOINT_FILE):
-        print(f"[ERROR] {CHECKPOINT_FILE} not found. Run 0STACK.py first.")
+        logger.error(f"Checkpoint file not found at: {CHECKPOINT_FILE}. Ensure 01_nested_cv_stacking.py completed.")
         return
 
+    logger.info(f"Loading nested CV results from: {CHECKPOINT_FILE}")
     df = pd.read_csv(CHECKPOINT_FILE)
+    logger.info(f"Total records loaded: {len(df)}. Available modes: {df['Mode'].unique().tolist()}")
 
     # Filter and sort by fold to guarantee exact pairing
+    logger.info("Extracting performance metrics for 'morgan' and 'rdkit2d3d_fp' modes...")
     morgan = df[df['Mode'] == 'morgan'].sort_values('Fold')
     d3d = df[df['Mode'] == 'rdkit2d3d_fp'].sort_values('Fold')
 
     if len(morgan) == 0 or len(d3d) == 0:
-        print("[ERROR] Could not find both 'morgan' and 'rdkit2d3d_fp' in checkpoint.")
+        logger.error("Missing data for one or both required modes ('morgan', 'rdkit2d3d_fp'). Aborting test.")
         return
+
+    # Structural Validation: Strict pairing by Fold ID
+    if not np.array_equal(morgan['Fold'].values, d3d['Fold'].values):
+        logger.error(
+            "Fold IDs do not match exactly between 'morgan' and 'rdkit2d3d_fp'. Paired t-test requires strictly aligned distributions.")
+        return
+
+    logger.debug("Strict fold alignment validated successfully.")
 
     mae_morgan = morgan['MAE_outer'].values
     mae_d3d = d3d['MAE_outer'].values
 
-    print(f"Loaded {len(mae_morgan)} folds for 'morgan' and {len(mae_d3d)} folds for 'rdkit2d3d_fp'.")
-    print(f"Mean MAE Morgan   : {mae_morgan.mean():.4f} +/- {mae_morgan.std():.4f}")
-    print(f"Mean MAE 2D/3D/FP : {mae_d3d.mean():.4f} +/- {mae_d3d.std():.4f}")
+    logger.info(f"Data points extracted: {len(mae_morgan)} outer folds per mode.")
+    logger.info(
+        f"Morgan MAE Distribution     -> Mean: {mae_morgan.mean():.4f} | Std: {mae_morgan.std():.4f} | Min: {mae_morgan.min():.4f} | Max: {mae_morgan.max():.4f}")
+    logger.info(
+        f"2D/3D/FP MAE Distribution -> Mean: {mae_d3d.mean():.4f} | Std: {mae_d3d.std():.4f} | Min: {mae_d3d.min():.4f} | Max: {mae_d3d.max():.4f}")
 
     # =========================================================
     # Nadeau-Bengio Corrected Paired t-test
     # =========================================================
+    logger.info("Initializing Nadeau-Bengio variance correction calculations...")
     n_train_actual = morgan['N_train'].iloc[0]
     n_test_actual = morgan['N_test'].iloc[0]
-    n_obs = len(mae_morgan)  # Total folds (e.g., 25 for 5x5)
+    n_obs = len(mae_morgan)
+
+    logger.debug(f"Test Parameters -> N_train: {n_train_actual}, N_test: {n_test_actual}, N_folds_total (obs): {n_obs}")
 
     diff = mae_morgan - mae_d3d
     mean_diff = diff.mean()
     var_diff = diff.var(ddof=1)
 
+    logger.debug(f"Difference Array Statistics -> Mean diff: {mean_diff:.6f}, Variance of diff: {var_diff:.6f}")
+
     # Correction factor: 1/K*R + n_test/n_train
-    correction = (1.0 / n_obs) + (n_test_actual / n_train_actual)
-    se_corrected = np.sqrt(var_diff * correction)
+    variance_correction_term = (1.0 / n_obs) + (n_test_actual / n_train_actual)
+    se_corrected = np.sqrt(var_diff * variance_correction_term)
 
-    t_corrected = mean_diff / se_corrected if se_corrected > 0 else 0.0
-    df_ttest = n_obs - 1
-    p_corrected = 2 * stats.t.sf(np.abs(t_corrected), df=df_ttest) if se_corrected > 0 else 1.0
+    logger.debug(f"Correction Factor Term: {variance_correction_term:.6f}")
+    logger.debug(f"Corrected Standard Error: {se_corrected:.6f}")
 
-    print("\n" + "-" * 70)
-    print("Nadeau-Bengio Corrected Paired t-test:")
-    print(f"  t-statistic = {t_corrected:.3f}")
-    print(f"  p-value     = {p_corrected:.4f}")
-    print("-" * 70)
+    if se_corrected > 0:
+        t_corrected = mean_diff / se_corrected
+        df_ttest = n_obs - 1
+        p_corrected = 2 * stats.t.sf(np.abs(t_corrected), df=df_ttest)
+    else:
+        logger.warning(
+            "Corrected standard error is exactly zero. This typically implies identical prediction outputs across all folds.")
+        t_corrected = 0.0
+        p_corrected = 1.0
+
+    logger.info("-" * 80)
+    logger.info("Nadeau-Bengio Corrected Paired t-test Results:")
+    logger.info(f"  t-statistic = {t_corrected:.3f}")
+    logger.info(f"  p-value     = {p_corrected:.4f}")
+    logger.info("-" * 80)
 
     if p_corrected >= 0.05:
-        print("RESULT (Nadeau-Bengio): No statistically significant difference (p >= 0.05).")
+        logger.info(
+            "TEST CONCLUSION: No statistically significant difference between Morgan and 2D/3D/FP representations (p >= 0.05).")
     else:
-        print("RESULT (Nadeau-Bengio): Statistically significant difference (p < 0.05).")
+        logger.info(
+            "TEST CONCLUSION: Statistically significant difference observed between representations (p < 0.05).")
 
     # =========================================================
     # Export to LaTeX
     # =========================================================
-    with open(NADEAU_BENGIO_LATEX_FILE, 'w', encoding='utf-8') as f:
-        f.write("% =====================================================\n")
-        f.write("% Auto-generated by 01NadeauBengio.py (NB Correction Only)\n")
-        f.write("% Include in preamble with: \\input{latex/nadeau_bengio_variables.tex}\n")
-        f.write("% =====================================================\n\n")
-        f.write(f"\\newcommand{{\\CorrectedTStat}}{{{t_corrected:.3f}}}\n")
-        f.write(f"\\newcommand{{\\CorrectedTP}}{{{p_corrected:.4f}}}\n")
+    logger.info(f"Writing statistical variables to LaTeX file: {NADEAU_BENGIO_LATEX_FILE}")
+    try:
+        os.makedirs(os.path.dirname(NADEAU_BENGIO_LATEX_FILE), exist_ok=True)
+        with open(NADEAU_BENGIO_LATEX_FILE, 'w', encoding='utf-8') as f:
+            f.write("% =====================================================\n")
+            f.write("% Auto-generated by 02_statistical_tests.py (NB Correction Only)\n")
+            f.write("% Include in preamble with: \\input{latex/nadeau_bengio_variables.tex}\n")
+            f.write("% =====================================================\n\n")
+            f.write(f"\\newcommand{{\\CorrectedTStat}}{{{t_corrected:.3f}}}\n")
+            f.write(f"\\newcommand{{\\CorrectedTP}}{{{p_corrected:.4f}}}\n")
+        logger.info("LaTeX variable export completed successfully.")
+    except Exception as e:
+        logger.error(f"Failed to write LaTeX variables: {e}")
 
-    print(f"\n[LATEX] Successfully generated: {NADEAU_BENGIO_LATEX_FILE}")
 
 if __name__ == "__main__":
     main()
