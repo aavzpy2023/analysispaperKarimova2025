@@ -1,0 +1,62 @@
+==========================================================================================
+07_molecular_docking_5.py — Fully Agnostic Docking Pipeline
+Receptor: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/receptor/receptor.pdbqt
+Active site center: [3.689, 39.992, -62.818]
+Box: 20.0A | Exhaustiveness: 32
+Log file: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/logs/07_molecular_docking.log
+==========================================================================================
+
+[INFO] 19 candidates selected for docking
+
+Compound                  |     LE | Dock (kcal/mol) | Time (s)
+-----------------------------------------------------------------
+Methotrexate              | -0.263 |           -8.69 |    33.44s
+Trimetrexate Glucuronate  | -0.315 |           -8.51 |    12.58s
+CID 336805                | -0.315 |           -8.51 |    12.90s
+Folic Acid                | -0.273 |           -8.74 |    28.26s
+Methylene Blue            | -0.365 |           -7.31 |     2.95s
+Bendamustine Hydrochlori  | -0.288 |           -6.62 |    11.30s
+Fentanyl Citrate          | -0.346 |           -8.66 |     9.77s
+Ivabradine                | -0.205 |           -6.97 |    68.16s
+Ivabradine Hydrochloride  | -0.205 |           -6.97 |    70.62s
+Trifarotene               | -0.265 |           -9.02 |    29.97s
+Triamterene               | -0.422 |           -8.03 |     4.82s
+Pyrimethamine             | -0.433 |           -7.36 |     4.38s
+Sulfamethoxazole; Trimet  | -0.346 |           -7.27 |     7.65s
+Finerenone                | -0.282 |           -7.91 |     9.49s
+Trimethoprim Hydrochlori  | -0.346 |           -7.27 |     7.92s
+Trimethoprim              | -0.346 |           -7.27 |     7.76s
+Trimethoprim sulfate      | -0.346 |           -7.27 |     8.17s
+Etodolac                  | -0.361 |           -7.57 |     5.35s
+Bisacodyl                 | -0.327 |           -8.84 |    11.00s
+
+====================================================================================================
+FINAL RESULTS ENRICHED — ML Prediction vs. Physics (AutoDock Vina)
+====================================================================================================
+Compound                  |  ML pIC50 |     Vina |      LE | Agreement
+--------------------------------------------------------------------------------
+Trifarotene               |    6.8311 |    -9.02 |  -0.265 | VALIDATED (+)
+Bisacodyl                 |    5.3321 |    -8.84 |  -0.327 | ML FALSE NEGATIVE
+Folic Acid                |    7.0830 |    -8.74 |  -0.273 | VALIDATED (+)
+Methotrexate              |    7.5678 |    -8.69 |  -0.264 | VALIDATED (+)
+Fentanyl Citrate          |    6.8673 |    -8.66 |  -0.346 | VALIDATED (+)
+Trimetrexate Glucuronate  |    7.3351 |    -8.51 |  -0.315 | VALIDATED (+)
+CID 336805                |    7.3351 |    -8.51 |  -0.315 | VALIDATED (+)
+Triamterene               |    6.6031 |    -8.03 |  -0.422 | VALIDATED (+)
+Finerenone                |    5.8234 |    -7.91 |  -0.282 | Neutral
+Etodolac                  |    5.5419 |    -7.57 |  -0.361 | Neutral
+Pyrimethamine             |    6.3259 |    -7.36 |  -0.433 | Neutral
+Methylene Blue            |    6.9091 |    -7.31 |  -0.365 | ML FALSE POSITIVE
+Sulfamethoxazole; Trimet  |    6.0235 |    -7.27 |  -0.346 | Neutral
+Trimethoprim Hydrochlori  |    5.6407 |    -7.27 |  -0.346 | VALIDATED (-)
+Trimethoprim              |    5.6352 |    -7.27 |  -0.346 | VALIDATED (-)
+Trimethoprim sulfate      |    5.6038 |    -7.27 |  -0.346 | VALIDATED (-)
+Ivabradine                |    6.8497 |    -6.97 |  -0.205 | ML FALSE POSITIVE
+Ivabradine Hydrochloride  |    6.8492 |    -6.97 |  -0.205 | ML FALSE POSITIVE
+Bendamustine Hydrochlori  |    6.8859 |    -6.62 |  -0.288 | ML FALSE POSITIVE
+
+[EXPORT] Enriched dataset saved to /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/Final_Validation_Hybrid.csv
+
+[LATEX] Attempting to write file to: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/latex/docking_variables.tex
+[LATEX] SUCCESS! Variables exported to /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/latex/docking_variables.tex
+[DONE] 07_molecular_docking_5.py complete.

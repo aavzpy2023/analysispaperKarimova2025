@@ -56,7 +56,6 @@ pip-deleteUn `.gitignore` estándar configurado específicamente para proyectos 
 *.ind
 *.ist
 *.lof
-*.log
 *.lot
 *.out
 *.run.xml
