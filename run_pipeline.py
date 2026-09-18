@@ -1,7 +1,12 @@
-import subprocess
+import os
 import sys
+import subprocess
+from datetime import datetime
 
-# Define the validated sequential pipeline
+# Directorio de logs centralizado
+LOGS_DIR = os.path.abspath("./logs")
+os.makedirs(LOGS_DIR, exist_ok=True)
+
 PIPELINE = [
     "scripts/01_nested_cv_stacking.py",
     "scripts/02_statistical_tests.py",
@@ -14,19 +19,73 @@ PIPELINE = [
     "scripts/09_gnn_baseline.py"
 ]
 
+class MasterStreamWriter:
+    """Escribe en tiempo real hacia la consola y hacia archivos de log (individual y general)."""
+    def __init__(self, log_filepaths):
+        self.terminal = sys.stdout
+        self.files = [open(fp, "a", encoding="utf-8") for fp in log_filepaths]
+
+    def write(self, message):
+        self.terminal.write(message)
+        for f in self.files:
+            f.write(message)
+            f.flush()
+
+    def flush(self):
+        self.terminal.flush()
+        for f in self.files:
+            f.flush()
+
+    def close(self):
+        for f in self.files:
+            f.close()
+
+def execute_and_log(script_path, master_log_path):
+    script_filename = os.path.basename(script_path)
+    log_filename = script_filename.replace(".py", ".log")
+    step_log_path = os.path.join(LOGS_DIR, log_filename)
+
+    # Limpiar log individual de ejecuciones anteriores
+    with open(step_log_path, "w", encoding="utf-8") as f:
+        f.write(f"=== START LOG: {script_filename} [{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] ===\n\n")
+
+    writer = MasterStreamWriter([step_log_path, master_log_path])
+
+    # Captura stdout y stderr unificados a nivel de proceso del sistema
+    process = subprocess.Popen(
+        [sys.executable, script_path],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        bufsize=1
+    )
+
+    try:
+        for line in iter(process.stdout.readline, ''):
+            writer.write(line)
+        process.wait()
+        if process.returncode != 0:
+            raise subprocess.CalledProcessError(process.returncode, script_path)
+    finally:
+        writer.write(f"\n=== END LOG: {script_filename} [EXIT CODE: {process.returncode}] ===\n\n")
+        writer.close()
+
 def run_pipeline():
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    master_log_path = os.path.join(LOGS_DIR, f"master_pipeline_{timestamp}.log")
+
     print("=" * 80)
     print("INITIATING Q1-STANDARDIZED COMPUTATIONAL PIPELINE")
+    print(f"Master execution log: {master_log_path}")
     print("=" * 80)
 
     for script in PIPELINE:
         print(f"\n[>>>] Executing {script}...")
         try:
-            # Execute and pipe output to stdout
-            result = subprocess.run([sys.executable, script], check=True)
+            execute_and_log(script, master_log_path)
             print(f"[OK] {script} completed successfully.")
         except subprocess.CalledProcessError as e:
-            print(f"[FATAL ERROR] {script} failed with exit code {e.returncode}.")
+            print(f"\n[FATAL ERROR] {script} failed with exit code {e.returncode}.")
             print("Halting pipeline to prevent cascading data corruption.")
             sys.exit(1)
 

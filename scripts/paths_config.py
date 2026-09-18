@@ -1,5 +1,5 @@
 # =========================================================
-# paths_config.py — Central path configuration
+# paths_config.py — Central path and experimental configuration
 # Import this in every script: from paths_config import *
 # =========================================================
 import os
@@ -33,8 +33,8 @@ MASK_FILE            = os.path.join(RESULTS_DIR, "selected_features_mask.npy")
 # ADMET & Docking Candidates
 FDA_RAW_CANDIDATES_CSV   = os.path.join(RESULTS_DIR, "FDA_Candidates_For_Docking.csv")
 FDA_ADMET_CANDIDATES_CSV = os.path.join(RESULTS_DIR, "ADMET_CANDIDATES_For_Docking.csv")
-FDA_CANDIDATES_CSV  = os.path.join(RESULTS_DIR, "FDA_Candidates_For_Docking.csv")
-DOCKING_RESULTS_CSV  = os.path.join(RESULTS_DIR, "Final_Validation_Hybrid.csv")
+FDA_CANDIDATES_CSV       = os.path.join(RESULTS_DIR, "FDA_Candidates_For_Docking.csv")
+DOCKING_RESULTS_CSV       = os.path.join(RESULTS_DIR, "Final_Validation_Hybrid.csv")
 
 # LaTeX files
 LATEX_PAPER     = os.path.join(LATEX_DIR, "paper_variables.tex")
@@ -46,6 +46,36 @@ LATEX_REDOCKING = os.path.join(LATEX_DIR, "redocking_variables.tex")
 # Figure files
 FIGURE_NESTED_CV = os.path.join(FIGURES_DIR, "r2_by_representation_boxplot.png")
 FIGURE_AUGMENT   = os.path.join(FIGURES_DIR, "augment_r2_comparison.png")
+
+# =========================================================
+# DOCKING & VINA EXPERIMENTAL PARAMETERS
+# =========================================================
+# Active site grid box coordinates (detected from crystal ligand)
+CENTER_X, CENTER_Y, CENTER_Z = 3.689, 39.992, -62.818
+BOX_SIZE       = 20.0   # Angstroms
+EXHAUSTIVENESS = 32     # Search depth (32 = publication quality)
+N_POSES        = 3      # Top poses per ligand
+
+# Decision Thresholds (ML + Physics classification)
+ML_ACTIVE_THRESH   = 6.5   # pIC50 > 6.5 = predicted active
+DOCK_ACTIVE_THRESH = -8.0  # kcal/mol < -8.0 = binding confirmed
+
+# Compound Selection Settings
+TOP_CANDIDATES_COUNT = 15
+REF_CONTROL_NAMES    = [
+    'Pyrimethamine', 'Trimethoprim', 'Bisacodyl',
+    'Etodolac', 'Triamterene', 'Methotrexate', 'Chlorambucil'
+]
+
+# Control compounds exported to LaTeX: tuple(search_substring, latex_prefix)
+LATEX_REF_COMPOUNDS = [
+    ('Chlorambucil', 'Chlorambucil'),
+    ('Bisacodyl', 'Bisacodyl'),
+    ('Pyrimethamine', 'Pyrimethamine'),
+    ('Folic Acid', 'FolicAcid'),
+    ('Methotrexate', 'Methotrexate'),
+    ('Triamterene', 'Triamterene')
+]
 
 # Ensure all output directories exist
 for d in [RESULTS_DIR, LATEX_DIR, FIGURES_DIR, LOGS_DIR]:
