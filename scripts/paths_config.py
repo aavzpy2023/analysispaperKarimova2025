@@ -47,10 +47,10 @@ LATEX_REDOCKING = os.path.join(LATEX_DIR, "redocking_variables.tex")
 FIGURE_NESTED_CV = os.path.join(FIGURES_DIR, "r2_by_representation_boxplot.png")
 FIGURE_AUGMENT   = os.path.join(FIGURES_DIR, "augment_r2_comparison.png")
 
-
+RANDOM_STATE = 42
 
 # =========================================================
-# PROFILES TO RUN (5x5 REPEATED NESTED CV)
+# PROFILES TO RUN (5x5 REPEATED NESTED CV) (1)
 # =========================================================
 PROFILE = 'workstation'
 
@@ -76,7 +76,31 @@ PROFILES = {
 }
 CFG = PROFILES[PROFILE]
 
-RANDOM_STATE_NESTED_CV = 42
+
+# =========================================================
+# y-RANDOMIZATION EXPERIMENT CONFIGURATION (3)
+# =========================================================
+N_PERMUTATIONS = 100
+
+# Dynamically extract CV_FOLDS and N_JOBS from the active profile
+ACTIVE_CFG = PROFILES[PROFILE]
+CV_FOLDS = ACTIVE_CFG.get('OUTER_N_SPLITS', 5)
+N_JOBS = ACTIVE_CFG.get('N_JOBS', 1)
+
+
+
+# =========================================================
+# CONFIGURATION & PARAMETERS FOR DATA AUGMENTATION (4)
+# =========================================================
+TEST_SIZE = 0.15  # 15% holdout test set (identical to paper)
+N_ENSEMBLE_RUNS = 5  # 5 stochastic ensemble runs (averaged)
+N_BOOTSTRAP = 2000  # Resampling iterations for non-parametric CIs
+LATEX_FILE = LATEX_AUGMENT
+FIGURE_FILE = FIGURE_AUGMENT
+
+# Gaussian noise perturbation levels
+NOISE_LEVELS = [0.01, 0.001]
+
 
 
 
@@ -138,7 +162,6 @@ FIGURE_GNN      = os.path.join(FIGURES_DIR, "gnn_comparison.png")
 
 # Experimental Parameters
 N_WORKERS_GNN    = 0
-RANDOM_STATE_GNN = 42
 N_BOOTSTRAP_GNN  = 2000
 TEST_SIZE_GNN    = 0.15
 

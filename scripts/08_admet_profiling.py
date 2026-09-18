@@ -102,7 +102,7 @@ def main():
     X_train_herg = smiles_to_fps(herg_dataset["Drug"].tolist())
     y_train_herg = herg_dataset["Y"].values
 
-    rf_herg = RandomForestClassifier(n_estimators=100, random_state=42, n_jobs=CORES_ADMET)
+    rf_herg = RandomForestClassifier(n_estimators=100, random_state=RANDOM_STATE, n_jobs=CORES_ADMET)
     rf_herg.fit(X_train_herg, y_train_herg)
     df_filtered["hERG_Blocker_Prob"] = rf_herg.predict_proba(X_cand)[:, 1]
 
@@ -112,7 +112,7 @@ def main():
     X_train_caco = smiles_to_fps(caco_dataset["Drug"].tolist())
     y_train_caco = caco_dataset["Y"].values
 
-    rf_caco = RandomForestRegressor(n_estimators=100, random_state=42, n_jobs=CORES_ADMET)
+    rf_caco = RandomForestRegressor(n_estimators=100, random_state=RANDOM_STATE, n_jobs=CORES_ADMET)
     rf_caco.fit(X_train_caco, y_train_caco)
     df_filtered["Caco2_Permeability"] = rf_caco.predict(X_cand)
 
