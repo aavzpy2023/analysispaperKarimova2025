@@ -1,4 +1,5 @@
 import os
+import sys
 import warnings
 from paths_config import *
 import numpy as np
@@ -6,6 +7,30 @@ import pandas as pd
 from rdkit import Chem, RDLogger
 from rdkit.Chem import AllChem
 from scipy import stats
+
+# =========================================================
+# LOGGING SYSTEM SETUP
+# =========================================================
+class LoggerWriter:
+    def __init__(self, filename):
+        self.terminal = sys.stdout
+        self.log = open(filename, "w", encoding="utf-8")
+
+    def write(self, message):
+        self.terminal.write(message)
+        self.log.write(message)
+        self.log.flush() # Ensure it writes in real-time
+
+    def flush(self):
+        self.terminal.flush()
+        self.log.flush()
+
+# Create logs directory if it doesn't exist
+os.makedirs(LOGS_DIR, exist_ok=True)
+log_file_path = os.path.join(LOGS_DIR, "07_molecular_docking.log")
+
+# Redirect stdout to both terminal and log file
+sys.stdout = LoggerWriter(log_file_path)
 
 warnings.filterwarnings("ignore")
 RDLogger.DisableLog('rdApp.*')
@@ -152,6 +177,7 @@ def run():
     print(f"Receptor: {RECEPTOR_FILE}")
     print(f"Active site center: [{CENTER_X}, {CENTER_Y}, {CENTER_Z}]")
     print(f"Box: {BOX_SIZE}A | Exhaustiveness: {EXHAUSTIVENESS}")
+    print(f"Log file: {log_file_path}")
     print("=" * 90)
 
     if not os.path.exists(RECEPTOR_FILE):
