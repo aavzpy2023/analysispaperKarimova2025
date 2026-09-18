@@ -99,12 +99,20 @@ def export_latex(df_results):
         newcommand(f, "DockBestMLpIC",        f"{best['ML_pIC50']:.4f}")
         newcommand(f, "DockBestDockScore",    f"{best['Docking_Score']:.2f}")
 
-        # Dynamic extraction for true negative example (Chlorambucil)
-        chlorambucil = df_results[df_results['Name'].str.contains('Chlorambucil', case=False, na=False)]
-        if not chlorambucil.empty:
-            c_row = chlorambucil.iloc[0]
-            newcommand(f, "ChlorambucilMLpIC", f"{c_row['ML_pIC50']:.2f}")
-            newcommand(f, "ChlorambucilDockScore", f"{c_row['Docking_Score']:.2f}")
+        # Dynamic extraction for specific compounds mentioned in the manuscript
+        def extract_compound_metrics(df, name_substring, prefix):
+            match = df[df['Name'].str.contains(name_substring, case=False, na=False)]
+            if not match.empty:
+                row = match.iloc[0]
+                newcommand(f, f"{prefix}MLpIC", f"{row['ML_pIC50']:.2f}")
+                newcommand(f, f"{prefix}DockScore", f"{row['Docking_Score']:.2f}")
+
+        extract_compound_metrics(df_results, 'Chlorambucil', 'Chlorambucil')
+        extract_compound_metrics(df_results, 'Bisacodyl', 'Bisacodyl')
+        extract_compound_metrics(df_results, 'Pyrimethamine', 'Pyrimethamine')
+        extract_compound_metrics(df_results, 'Folic Acid', 'FolicAcid')
+        extract_compound_metrics(df_results, 'Methotrexate', 'Methotrexate')
+        extract_compound_metrics(df_results, 'Triamterene', 'Triamterene')
 
     print(f"[LATEX] Docking variables exported to {LATEX_FILE}")
 
