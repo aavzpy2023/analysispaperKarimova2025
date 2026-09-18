@@ -44,7 +44,7 @@ def prepare_ligand_pdbqt(mol_clean):
 
         mol_h = Chem.AddHs(mol_clean)
         params = AllChem.ETKDGv3()
-        params.randomSeed = 42
+        params.randomSeed = RANDOM_STATE
         if AllChem.EmbedMolecule(mol_h, params) == -1:
             AllChem.EmbedMolecule(mol_h, useRandomCoords=True)
         try:
