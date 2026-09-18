@@ -1,6 +1,7 @@
 import concurrent.futures
 import os
 import sys
+import time
 import numpy as np
 import pandas as pd
 from rdkit import Chem
@@ -22,8 +23,9 @@ setup_logger(log_file_path)
 # =========================================================
 # CONFIG
 # =========================================================
-INPUT_PATH  = DOCKING_RESULTS_CSV
+INPUT_PATH = DOCKING_RESULTS_CSV
 OUTPUT_PATH = FDA_ADMET_CANDIDATES_CSV
+
 
 def lipinski_pass(smiles):
     """Evaluates Lipinski's Rule of Five dynamically."""
@@ -31,9 +33,9 @@ def lipinski_pass(smiles):
     if not mol:
         return False
     return (
-        Descriptors.NumHDonors(mol) <= LIPINSKI_MAX_HDONORS
-        and Descriptors.NumHAcceptors(mol) <= LIPINSKI_MAX_HACCEPTORS
-        and Descriptors.MolLogP(mol) <= LIPINSKI_MAX_LOGP
+            Descriptors.NumHDonors(mol) <= LIPINSKI_MAX_HDONORS
+            and Descriptors.NumHAcceptors(mol) <= LIPINSKI_MAX_HACCEPTORS
+            and Descriptors.MolLogP(mol) <= LIPINSKI_MAX_LOGP
     )
 
 
@@ -59,6 +61,8 @@ def smiles_to_fps(smiles_list, radius=2, n_bits=2048):
 
 
 def main():
+    t0 = time.time()
+
     print("=" * 90)
     print("08_admet_profiling.py — ADMET Profiling & Toxicity Risk Assessment")
     print(f"Log file: {log_file_path}")
@@ -91,8 +95,8 @@ def main():
     X_cand = smiles_to_fps(smiles_candidates)
 
     # 2. hERG Training and Prediction (Cardiotoxicity Classifier)
-    print("\n[2] Training hERG Cardiotoxicity Classifier (TDC Dataset)...")
     herg_dataset = Tox(name="hERG").get_data()
+    print(f"\n[2] Training hERG Cardiotoxicity Classifier (TDC Dataset: {len(herg_dataset)} samples)...")
     X_train_herg = smiles_to_fps(herg_dataset["Drug"].tolist())
     y_train_herg = herg_dataset["Y"].values
 
@@ -101,8 +105,8 @@ def main():
     df_filtered["hERG_Blocker_Prob"] = rf_herg.predict_proba(X_cand)[:, 1]
 
     # 3. Caco-2 Training and Prediction (Intestinal Permeability Regressor)
-    print("\n[3] Training Caco-2 Permeability Regressor (TDC Dataset)...")
     caco_dataset = ADME(name="Caco2_Wang").get_data()
+    print(f"\n[3] Training Caco-2 Permeability Regressor (TDC Dataset: {len(caco_dataset)} samples)...")
     X_train_caco = smiles_to_fps(caco_dataset["Drug"].tolist())
     y_train_caco = caco_dataset["Y"].values
 
@@ -135,16 +139,28 @@ def main():
 
     # SAVE 2: Filtered Dataset (Only Safe Candidates)
     df_final = df_filtered[df_filtered["hERG_Pass"]].copy()
+
+    # Calculate funnel stats
+    flagged_herg = len(df_filtered) - len(df_final)
+    print(f"\n[4] Flagged by hERG toxicity: {flagged_herg} compounds")
+
     df_final.to_csv(OUTPUT_PATH, index=False)
 
-    print("\n" + "=" * 90)
+    print("\n" + "=" * 105)
     print("ADMET PROFILING RESULTS SUMMARY")
-    print("=" * 90)
+    print("=" * 105)
     for _, r in df_final.iterrows():
-        print(f"{str(r['Name']):<28} | hERG Prob: {r['hERG_Blocker_Prob']:.3f} | "
-              f"Caco-2: {r['Caco2_Permeability']:.2f} | Profile: {r['ADMET_Profile']}")
+        # Truncate and pad the name to precisely 28 characters to maintain alignment
+        safe_name = str(r['Name'])[:28]
+        print(f"{safe_name:<28} | hERG Prob: {r['hERG_Blocker_Prob']:.3f} | "
+              f"Caco-2: {r['Caco2_Permeability']:>6.2f} | Profile: {r['ADMET_Profile']}")
 
     print(f"\n[EXPORT] Safe candidates ({len(df_final)}) saved to {OUTPUT_PATH}")
+
+    # Calculate and format total execution time
+    t_elapsed = time.time() - t0
+    mins, secs = divmod(t_elapsed, 60)
+    print(f"[TIME] Total execution: {int(mins)}m {int(secs)}s")
     print("[DONE] 08_admet_profiling.py complete.")
 
 
