@@ -4,7 +4,7 @@ import sys
 import time
 import numpy as np
 import pandas as pd
-from rdkit import Chem
+from rdkit import Chem, RDLogger
 from rdkit.Chem import Descriptors, rdFingerprintGenerator
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from tdc.single_pred import ADME, Tox
@@ -13,6 +13,8 @@ from tdc.single_pred import ADME, Tox
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from paths_config import *
 from logger_utils import setup_logger
+
+RDLogger.DisableLog('rdApp.*')
 
 # =========================================================
 # LOGGING SETUP

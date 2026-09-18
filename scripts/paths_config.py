@@ -92,6 +92,69 @@ LIPINSKI_MAX_HDONORS    = 5
 LIPINSKI_MAX_HACCEPTORS = 10
 LIPINSKI_MAX_LOGP       = 5.0
 
+
+# =========================================================
+# GNN BASELINE CONFIGURATION
+# =========================================================
+# Result files
+GNN_RESULTS_CSV = os.path.join(RESULTS_DIR, "gnn_results.csv")
+LATEX_GNN       = os.path.join(LATEX_DIR, "gnn_variables.tex")
+FIGURE_GNN      = os.path.join(FIGURES_DIR, "gnn_comparison.png")
+
+# Experimental Parameters
+N_WORKERS_GNN    = 0
+RANDOM_STATE_GNN = 42
+N_BOOTSTRAP_GNN  = 2000
+TEST_SIZE_GNN    = 0.15
+
+# Reference R2 values for plotting/comparison
+PAPER_R2 = {
+    'PaperBaseline': ('2D/3D/FP, no feature selection', 0.75),
+    'PaperSelected': ('After Permutation Importance selection', 0.82),
+    'PaperFinal': ('Data augmentation + DNN ensemble', 0.85),
+}
+
+
+def get_classical_r2(results_file):
+    """
+    Dynamically loads the best classical ML R2 scores from script 01 results.
+    Prevents hardcoding values and adapts to new runs.
+    """
+    # Fallback values in case script 01 hasn't been run yet
+    default_r2 = {
+        'Morgan FP (RF+XGB+SVM)': 0.7407,
+        'RDKit 2D+FP (best)': 0.7322,
+    }
+
+    if not os.path.exists(results_file):
+        return default_r2
+
+    try:
+        import csv
+        results = {}
+        with open(results_file, mode='r', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                results[row['Mode']] = float(row['mean'])
+
+        # Extract dynamic values
+        morgan_val = results.get('morgan', default_r2['Morgan FP (RF+XGB+SVM)'])
+
+        # Get the best RDKit score from all modes that contain 'rdkit'
+        rdkit_vals = [v for k, v in results.items() if 'rdkit' in k]
+        rdkit_best = max(rdkit_vals) if rdkit_vals else default_r2['RDKit 2D+FP (best)']
+
+        return {
+            'Morgan FP (Best Ensemble)': round(morgan_val, 4),
+            'RDKit (Best Ensemble)': round(rdkit_best, 4),
+        }
+    except Exception:
+        return default_r2
+
+
+# Generate the dictionary dynamically reading the nested_cv_final_results.csv
+CLASSICAL_R2 = get_classical_r2(FINAL_RESULTS_FILE)
+
 # Ensure all output directories exist
 for d in [RESULTS_DIR, LATEX_DIR, FIGURES_DIR, LOGS_DIR]:
     os.makedirs(d, exist_ok=True)
