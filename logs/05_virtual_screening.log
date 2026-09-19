@@ -1,0 +1,121 @@
+====================================================================================================
+VIRTUAL SCREENING PIPELINE — TgDHFR Inhibitor Search
+Timestamp: 2026-09-19 10:24:20
+====================================================================================================
+
+[1/5] ML ARCHITECTURE LOADING
+  [-] Model path: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/best_model.joblib
+  [+] Ensembled model loaded successfully (0.17s)
+  [-] Mask path: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/selected_features_mask.npy
+  [+] Mask applied: 1385 / 2048 features (67.63% retention)
+
+[2/5] APPLICABILITY DOMAIN CONFIGURATION (ISOLATION FOREST)
+  [-] Training source: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/data/V2-df_ic50_chmbl_CID_myFill.csv
+  [+] Training matrix generated: (756, 1385)
+  [+] Isolation Forest fitted (Contamination: 5.0%) in 0.84s
+
+[3/5] FDA LIBRARY PROCESSING
+  [-] Screening source: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/data/PubChem_FDA-approved_NoInorganics.csv
+  [+] Raw compounds imported: 3378
+  [+] Physical/Structural Filtering (MW < 1000.0, Allowed Atoms): 2516 candidates retained (74.5%)
+  [+] In-Domain Filtering (Isolation Forest): 1832 compounds retained (72.8%)
+  [+] Total filtering time: 2.57s
+
+[4/5] ML INFERENCE - BIOACTIVITY PREDICTION (pIC50)
+  [+] Inferences completed in 1.632s
+  [-] Prediction Statistics -> Mean: 5.6719 | Max: 7.5544 | Min: 3.6924
+
+[5/5] PERFORMANCE REPORTS AND EXPORT
+
+--------------------------------------------------------------------------------
+REPORT A: Internal Validation vs Known TgDHFR Controls
+--------------------------------------------------------------------------------
+Drug               |   pIC50 Exp. |  pIC50 Pred. |  Abs Error | Status
+--------------------------------------------------------------------------------
+Pyrimethamine      |         6.56 |       6.3226 |     0.2374 | EXCELLENT
+Trimethoprim       |         5.57 |       6.0387 |     0.4687 | EXCELLENT
+
+----------------------------------------------------------------------------------------------------
+REPORT B: Top 10 FDA Candidates (Sorted by Predicted Affinity)
+----------------------------------------------------------------------------------------------------
+Rank  Compound Name                    pIC50     LE     BEI    LLE    SEI
+----------------------------------------------------------------------------------------------------
+1     Methotrexate                    7.5544   0.31   16.62   7.29   3.59
+2     CID 336805                      7.3423   0.25   13.03   7.89   2.90
+3     Trimetrexate Glucuronate        7.3423   0.25   13.03   7.89   2.90
+4     Pralatrexate                    7.1677   0.28   15.01   6.19   3.46
+5     Folic Acid                      7.1157   0.30   16.12   7.16   3.34
+6     Neratinib Maleate               6.9965   0.20   10.39   1.35   3.74
+7     Bendamustine Hydrochloride      6.9342   0.40   17.57   3.25  11.88
+8     Methylene Blue                  6.9144   0.45   21.62   7.41  36.13
+9     Fentanyl Citrate                6.8628   0.25   12.98   3.97   4.41
+10    Trifarotene                     6.8399   0.28   14.88   0.85   9.77
+
+====================================================================================================
+[SUCCESS] 19 candidates safely exported to:
+        -> /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/FDA_Candidates_For_Docking.csv
+        Logs saved in: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/logs/05_virtual_screening.log
+        Total execution time: 7.25s
+====================================================================================================
+====================================================================================================
+VIRTUAL SCREENING PIPELINE — TgDHFR Inhibitor Search
+Timestamp: 2026-09-19 10:24:20
+====================================================================================================
+
+[1/5] ML ARCHITECTURE LOADING
+  [-] Model path: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/best_model.joblib
+  [+] Ensembled model loaded successfully (0.17s)
+  [-] Mask path: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/selected_features_mask.npy
+  [+] Mask applied: 1385 / 2048 features (67.63% retention)
+
+[2/5] APPLICABILITY DOMAIN CONFIGURATION (ISOLATION FOREST)
+  [-] Training source: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/data/V2-df_ic50_chmbl_CID_myFill.csv
+  [+] Training matrix generated: (756, 1385)
+  [+] Isolation Forest fitted (Contamination: 5.0%) in 0.84s
+
+[3/5] FDA LIBRARY PROCESSING
+  [-] Screening source: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/data/PubChem_FDA-approved_NoInorganics.csv
+  [+] Raw compounds imported: 3378
+  [+] Physical/Structural Filtering (MW < 1000.0, Allowed Atoms): 2516 candidates retained (74.5%)
+  [+] In-Domain Filtering (Isolation Forest): 1832 compounds retained (72.8%)
+  [+] Total filtering time: 2.57s
+
+[4/5] ML INFERENCE - BIOACTIVITY PREDICTION (pIC50)
+  [+] Inferences completed in 1.632s
+  [-] Prediction Statistics -> Mean: 5.6719 | Max: 7.5544 | Min: 3.6924
+
+[5/5] PERFORMANCE REPORTS AND EXPORT
+
+--------------------------------------------------------------------------------
+REPORT A: Internal Validation vs Known TgDHFR Controls
+--------------------------------------------------------------------------------
+Drug               |   pIC50 Exp. |  pIC50 Pred. |  Abs Error | Status
+--------------------------------------------------------------------------------
+Pyrimethamine      |         6.56 |       6.3226 |     0.2374 | EXCELLENT
+Trimethoprim       |         5.57 |       6.0387 |     0.4687 | EXCELLENT
+
+----------------------------------------------------------------------------------------------------
+REPORT B: Top 10 FDA Candidates (Sorted by Predicted Affinity)
+----------------------------------------------------------------------------------------------------
+Rank  Compound Name                    pIC50     LE     BEI    LLE    SEI
+----------------------------------------------------------------------------------------------------
+1     Methotrexate                    7.5544   0.31   16.62   7.29   3.59
+2     CID 336805                      7.3423   0.25   13.03   7.89   2.90
+3     Trimetrexate Glucuronate        7.3423   0.25   13.03   7.89   2.90
+4     Pralatrexate                    7.1677   0.28   15.01   6.19   3.46
+5     Folic Acid                      7.1157   0.30   16.12   7.16   3.34
+6     Neratinib Maleate               6.9965   0.20   10.39   1.35   3.74
+7     Bendamustine Hydrochloride      6.9342   0.40   17.57   3.25  11.88
+8     Methylene Blue                  6.9144   0.45   21.62   7.41  36.13
+9     Fentanyl Citrate                6.8628   0.25   12.98   3.97   4.41
+10    Trifarotene                     6.8399   0.28   14.88   0.85   9.77
+
+====================================================================================================
+[SUCCESS] 19 candidates safely exported to:
+        -> /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/FDA_Candidates_For_Docking.csv
+        Logs saved in: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/logs/05_virtual_screening.log
+        Total execution time: 7.25s
+====================================================================================================
+
+=== END LOG: 05_virtual_screening.py [EXIT CODE: 0] ===
+
