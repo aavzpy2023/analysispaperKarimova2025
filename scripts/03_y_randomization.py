@@ -155,6 +155,11 @@ def main():
     )
 
     elapsed_time = time.time() - start_time
+    df_random = pd.DataFrame({'Permuted_R2': random_scores})
+    csv_path = os.path.join(RESULTS_DIR, "y_randomization_scores.csv")
+    df_random.to_csv(csv_path, index=False)
+    logger.info(f"Y-randomization distribution saved to {csv_path}")
+
     mean_random = float(np.mean(random_scores))
     std_random = float(np.std(random_scores))
     z_score = (true_r2 - mean_random) / std_random if std_random > 0 else 0.0

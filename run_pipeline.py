@@ -9,6 +9,7 @@ os.makedirs(LOGS_DIR, exist_ok=True)
 
 PIPELINE = [
     "scripts/01_nested_cv_stacking.py",
+    "scripts/01.1_build_figures.py",
     "scripts/02_statistical_tests.py",
     "scripts/03_y_randomization.py",
     "scripts/04_augmentation_training.py",
