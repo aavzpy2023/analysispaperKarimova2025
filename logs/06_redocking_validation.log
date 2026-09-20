@@ -1,6 +1,6 @@
 ================================================================================
 REDOCKING VALIDATION PIPELINE — Crystal Ligand Re-Docking
-Timestamp: 2026-09-19 10:24:28
+Timestamp: 2026-09-20 12:32:08
 Receptor setup: Chain B (DHFR active site) of PDB 6AOG
 ================================================================================
 Target Criterion: Centroid distance < 2.0 Å = Protocol Validated
@@ -17,19 +17,19 @@ Target Criterion: Centroid distance < 2.0 Å = Protocol Validated
 [2/4] LIGAND PREPARATION AND CONVERSION
   [+] Crystal ligand PDB successfully written to: crystal_ligand.pdb
   [+] Ligand successfully converted to crystal_ligand.pdbqt via RDKit + Meeko.
-  [+] Preparation completed in 0.81s
+  [+] Preparation completed in 0.60s
 
 [3/4] AUTODOCK VINA REDOCKING
   [-] Re-docking ligand 'CP6' into chain 'B'...
   [-] Grid Center: [3.689, 39.992, -62.818] | Box Size: 20.0Å | Exhaustiveness: 32
-  [+] Docking completed in 7.60s
-  [+] Best Pose Binding Affinity: -7.899 kcal/mol
+  [+] Docking completed in 6.56s
+  [+] Best Pose Binding Affinity: -7.902 kcal/mol
 
 [4/4] VALIDATION RESULT
 --------------------------------------------------------------------------------
   [-] Crystal Reference Centroid : [  3.689  39.992 -62.818]
-  [-] Docked Output Centroid     : [  3.9    40.034 -62.724]
-  [>] Calculated Centroid Distance: 0.235 Å
+  [-] Docked Output Centroid     : [  3.875  40.036 -62.695]
+  [>] Calculated Centroid Distance: 0.228 Å
 --------------------------------------------------------------------------------
   [SUCCESS] ✓ PROTOCOL VALIDATED
 
@@ -38,7 +38,7 @@ Target Criterion: Centroid distance < 2.0 Å = Protocol Validated
   pyrimethamine (CP6, PDB: 6AOG, chain B)
   into the TgDHFR active site. The top-ranked pose reproduced
   the crystallographic binding mode with a centroid distance
-  of 0.24 Å (threshold: 2.0 Å)."
+  of 0.23 Å (threshold: 2.0 Å)."
 
   [IMPORTANT WARNING]: The corrected active site center
   for the DHFR site (chain B) is [3.689, 39.992, -62.818].
@@ -46,12 +46,12 @@ Target Criterion: Centroid distance < 2.0 Å = Protocol Validated
 
   [+] LaTeX variable definitions saved to: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/latex/redocking_variables.tex
 ================================================================================
-[DONE] Redocking Validation Pipeline completed in 8.43s.
+[DONE] Redocking Validation Pipeline completed in 7.17s.
        Logs saved in: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/logs/06_redocking_validation.log
 ================================================================================
 ================================================================================
 REDOCKING VALIDATION PIPELINE — Crystal Ligand Re-Docking
-Timestamp: 2026-09-19 10:24:28
+Timestamp: 2026-09-20 12:32:08
 Receptor setup: Chain B (DHFR active site) of PDB 6AOG
 ================================================================================
 Target Criterion: Centroid distance < 2.0 Å = Protocol Validated
@@ -68,19 +68,19 @@ Target Criterion: Centroid distance < 2.0 Å = Protocol Validated
 [2/4] LIGAND PREPARATION AND CONVERSION
   [+] Crystal ligand PDB successfully written to: crystal_ligand.pdb
   [+] Ligand successfully converted to crystal_ligand.pdbqt via RDKit + Meeko.
-  [+] Preparation completed in 0.81s
+  [+] Preparation completed in 0.60s
 
 [3/4] AUTODOCK VINA REDOCKING
   [-] Re-docking ligand 'CP6' into chain 'B'...
   [-] Grid Center: [3.689, 39.992, -62.818] | Box Size: 20.0Å | Exhaustiveness: 32
-  [+] Docking completed in 7.60s
-  [+] Best Pose Binding Affinity: -7.899 kcal/mol
+  [+] Docking completed in 6.56s
+  [+] Best Pose Binding Affinity: -7.902 kcal/mol
 
 [4/4] VALIDATION RESULT
 --------------------------------------------------------------------------------
   [-] Crystal Reference Centroid : [  3.689  39.992 -62.818]
-  [-] Docked Output Centroid     : [  3.9    40.034 -62.724]
-  [>] Calculated Centroid Distance: 0.235 Å
+  [-] Docked Output Centroid     : [  3.875  40.036 -62.695]
+  [>] Calculated Centroid Distance: 0.228 Å
 --------------------------------------------------------------------------------
   [SUCCESS] ✓ PROTOCOL VALIDATED
 
@@ -89,7 +89,7 @@ Target Criterion: Centroid distance < 2.0 Å = Protocol Validated
   pyrimethamine (CP6, PDB: 6AOG, chain B)
   into the TgDHFR active site. The top-ranked pose reproduced
   the crystallographic binding mode with a centroid distance
-  of 0.24 Å (threshold: 2.0 Å)."
+  of 0.23 Å (threshold: 2.0 Å)."
 
   [IMPORTANT WARNING]: The corrected active site center
   for the DHFR site (chain B) is [3.689, 39.992, -62.818].
@@ -97,14 +97,14 @@ Target Criterion: Centroid distance < 2.0 Å = Protocol Validated
 
   [+] LaTeX variable definitions saved to: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/latex/redocking_variables.tex
 ================================================================================
-[DONE] Redocking Validation Pipeline completed in 8.43s.
+[DONE] Redocking Validation Pipeline completed in 7.17s.
        Logs saved in: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/logs/06_redocking_validation.log
 ================================================================================
 
 mode |   affinity | dist from best mode
      | (kcal/mol) | rmsd l.b.| rmsd u.b.
 -----+------------+----------+----------
-   1       -7.899          0          0
+   1       -7.902          0          0
 
 === END LOG: 06_redocking_validation.py [EXIT CODE: 0] ===
 

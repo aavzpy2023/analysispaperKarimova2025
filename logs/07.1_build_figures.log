@@ -1,0 +1,8 @@
+=== START LOG: 07.1_build_figures.py [2026-09-20 12:38:17] ===
+
+Looks like you are using a tranform that doesn't support FancyArrowPatch, using ax.annotate instead. The arrows might strike through texts. Increasing shrinkA in arrowprops might help.
+[-] Reading data from: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/Final_Validation_Hybrid.csv
+[+] Enhanced figure saved successfully at: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/figures/07_docking_scatter.png
+
+=== END LOG: 07.1_build_figures.py [EXIT CODE: 0] ===
+
