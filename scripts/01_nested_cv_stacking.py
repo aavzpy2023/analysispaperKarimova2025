@@ -491,25 +491,6 @@ def generate_latex_file(df_all, summary, df_ttest, top2_modes, paired_stats):
     print(f"[LATEX] Variables successfully exported to: {LATEX_PAPER}", flush=True)
 
 
-def generate_figure(df_all, summary):
-    order = summary['Mode'].tolist()
-    data = [df_all[df_all['Mode'] == m]['R2_outer'].values for m in order]
-
-    fig, ax = plt.subplots(figsize=(8, 5))
-    ax.boxplot(data, labels=order, showmeans=True)
-    for label, (_, val) in PAPER_R2.items():
-        ax.axhline(val, linestyle='--', linewidth=1, alpha=0.6, label=f"{label} ({val})")
-    ax.set_ylabel("R² (outer-fold nested CV)")
-    ax.set_xlabel("Molecular representation")
-    ax.set_title("Nested CV R² distribution (5x5 Repeated Outer Folds)")
-    ax.legend(fontsize=8)
-    plt.xticks(rotation=20)
-    plt.tight_layout()
-    plt.savefig(FIGURE_NESTED_CV, dpi=300)
-    plt.close(fig)
-    print(f"[FIGURE] Saved {FIGURE_NESTED_CV}", flush=True)
-
-
 # =========================================================
 # FINAL ANALYSIS
 # =========================================================
@@ -584,7 +565,6 @@ def summarize_and_test():
 
     # Export to LaTeX and generate figure
     generate_latex_file(df, summary, df_ttest, top2, paired_stats)
-    generate_figure(df, summary)
 
 
 def run_benchmark():

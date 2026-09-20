@@ -76,6 +76,15 @@ PROFILES = {
 }
 CFG = PROFILES[PROFILE]
 
+# FIGURES
+
+mode_labels = {
+    'morgan': 'Morgan FP',
+    'rdkit2d': 'RDKit 2D',
+    'rdkit2d_fp': 'RDKit 2D FP',
+    'rdkit2d3d_fp': 'RDKit 2D+3D FP'
+}
+
 
 # =========================================================
 # y-RANDOMIZATION EXPERIMENT CONFIGURATION (3)
