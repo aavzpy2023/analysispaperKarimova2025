@@ -18,8 +18,11 @@ PIPELINE = [
     "scripts/05.1_build_figures.py",
     "scripts/06_redocking_validation.py",
     "scripts/07_molecular_docking.py",
+    "scripts/07.1_build_figures.py",
     "scripts/08_admet_profiling.py",
-    "scripts/09_gnn_baseline.py"
+    "scripts/08.1_build_figures.py",
+    "scripts/09_gnn_baseline.py",
+    "scripts/09.1_build_figures.py",
 ]
 
 class MasterStreamWriter:

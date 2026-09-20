@@ -8,12 +8,12 @@ import matplotlib.pyplot as plt
 
 # Link root directory to import paths_config
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from paths_config import RESULTS_DIR, FIGURES_DIR
+from paths_config import RESULTS_DIR, FIGURES_DIR, CSV_04_OUTPUT_FILE
 
 # =========================================================
 # CONFIGURATION
 # =========================================================
-CSV_FILE = os.path.join(RESULTS_DIR, "augmentation_summary.csv")
+CSV_FILE = os.path.join(RESULTS_DIR, CSV_04_OUTPUT_FILE)
 FIGURE_FILE = os.path.join(FIGURES_DIR, "04_augment_r2_comparison.png")
 
 PAPER_R2 = {

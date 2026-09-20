@@ -38,7 +38,6 @@ warnings.filterwarnings("ignore")
 # Dynamically extract hardware/profile configurations
 N_JOBS = ACTIVE_CFG.get('N_JOBS', 1)
 N_ESTIMATORS = ACTIVE_CFG.get('N_ESTIMATORS_TREES', 200)
-
 logger = logging.getLogger(__name__)
 
 # =========================================================
@@ -425,7 +424,7 @@ def run():
         })
 
     df_results = pd.DataFrame(csv_data)
-    csv_path = os.path.join(RESULTS_DIR, "04_augmentation_summary.csv")
+    csv_path = os.path.join(RESULTS_DIR, CSV_04_OUTPUT_FILE)
     df_results.to_csv(csv_path, index=False)
     logger.info(f"Results summary saved to {csv_path}")
 

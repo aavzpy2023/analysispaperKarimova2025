@@ -109,6 +109,7 @@ FIGURE_FILE = FIGURE_AUGMENT
 
 # Gaussian noise perturbation levels
 NOISE_LEVELS = [0.01, 0.001]
+CSV_04_OUTPUT_FILE = "04_augmentation_summary.csv"
 
 
 
