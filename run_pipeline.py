@@ -3,7 +3,7 @@ import sys
 import subprocess
 from datetime import datetime
 
-# Directorio de logs centralizado
+# Centralized logs directory
 LOGS_DIR = os.path.abspath("./logs")
 os.makedirs(LOGS_DIR, exist_ok=True)
 
@@ -13,7 +13,9 @@ PIPELINE = [
     "scripts/02_statistical_tests.py",
     "scripts/03_y_randomization.py",
     "scripts/04_augmentation_training.py",
+    "scripts/04.1_build_figures.py",
     "scripts/05_virtual_screening.py",
+    "scripts/05.1_build_figures.py",
     "scripts/06_redocking_validation.py",
     "scripts/07_molecular_docking.py",
     "scripts/08_admet_profiling.py",
@@ -21,7 +23,7 @@ PIPELINE = [
 ]
 
 class MasterStreamWriter:
-    """Escribe en tiempo real hacia la consola y hacia archivos de log (individual y general)."""
+    """Writes in real-time to both console and log files (individual and master)."""
     def __init__(self, log_filepaths):
         self.terminal = sys.stdout
         self.files = [open(fp, "a", encoding="utf-8") for fp in log_filepaths]
@@ -46,13 +48,13 @@ def execute_and_log(script_path, master_log_path):
     log_filename = script_filename.replace(".py", ".log")
     step_log_path = os.path.join(LOGS_DIR, log_filename)
 
-    # Limpiar log individual de ejecuciones anteriores
+    # Clear individual log from previous executions
     with open(step_log_path, "w", encoding="utf-8") as f:
         f.write(f"=== START LOG: {script_filename} [{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] ===\n\n")
 
     writer = MasterStreamWriter([step_log_path, master_log_path])
 
-    # Captura stdout y stderr unificados a nivel de proceso del sistema
+    # Capture unified stdout and stderr at system process level
     process = subprocess.Popen(
         [sys.executable, script_path],
         stdout=subprocess.PIPE,

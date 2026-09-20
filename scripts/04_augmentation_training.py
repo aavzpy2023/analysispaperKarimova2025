@@ -261,38 +261,6 @@ def export_latex(results_dict):
 
 
 # =========================================================
-# FIGURE GENERATION
-# =========================================================
-def export_figure(results_dict):
-    os.makedirs(os.path.dirname(FIGURE_FILE), exist_ok=True)
-    labels = ['Exp A\n(ML baseline)', 'Exp B\n(+feat. select.)', 'Exp C\n(+augmentation)']
-    means = [results_dict[k]['r2'] for k in ('A', 'B', 'C')]
-    ci_lo = [results_dict[k]['ci_lo'] for k in ('A', 'B', 'C')]
-    ci_hi = [results_dict[k]['ci_hi'] for k in ('A', 'B', 'C')]
-    errs = [[m - l for m, l in zip(means, ci_lo)],
-            [h - m for m, h in zip(means, ci_hi)]]
-
-    fig, ax = plt.subplots(figsize=(8, 5))
-    x = np.arange(len(labels))
-    ax.bar(x, means, yerr=errs, capsize=6, color=['#4C72B0', '#55A868', '#C44E52'], alpha=0.85)
-
-    for label, (desc, val) in PAPER_R2.items():
-        ls = '--' if 'Final' not in label else '-'
-        ax.axhline(val, linestyle=ls, linewidth=1.2, alpha=0.7, label=f"{label} ({val})")
-
-    ax.set_xticks(x)
-    ax.set_xticklabels(labels)
-    ax.set_ylabel("R² (bootstrap mean ± 95% CI)")
-    ax.set_title("Classical ML: Effect of Feature Selection and Data Augmentation")
-    ax.set_ylim(0.5, 1.0)
-    ax.legend(fontsize=8)
-    plt.tight_layout()
-    plt.savefig(FIGURE_FILE, dpi=300)
-    plt.close(fig)
-    logger.info(f"Saved figure to {FIGURE_FILE}")
-
-
-# =========================================================
 # MAIN EXECUTION PIPELINE
 # =========================================================
 def run():
@@ -444,9 +412,25 @@ def run():
     joblib.dump(final_model_aug, aug_model_path)
     logger.info(f"Saved augmented model separately to: {aug_model_path}")
 
+    csv_data = []
+    for exp_key in ['A', 'B', 'C']:
+        csv_data.append({
+            'Experiment': f'Exp_{exp_key}',
+            'R2': results[exp_key]['r2'],
+            'MAE': results[exp_key]['mae'],
+            'CI_Lower': results[exp_key]['ci_lo'],
+            'CI_Upper': results[exp_key]['ci_hi'],
+            'N_Features': results[exp_key]['n_features_selected'],
+            'Aug_Size': results[exp_key]['aug_size']
+        })
+
+    df_results = pd.DataFrame(csv_data)
+    csv_path = os.path.join(RESULTS_DIR, "04_augmentation_summary.csv")
+    df_results.to_csv(csv_path, index=False)
+    logger.info(f"Results summary saved to {csv_path}")
+
     # Export artifacts
     export_latex(results)
-    export_figure(results)
     logger.info("04_augmentation_training.py execution complete with Q1 statistical rigor.")
 
 

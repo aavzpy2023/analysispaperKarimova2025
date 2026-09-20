@@ -44,7 +44,7 @@ plt.xlabel('Molecular Representation')
 plt.grid(axis='y', linestyle='--', alpha=0.5)  # Subtle background grid
 plt.tight_layout()
 
-fig1_path = os.path.join(FIGURES_DIR, 'nested_cv_stability_boxplot.png')
+fig1_path = os.path.join(FIGURES_DIR, '01_nested_cv_stability_boxplot.png')
 plt.savefig(fig1_path, dpi=300)
 plt.close()
 
@@ -77,7 +77,7 @@ plt.ylim(0.6, 0.9)  # Crop Y-axis to highlight differences (adjust based on data
 plt.grid(axis='y', linestyle='--', alpha=0.7, zorder=0)  # Add grid to compare bar heights
 plt.tight_layout()
 
-fig2_path = os.path.join(FIGURES_DIR, 'nested_cv_benchmark_comparison.png')
+fig2_path = os.path.join(FIGURES_DIR, '01_nested_cv_benchmark_comparison.png')
 plt.savefig(fig2_path, dpi=300)
 plt.close()
 
@@ -119,7 +119,7 @@ plt.yticks(rotation=0, fontsize=11)
 
 plt.tight_layout()
 
-fig3_path = os.path.join(FIGURES_DIR, 'nested_cv_model_selection_heatmap.png')
+fig3_path = os.path.join(FIGURES_DIR, '01_nested_cv_model_selection_heatmap.png')
 plt.savefig(fig3_path, dpi=300, bbox_inches='tight')
 plt.close()
 
@@ -145,7 +145,7 @@ plt.grid(True, linestyle='--', alpha=0.6)
 plt.legend(title='Representation')
 plt.tight_layout()
 
-fig4_path = os.path.join(FIGURES_DIR, 'nested_cv_time_vs_performance.png')
+fig4_path = os.path.join(FIGURES_DIR, '01_nested_cv_time_vs_performance.png')
 plt.savefig(fig4_path, dpi=300)
 plt.close()
 
