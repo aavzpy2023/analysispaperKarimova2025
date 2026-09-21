@@ -42,6 +42,15 @@ def setup_logger(log_file_path, level=logging.INFO):
 
     Safe to call more than once: it never nests tee streams.
     """
+    fmt = "%(asctime)s | %(levelname)s | %(message)s"
+
+    # When launched by run_pipeline.py the runner already captures this process's stdout/stderr
+    # into the per-step and master logs. Opening the same file here would truncate/overwrite it,
+    # so in that mode we only route `logging` to stdout and leave file handling to the runner.
+    if os.environ.get("MLGNN_LOG_MANAGED") == "1":
+        logging.basicConfig(level=level, format=fmt, stream=sys.stdout, force=True)
+        return
+
     os.makedirs(os.path.dirname(log_file_path), exist_ok=True)
 
     # Unwrap a previous tee so repeated calls do not stack writers
@@ -59,7 +68,7 @@ def setup_logger(log_file_path, level=logging.INFO):
 
     logging.basicConfig(
         level=level,
-        format="%(asctime)s | %(levelname)s | %(message)s",
+        format=fmt,
         stream=sys.stdout,   # the tee writer created above
         force=True,          # replace any pre-existing root handlers
     )
