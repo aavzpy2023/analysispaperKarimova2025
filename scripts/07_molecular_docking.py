@@ -1,3 +1,5 @@
+import os
+import sys
 import time
 import warnings
 from paths_config import *
@@ -56,7 +58,8 @@ def prepare_ligand_pdbqt(mol_clean):
         mol_setups = prep.prepare(mol_h)
         pdbqt_string, is_ok, _ = PDBQTWriterLegacy.write_string(mol_setups[0])
         return pdbqt_string if is_ok else None
-    except Exception:
+    except Exception as e:
+        print(f"    [ligand prep] {type(e).__name__}: {str(e)[:80]}")
         return None
 
 
@@ -125,7 +128,7 @@ def run():
         from vina import Vina
     except ImportError:
         print("[ERROR] AutoDock Vina Python bindings not installed.")
-        return
+        sys.exit(1)
 
     print("=" * 90)
     print("07_molecular_docking.py — Fully Agnostic Docking Pipeline")
@@ -136,17 +139,20 @@ def run():
     print("=" * 90)
 
     if not os.path.exists(RECEPTOR_PDBQT) or not os.path.exists(FDA_CANDIDATES_CSV):
-        print("[ERROR] Input files missing.")
-        return
+        print("[ERROR] Input files missing (receptor PDBQT or candidates CSV from step 05).")
+        sys.exit(1)
 
     df = pd.read_csv(FDA_CANDIDATES_CSV)
+    if 'pIC50_pred' not in df.columns and 'CONSENSUS_MEAN' not in df.columns:
+        print("[ERROR] Candidates CSV has neither 'pIC50_pred' nor 'CONSENSUS_MEAN' (ML score column).")
+        sys.exit(1)
     top = df.head(TOP_CANDIDATES_COUNT).copy()
     refs = df[df['Name'].str.contains('|'.join(REF_CONTROL_NAMES), case=False, na=False)]
 
     candidates = pd.concat([top, refs]).drop_duplicates(subset=['SMILES']).reset_index(drop=True)
     print(f"\n[INFO] {len(candidates)} candidates selected for docking")
 
-    v = Vina(sf_name='vina')
+    v = Vina(sf_name='vina', seed=RANDOM_STATE)   # fixed seed -> reproducible poses/energies
     v.set_receptor(RECEPTOR_PDBQT)
     v.compute_vina_maps(
         center=[CENTER_X, CENTER_Y, CENTER_Z],
@@ -230,7 +236,7 @@ def run():
 
     if not results:
         print("[ERROR] No successful docking results.")
-        return
+        sys.exit(1)
 
     df_res = pd.DataFrame(results).sort_values('Docking_Score').reset_index(drop=True)
 

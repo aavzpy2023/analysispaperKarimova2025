@@ -20,7 +20,8 @@ RDLogger.DisableLog('rdApp.*')
 # LOGGING SETUP
 # =========================================================
 log_file_path = os.path.join(LOGS_DIR, "08_admet_profiling.log")
-setup_logger(log_file_path)
+# setup_logger() is called inside main(): a module-level call would be re-executed (and truncate the log)
+# in every worker process when multiprocessing uses "spawn" (macOS / Windows).
 
 # =========================================================
 # CONFIG
@@ -30,7 +31,7 @@ OUTPUT_PATH = FDA_ADMET_CANDIDATES_CSV
 
 
 def lipinski_pass(smiles):
-    """Evaluates Lipinski's Rule of Five dynamically."""
+    """Evaluates three Lipinski criteria (H-bond donors, acceptors, logP). Molecular weight is NOT evaluated here."""
     mol = Chem.MolFromSmiles(smiles)
     if not mol:
         return False
@@ -63,6 +64,7 @@ def smiles_to_fps(smiles_list, radius=2, n_bits=2048):
 
 
 def main():
+    setup_logger(log_file_path)
     t0 = time.time()
 
     print("=" * 90)
@@ -72,7 +74,7 @@ def main():
 
     if not os.path.exists(INPUT_PATH):
         print(f"[ERROR] Input file not found at {INPUT_PATH}")
-        return
+        sys.exit(1)
 
     df = pd.read_csv(INPUT_PATH)
     print(f"[1] Total initial candidates from docking: {len(df)}")
@@ -91,13 +93,13 @@ def main():
 
     if df_filtered.empty:
         print("[ERROR] No candidates passed Lipinski filter.")
-        return
+        sys.exit(1)
 
     smiles_candidates = df_filtered["SMILES"].tolist()
     X_cand = smiles_to_fps(smiles_candidates)
 
     # 2. hERG Training and Prediction (Cardiotoxicity Classifier)
-    herg_dataset = Tox(name="hERG").get_data()
+    herg_dataset = Tox(name="hERG", path=DATA_DIR).get_data()
     print(f"\n[2] Training hERG Cardiotoxicity Classifier (TDC Dataset: {len(herg_dataset)} samples)...")
     X_train_herg = smiles_to_fps(herg_dataset["Drug"].tolist())
     y_train_herg = herg_dataset["Y"].values
@@ -107,7 +109,7 @@ def main():
     df_filtered["hERG_Blocker_Prob"] = rf_herg.predict_proba(X_cand)[:, 1]
 
     # 3. Caco-2 Training and Prediction (Intestinal Permeability Regressor)
-    caco_dataset = ADME(name="Caco2_Wang").get_data()
+    caco_dataset = ADME(name="Caco2_Wang", path=DATA_DIR).get_data()
     print(f"\n[3] Training Caco-2 Permeability Regressor (TDC Dataset: {len(caco_dataset)} samples)...")
     X_train_caco = smiles_to_fps(caco_dataset["Drug"].tolist())
     y_train_caco = caco_dataset["Y"].values

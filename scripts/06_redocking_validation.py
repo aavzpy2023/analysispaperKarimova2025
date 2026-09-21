@@ -1,4 +1,5 @@
 import os
+import sys
 import time
 import warnings
 import numpy as np
@@ -43,7 +44,7 @@ def extract_crystal_ligand(pdb_file, ligand_code, chain):
     return np.array(crystal_coords), ligand_lines, centroid
 
 
-def write_ligand_pdb(ligand_lines, out_path="crystal_ligand.pdb"):
+def write_ligand_pdb(ligand_lines, out_path=os.path.join(RECEPTOR_DIR, "crystal_ligand.pdb")):
     """Writes the extracted ligand lines into a standalone PDB file."""
     with open(out_path, 'w') as f:
         f.writelines(ligand_lines)
@@ -52,7 +53,7 @@ def write_ligand_pdb(ligand_lines, out_path="crystal_ligand.pdb"):
     return out_path
 
 
-def convert_ligand_to_pdbqt(ligand_pdb, out_pdbqt="crystal_ligand.pdbqt"):
+def convert_ligand_to_pdbqt(ligand_pdb, out_pdbqt=os.path.join(RECEPTOR_DIR, "crystal_ligand.pdbqt")):
     """Converts the ligand PDB file into a PDBQT format suitable for Vina."""
     try:
         from meeko import MoleculePreparation
@@ -150,7 +151,7 @@ def run_redocking_validation():
         from vina import Vina
     except ImportError:
         print("[ERROR] AutoDock Vina Python bindings are not installed. Interrupting execution.")
-        return
+        sys.exit(1)
 
     print("=" * 80)
     print("REDOCKING VALIDATION PIPELINE — Crystal Ligand Re-Docking")
@@ -164,9 +165,17 @@ def run_redocking_validation():
     t0 = time.time()
     result = extract_crystal_ligand(PDB_FILE, LIGAND_CODE, CHAIN)
     if result[0] is None:
-        return
+        sys.exit(1)
     crystal_coords, ligand_lines, centroid = result
     cx, cy, cz = centroid
+
+    # Consistency check: the redocking must validate the SAME box that step 07 uses for screening
+    center_offset = float(np.linalg.norm(centroid - np.array([CENTER_X, CENTER_Y, CENTER_Z])))
+    print(f"  [CHECK] Distance between this centroid and the screening box center in paths_config.py "
+          f"(used by step 07): {center_offset:.3f} A")
+    if center_offset > 1.0:
+        print("  [WARNING] The redocking box differs from the box used for screening; update CENTER_X/Y/Z "
+              "in paths_config.py, otherwise this validation does not cover step 07.")
 
     print(f"\n  [NOTE] Active site center for chain {CHAIN}: [{cx:.3f}, {cy:.3f}, {cz:.3f}]")
     print(f"  [NOTE] (Original script used average of both chains: [17.394, 68.757, -68.051])")
@@ -179,7 +188,7 @@ def run_redocking_validation():
     ligand_pdb = write_ligand_pdb(ligand_lines)
     ligand_pdbqt = convert_ligand_to_pdbqt(ligand_pdb)
     if ligand_pdbqt is None:
-        return
+        sys.exit(1)
     print(f"  [+] Preparation completed in {time.time() - t0:.2f}s\n")
 
     # ── 3. AutoDock Vina Redocking ───────────────────────────────────────────
@@ -189,7 +198,7 @@ def run_redocking_validation():
         f"  [-] Grid Center: [{cx:.3f}, {cy:.3f}, {cz:.3f}] | Box Size: {BOX_SIZE}Å | Exhaustiveness: {EXHAUSTIVENESS}")
 
     t0 = time.time()
-    v = Vina(sf_name='vina')
+    v = Vina(sf_name='vina', seed=RANDOM_STATE)   # fixed seed -> reproducible poses/energies
     v.set_receptor(RECEPTOR_FILE)
     v.compute_vina_maps(center=[cx, cy, cz], box_size=[BOX_SIZE, BOX_SIZE, BOX_SIZE])
 
@@ -223,7 +232,7 @@ def run_redocking_validation():
             print(f'  of {rmsd:.2f} Å (threshold: {RMSD_THRESHOLD:.1f} Å)."')
             print(f'\n  [IMPORTANT WARNING]: The corrected active site center')
             print(f'  for the DHFR site (chain {CHAIN}) is [{cx:.3f}, {cy:.3f}, {cz:.3f}].')
-            print(f'  Ensure you update this in your 3DOCKING.py script before the final screening run.')
+            print(f'  Ensure CENTER_X/Y/Z in paths_config.py (used by 07_molecular_docking.py) match this center.')
         else:
             print("  [FAILED] ✗ PROTOCOL NOT VALIDATED")
             print(f"  Centroid distance {rmsd:.3f}Å exceeds the {RMSD_THRESHOLD}Å threshold.")
@@ -240,12 +249,14 @@ def run_redocking_validation():
             f.write(f"\\newcommand{{\\RedockCenterX}}{{{cx:.3f}}}\n")
             f.write(f"\\newcommand{{\\RedockCenterY}}{{{cy:.3f}}}\n")
             f.write(f"\\newcommand{{\\RedockCenterZ}}{{{cz:.3f}}}\n")
+            f.write(f"\\newcommand{{\\RedockCenterOffset}}{{{center_offset:.3f}}}\n")
             validated = "true" if rmsd < RMSD_THRESHOLD else "false"
             f.write(f"\\newcommand{{\\RedockValidated}}{{{validated}}}\n")
 
         print(f"\n  [+] LaTeX variable definitions saved to: {LATEX_REDOCKING}")
     else:
-        print("  [WARNING] Could not parse docked coordinates. Validation aborted.")
+        print("  [ERROR] Could not parse docked coordinates. Validation aborted.")
+        sys.exit(1)
 
     print("=" * 80)
     print(f"[DONE] Redocking Validation Pipeline completed in {time.time() - start_pipeline:.2f}s.")

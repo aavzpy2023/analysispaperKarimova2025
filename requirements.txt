@@ -10,7 +10,7 @@
 # =====================================================================
 
 # -- Core data science ------------------------------------------------
-numpy>=1.26.0,<2.0.0          # <2.0: required by the torch/dgl builds used for the GNN baselines
+numpy>=1.26.0,<2.0.0          # tested with 1.26.4; the 2.x series was not validated
 pandas==2.3.3
 scipy==1.16.3
 scikit-learn==1.6.0
@@ -26,6 +26,7 @@ rdkit==2025.9.3
 # -- Docking (steps 06-07): Python bindings, no external binary needed --
 vina==1.2.7
 meeko==0.8.0                  # API changed across versions (PDBQTWriterLegacy)
+gemmi==0.7.5                  # `import meeko` fails without it (meeko does not declare it as a dependency)
 
 # -- GNN baseline (step 09) --------------------------------------------
 torch==2.5.1
@@ -50,7 +51,7 @@ adjustText==1.4.0
 # =====================================================================
 # Packages that were in the original requirements but are NOT imported by any script
 # (checked with: grep -nE "^\s*(import|from)\s+(tdc|pubchempy|gemmi|loguru)" scripts/*.py):
-#   PubChemPy (also needs network access), gemmi, loguru
+#   PubChemPy (also needs network access), loguru
 # =====================================================================
 
 # Removed on purpose (do not add back):
