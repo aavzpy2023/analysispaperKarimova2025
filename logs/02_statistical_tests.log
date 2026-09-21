@@ -1,3 +1,18 @@
-
-=== END LOG: 02_statistical_tests.py [EXIT CODE: 0] ===
-
+2026-09-20 21:17:58,824 | INFO | ================================================================================
+2026-09-20 21:17:58,824 | INFO | 02_statistical_tests.py — Nadeau-Bengio Variance Correction Test
+2026-09-20 21:17:58,824 | INFO | ================================================================================
+2026-09-20 21:17:58,825 | INFO | Loading nested CV results from: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/nested_cv_checkpoint.csv
+2026-09-20 21:17:58,829 | INFO | Total records loaded: 100. Available modes: ['morgan', 'rdkit2d', 'rdkit2d_fp', 'rdkit2d3d_fp']
+2026-09-20 21:17:58,829 | INFO | Extracting performance metrics for 'morgan' and 'rdkit2d3d_fp' modes...
+2026-09-20 21:17:58,831 | INFO | Data points extracted: 25 outer folds per mode.
+2026-09-20 21:17:58,832 | INFO | Morgan MAE Distribution     -> Mean: 0.4841 | Std: 0.0365 | Min: 0.4314 | Max: 0.5683
+2026-09-20 21:17:58,832 | INFO | 2D/3D/FP MAE Distribution -> Mean: 0.4828 | Std: 0.0440 | Min: 0.4067 | Max: 0.5756
+2026-09-20 21:17:58,832 | INFO | Initializing Nadeau-Bengio variance correction calculations...
+2026-09-20 21:17:58,833 | INFO | --------------------------------------------------------------------------------
+2026-09-20 21:17:58,833 | INFO | Nadeau-Bengio Corrected Paired t-test Results:
+2026-09-20 21:17:58,833 | INFO |   t-statistic = 0.098
+2026-09-20 21:17:58,833 | INFO |   p-value     = 0.9230
+2026-09-20 21:17:58,833 | INFO | --------------------------------------------------------------------------------
+2026-09-20 21:17:58,833 | INFO | TEST CONCLUSION: No statistically significant difference between Morgan and 2D/3D/FP representations (p >= 0.05).
+2026-09-20 21:17:58,833 | INFO | Writing statistical variables to LaTeX file: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/latex/nadeau_bengio_variables.tex
+2026-09-20 21:17:58,834 | INFO | LaTeX variable export completed successfully.
