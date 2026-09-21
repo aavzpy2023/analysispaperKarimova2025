@@ -202,7 +202,7 @@ def newcommand(f, name, value):
     f.write(f"\\newcommand{{\\{name}}}{{{value}}}\n")
 
 
-def export_latex(results_dict):
+def export_latex(results_dict, delta_rows=None):
     os.makedirs(os.path.dirname(LATEX_FILE), exist_ok=True)
     with open(LATEX_FILE, 'w', encoding='utf-8') as f:
         f.write("% =====================================================\n")
@@ -255,6 +255,16 @@ def export_latex(results_dict):
                 newcommand(f, f"Exp{exp_key}Vs{paper_key}InCI", "true" if is_within_ci else "false")
                 newcommand(f, f"Exp{exp_key}Vs{paper_key}PBoot", f"{p_boot:.4f}")
                 newcommand(f, f"Exp{exp_key}Vs{paper_key}Sig", sig)
+
+        # --- Paired bootstrap differences between experiments ---
+        if delta_rows:
+            f.write("\n% --- Paired bootstrap R2 differences (same resampled test indices) ---\n")
+            for d in delta_rows:
+                tag = d['tag']  # e.g. CvsA
+                newcommand(f, f"Exp{tag}DeltaRTwo", f"{d['delta_point']:+.4f}")
+                newcommand(f, f"Exp{tag}DeltaCILow", f"{d['ci_lo']:+.4f}")
+                newcommand(f, f"Exp{tag}DeltaCIHigh", f"{d['ci_hi']:+.4f}")
+                newcommand(f, f"Exp{tag}DeltaPBoot", f"{d['p_boot']:.4f}")
 
     logger.info(f"Variables successfully exported to {LATEX_FILE}")
 
@@ -379,14 +389,21 @@ def run():
             logger.info(
                 f"  vs {desc} (R2={paper_val}): {direction} by {abs(exp['r2'] - paper_val):.4f} | p_boot={p_boot:.4f} -> {sig_text}")
 
-    # Paired Bootstrap Difference Test: Exp A vs Exp C
-    diff_ca_boots = results['C']['boot_r2s'] - results['A']['boot_r2s']
-    diff_mean, diff_lo, diff_hi = compute_bootstrap_metrics(diff_ca_boots)
-    p_diff = calculate_empirical_bootstrap_pvalue(diff_ca_boots, 0.0)
-
+    # Paired Bootstrap Difference Tests.
+    # bootstrap_r2_distribution() uses the same seed for every experiment, so draw i uses
+    # the SAME resampled test indices in A, B and C -> differences are properly paired.
     logger.info("-" * 80)
-    logger.info("EVALUATION OF DATA AUGMENTATION EFFECT (Exp C vs Exp A):")
-    logger.info(f"Delta R2 (C - A): {diff_mean:+.4f} (95% CI [{diff_lo:+.4f}, {diff_hi:+.4f}], p_boot={p_diff:.4f})")
+    logger.info("PAIRED BOOTSTRAP DIFFERENCES (delta R2):")
+    delta_rows = []
+    for tag, k1, k0 in [('CvsA', 'C', 'A'), ('BvsA', 'B', 'A'), ('CvsB', 'C', 'B')]:
+        diff = results[k1]['boot_r2s'] - results[k0]['boot_r2s']
+        d_mean, d_lo, d_hi = compute_bootstrap_metrics(diff)
+        d_p = calculate_empirical_bootstrap_pvalue(diff, 0.0)
+        d_point = results[k1]['r2'] - results[k0]['r2']
+        delta_rows.append(dict(tag=tag, Comparison=f"Exp_{k1} - Exp_{k0}", delta_point=d_point,
+                               delta_boot_mean=d_mean, ci_lo=d_lo, ci_hi=d_hi, p_boot=d_p))
+        logger.info(f"Delta R2 (Exp {k1} - Exp {k0}): point={d_point:+.4f} | boot mean={d_mean:+.4f} "
+                    f"(95% CI [{d_lo:+.4f}, {d_hi:+.4f}], p_boot={d_p:.4f})")
 
     # ──────────────────────────────────────────────────────────────────────────
     # MODEL PERSISTENCE FOR VIRTUAL SCREENING (05_virtual_screening.py)
@@ -428,8 +445,22 @@ def run():
     df_results.to_csv(csv_path, index=False)
     logger.info(f"Results summary saved to {csv_path}")
 
+    # Paired differences, full bootstrap distributions and test predictions (for figures/audits)
+    df_delta = pd.DataFrame([{
+        'Comparison': d['Comparison'], 'Delta_R2_Point': d['delta_point'],
+        'Delta_R2_BootMean': d['delta_boot_mean'], 'CI_Lower': d['ci_lo'],
+        'CI_Upper': d['ci_hi'], 'P_Boot': d['p_boot']} for d in delta_rows])
+    df_delta.to_csv(os.path.join(RESULTS_DIR, CSV_04_DELTA_FILE), index=False)
+
+    pd.DataFrame({f'Exp_{k}': results[k]['boot_r2s'] for k in ('A', 'B', 'C')}).to_csv(
+        os.path.join(RESULTS_DIR, CSV_04_BOOT_FILE), index=False)
+
+    pd.DataFrame({'y_true': y_test, 'pred_Exp_A': y_pred_a, 'pred_Exp_B': y_pred_b,
+                  'pred_Exp_C': y_pred_c}).to_csv(os.path.join(RESULTS_DIR, CSV_04_PRED_FILE), index=False)
+    logger.info(f"Delta R2, bootstrap distributions and test predictions saved to {RESULTS_DIR}")
+
     # Export artifacts
-    export_latex(results)
+    export_latex(results, delta_rows)
     logger.info("04_augmentation_training.py execution complete with Q1 statistical rigor.")
 
 

@@ -52,7 +52,8 @@ RANDOM_STATE = 42
 # =========================================================
 # PROFILES TO RUN (5x5 REPEATED NESTED CV) (1)
 # =========================================================
-PROFILE = 'workstation'
+# Select the profile without editing the file:  export MLGNN_PROFILE=laptop
+PROFILE = os.environ.get('MLGNN_PROFILE', 'workstation')
 
 PROFILES = {
     'laptop': dict(
@@ -74,6 +75,15 @@ PROFILES = {
         N_ESTIMATORS_TREES=200,
     ),
 }
+if PROFILE not in PROFILES:
+    raise ValueError(f"Unknown MLGNN_PROFILE '{PROFILE}'. Valid options: {list(PROFILES)}")
+
+# Never request more workers than the machine has (override: export MLGNN_N_JOBS=8)
+_CPU = os.cpu_count() or 1
+_n_jobs_env = os.environ.get('MLGNN_N_JOBS')
+PROFILES[PROFILE]['N_JOBS'] = (
+    max(1, int(_n_jobs_env)) if _n_jobs_env else min(PROFILES[PROFILE]['N_JOBS'], _CPU)
+)
 CFG = PROFILES[PROFILE]
 
 # FIGURES
@@ -110,6 +120,9 @@ FIGURE_FILE = FIGURE_AUGMENT
 # Gaussian noise perturbation levels
 NOISE_LEVELS = [0.01, 0.001]
 CSV_04_OUTPUT_FILE = "04_augmentation_summary.csv"
+CSV_04_DELTA_FILE = "04_augmentation_delta_r2.csv"          # paired bootstrap differences
+CSV_04_BOOT_FILE = "04_augmentation_bootstrap_r2.csv"       # full bootstrap R2 distributions
+CSV_04_PRED_FILE = "04_augmentation_test_predictions.csv"   # test-set predictions per experiment
 
 
 
@@ -180,7 +193,7 @@ LATEX_REF_COMPOUNDS = [
 # HARDWARE & ADMET EXPERIMENTAL PARAMETERS
 # =========================================================
 # Hardware
-CORES_ADMET = 48
+CORES_ADMET = min(48, os.cpu_count() or 1)
 
 # ADMET Thresholds
 HERG_THRESH  = 0.5         # Probability < 0.5 = Low cardiotoxicity risk
