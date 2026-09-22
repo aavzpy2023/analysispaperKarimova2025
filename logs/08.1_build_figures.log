@@ -1,7 +1,7 @@
-=== START LOG: 08.1_build_figures.py [2026-09-20 12:38:25] ===
+=== START LOG: 08.1_build_figures.py [2026-09-22 01:08:49] ===
 
-Looks like you are using a tranform that doesn't support FancyArrowPatch, using ax.annotate instead. The arrows might strike through texts. Increasing shrinkA in arrowprops might help.
 [-] Reading full ADMET dataset from: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/ADMET_CANDIDATES_For_Docking_FULL_PRE_FILTER.csv
+Looks like you are using a tranform that doesn't support FancyArrowPatch, using ax.annotate instead. The arrows might strike through texts. Increasing shrinkA in arrowprops might help.
 [+] ADMET figure saved successfully at: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/figures/08_admet_quadrants.png
 
 === END LOG: 08.1_build_figures.py [EXIT CODE: 0] ===

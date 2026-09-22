@@ -1,6 +1,6 @@
-=== START LOG: 04.1_build_figures.py [2026-09-20 12:31:53] ===
+=== START LOG: 04.1_build_figures.py [2026-09-22 01:04:00] ===
 
-✅ Figure successfully saved to: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/figures/04_augment_r2_comparison.png
+Figure saved to: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/figures/04_augment_r2_comparison.png / .pdf
 
 === END LOG: 04.1_build_figures.py [EXIT CODE: 0] ===
 

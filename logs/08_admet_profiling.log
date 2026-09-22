@@ -1,18 +1,26 @@
+=== START LOG: 08_admet_profiling.py [2026-09-22 01:08:45] ===
+
 ==========================================================================================
 08_admet_profiling.py — ADMET Profiling & Toxicity Risk Assessment
 Log file: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/logs/08_admet_profiling.log
 ==========================================================================================
 [1] Total initial candidates from docking: 19
 [1] Evaluating Lipinski rule of five on 48 cores...
-[1] Candidates passing Lipinski: 14
+[1] Candidates passing Lipinski: 13
+Found local copy...
+Loading...
+Done!
 
 [2] Training hERG Cardiotoxicity Classifier (TDC Dataset: 655 samples)...
+Found local copy...
+Loading...
+Done!
 
 [3] Training Caco-2 Permeability Regressor (TDC Dataset: 910 samples)...
 
 [EXPORT] Full analytical dataset (for plotting) saved to /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/ADMET_CANDIDATES_For_Docking_FULL_PRE_FILTER.csv
 
-[4] Flagged by hERG toxicity: 8 compounds
+[4] Flagged by hERG toxicity: 7 compounds
 
 =========================================================================================================
 ADMET PROFILING RESULTS SUMMARY
@@ -21,31 +29,8 @@ Pralatrexate                 | hERG Prob: 0.312 | Caco-2:  -5.41 | Profile: Pare
 Methotrexate                 | hERG Prob: 0.400 | Caco-2:  -5.87 | Profile: Parenteral Candidate (Low Caco-2)
 Pyrimethamine                | hERG Prob: 0.125 | Caco-2:  -4.42 | Profile: ADMET-Compliant (Oral)
 Methylene Blue               | hERG Prob: 0.460 | Caco-2:  -4.61 | Profile: ADMET-Compliant (Oral)
-Trimethoprim Hydrochloride   | hERG Prob: 0.140 | Caco-2:  -4.77 | Profile: ADMET-Compliant (Oral)
 Trimethoprim                 | hERG Prob: 0.140 | Caco-2:  -4.77 | Profile: ADMET-Compliant (Oral)
-
-[EXPORT] Safe candidates (6) saved to /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/ADMET_CANDIDATES_For_Docking.csv
-[TIME] Total execution: 0m 2s
-[DONE] 08_admet_profiling.py complete.
-[1] Candidates passing Lipinski: 14
-
-[2] Training hERG Cardiotoxicity Classifier (TDC Dataset: 655 samples)...
-
-[3] Training Caco-2 Permeability Regressor (TDC Dataset: 910 samples)...
-
-[EXPORT] Full analytical dataset (for plotting) saved to /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/ADMET_CANDIDATES_For_Docking_FULL_PRE_FILTER.csv
-
-[4] Flagged by hERG toxicity: 8 compounds
-
-=========================================================================================================
-ADMET PROFILING RESULTS SUMMARY
-=========================================================================================================
-Pralatrexate                 | hERG Prob: 0.312 | Caco-2:  -5.41 | Profile: Parenteral Candidate (Low Caco-2)
-Methotrexate                 | hERG Prob: 0.400 | Caco-2:  -5.87 | Profile: Parenteral Candidate (Low Caco-2)
-Pyrimethamine                | hERG Prob: 0.125 | Caco-2:  -4.42 | Profile: ADMET-Compliant (Oral)
-Methylene Blue               | hERG Prob: 0.460 | Caco-2:  -4.61 | Profile: ADMET-Compliant (Oral)
 Trimethoprim Hydrochloride   | hERG Prob: 0.140 | Caco-2:  -4.77 | Profile: ADMET-Compliant (Oral)
-Trimethoprim                 | hERG Prob: 0.140 | Caco-2:  -4.77 | Profile: ADMET-Compliant (Oral)
 
 [EXPORT] Safe candidates (6) saved to /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/ADMET_CANDIDATES_For_Docking.csv
 [TIME] Total execution: 0m 2s

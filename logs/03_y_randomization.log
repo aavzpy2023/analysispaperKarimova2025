@@ -1,24 +1,29 @@
-2026-09-20 21:18:16,911 | INFO | ================================================================================
-2026-09-20 21:18:16,911 | INFO | 03_y_randomization.py — Model Robustness Test (Y-Randomization)
-2026-09-20 21:18:16,911 | INFO | ================================================================================
-2026-09-20 21:18:16,919 | INFO | Audit Result -> Best representation: 'morgan'
-2026-09-20 21:18:16,919 | INFO | Audit Result -> Most stable architecture: 'LGBM+XGB+SVM'
-2026-09-20 21:18:16,919 | INFO | Loading training data from: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/data/V2-df_ic50_chmbl_CID_myFill.csv
-2026-09-20 21:18:16,925 | INFO | Successfully loaded 756 valid SMILES and target values.
-2026-09-20 21:18:16,925 | INFO | Generating feature matrix X for representation mode 'morgan'...
-2026-09-20 21:18:17,215 | INFO | Feature matrix dimensions: (756, 2048)
-2026-09-20 21:18:17,219 | INFO | Evaluating baseline unpermuted R2 score using 5-fold CV...
-2026-09-20 21:18:35,807 | INFO | Baseline Unpermuted R2: 0.7374
-2026-09-20 21:18:35,807 | INFO | Starting 100 target permutations using 46 worker threads...
-2026-09-20 21:28:04,112 | INFO | Y-randomization distribution saved to /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/y_randomization_scores.csv
-2026-09-20 21:28:04,114 | INFO | --------------------------------------------------------------------------------
-2026-09-20 21:28:04,114 | INFO | Y-RANDOMIZATION INTEGRITY REPORT
-2026-09-20 21:28:04,114 | INFO | --------------------------------------------------------------------------------
-2026-09-20 21:28:04,114 | INFO |   Baseline R2 (True Target) : 0.7374
-2026-09-20 21:28:04,114 | INFO |   Random R2 (Mean)          : -0.0147
-2026-09-20 21:28:04,114 | INFO |   Random R2 (Std)           : 0.0094
-2026-09-20 21:28:04,115 | INFO |   Z-Score                   : 79.97
-2026-09-20 21:28:04,115 | INFO | ACADEMIC VERDICT: PASSED. Model performance on true target is significantly superior to random chance (no memory leakage/overfitting).
-2026-09-20 21:28:04,115 | INFO | Exporting Y-Randomization LaTeX variables to: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/latex/yrandom_variables.tex
-2026-09-20 21:28:04,116 | INFO | LaTeX variable export completed successfully.
-2026-09-20 21:28:04,116 | INFO | Total execution time: 568.3 seconds
+=== START LOG: 03_y_randomization.py [2026-09-22 00:32:55] ===
+
+2026-09-22 00:32:56,523 | INFO | ================================================================================
+2026-09-22 00:32:56,523 | INFO | 03_y_randomization.py — Model Robustness Test (Y-Randomization)
+2026-09-22 00:32:56,523 | INFO | ================================================================================
+2026-09-22 00:32:56,529 | INFO | Audit Result -> Best representation: 'morgan'
+2026-09-22 00:32:56,529 | INFO | Audit Result -> Most stable architecture: 'LGBM+XGB+SVM'
+2026-09-22 00:32:56,529 | INFO | Loading training data from: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/data/V2-df_ic50_chmbl_CID_myFill.csv
+2026-09-22 00:32:56,533 | INFO | Successfully loaded 756 valid SMILES and target values.
+2026-09-22 00:32:56,534 | INFO | Generating feature matrix X for representation mode 'morgan'...
+2026-09-22 00:32:56,745 | INFO | Feature matrix dimensions: (756, 2048)
+2026-09-22 00:32:56,746 | INFO | Evaluating baseline unpermuted R2 score using 5-fold CV...
+2026-09-22 00:33:15,457 | INFO | Baseline Unpermuted R2: 0.7374
+2026-09-22 00:33:15,457 | INFO | Starting 100 target permutations using 46 worker threads...
+2026-09-22 00:42:51,882 | INFO | Y-randomization distribution saved to /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/y_randomization_scores.csv
+2026-09-22 00:42:51,883 | INFO | --------------------------------------------------------------------------------
+2026-09-22 00:42:51,884 | INFO | Y-RANDOMIZATION INTEGRITY REPORT
+2026-09-22 00:42:51,884 | INFO | --------------------------------------------------------------------------------
+2026-09-22 00:42:51,884 | INFO |   Baseline R2 (True Target) : 0.7374
+2026-09-22 00:42:51,884 | INFO |   Random R2 (Mean)          : -0.0147
+2026-09-22 00:42:51,884 | INFO |   Random R2 (Std)           : 0.0094
+2026-09-22 00:42:51,884 | INFO |   Z-Score                   : 79.97
+2026-09-22 00:42:51,884 | INFO | ACADEMIC VERDICT: PASSED. Model performance on true target is significantly superior to random chance (no memory leakage/overfitting).
+2026-09-22 00:42:51,884 | INFO | Exporting Y-Randomization LaTeX variables to: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/latex/yrandom_variables.tex
+2026-09-22 00:42:51,885 | INFO | LaTeX variable export completed successfully.
+2026-09-22 00:42:51,885 | INFO | Total execution time: 576.4 seconds
+
+=== END LOG: 03_y_randomization.py [EXIT CODE: 0] ===
+

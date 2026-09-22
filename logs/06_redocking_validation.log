@@ -1,6 +1,8 @@
+=== START LOG: 06_redocking_validation.py [2026-09-22 01:04:13] ===
+
 ================================================================================
 REDOCKING VALIDATION PIPELINE — Crystal Ligand Re-Docking
-Timestamp: 2026-09-20 12:32:08
+Timestamp: 2026-09-22 01:04:14
 Receptor setup: Chain B (DHFR active site) of PDB 6AOG
 ================================================================================
 Target Criterion: Centroid distance < 2.0 Å = Protocol Validated
@@ -8,6 +10,7 @@ Target Criterion: Centroid distance < 2.0 Å = Protocol Validated
 [1/4] EXTRACTING CRYSTAL LIGAND (CP6)
   [+] Chain B extracted: 17 heavy atoms detected.
   [+] Centroid calculated (Active Site Center): [  3.689  39.992 -62.818]
+  [CHECK] Distance between this centroid and the screening box center in paths_config.py (used by step 07): 0.001 A
 
   [NOTE] Active site center for chain B: [3.689, 39.992, -62.818]
   [NOTE] (Original script used average of both chains: [17.394, 68.757, -68.051])
@@ -15,96 +18,51 @@ Target Criterion: Centroid distance < 2.0 Å = Protocol Validated
   [+] Extraction completed in 0.00s
 
 [2/4] LIGAND PREPARATION AND CONVERSION
-  [+] Crystal ligand PDB successfully written to: crystal_ligand.pdb
-  [+] Ligand successfully converted to crystal_ligand.pdbqt via RDKit + Meeko.
-  [+] Preparation completed in 0.60s
+  [+] Crystal ligand PDB successfully written to: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/receptor/crystal_ligand.pdb
+  [+] Ligand successfully converted to /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/receptor/crystal_ligand.pdbqt via RDKit + Meeko.
+  [+] Preparation completed in 0.59s
 
 [3/4] AUTODOCK VINA REDOCKING
   [-] Re-docking ligand 'CP6' into chain 'B'...
   [-] Grid Center: [3.689, 39.992, -62.818] | Box Size: 20.0Å | Exhaustiveness: 32
-  [+] Docking completed in 6.56s
-  [+] Best Pose Binding Affinity: -7.902 kcal/mol
-
-[4/4] VALIDATION RESULT
---------------------------------------------------------------------------------
-  [-] Crystal Reference Centroid : [  3.689  39.992 -62.818]
-  [-] Docked Output Centroid     : [  3.875  40.036 -62.695]
-  [>] Calculated Centroid Distance: 0.228 Å
---------------------------------------------------------------------------------
-  [SUCCESS] ✓ PROTOCOL VALIDATED
-
-  [DRAFT] SUGGESTED METHODS SENTENCE FOR MANUSCRIPT:
-  "Docking protocol validation was performed by re-docking
-  pyrimethamine (CP6, PDB: 6AOG, chain B)
-  into the TgDHFR active site. The top-ranked pose reproduced
-  the crystallographic binding mode with a centroid distance
-  of 0.23 Å (threshold: 2.0 Å)."
-
-  [IMPORTANT WARNING]: The corrected active site center
-  for the DHFR site (chain B) is [3.689, 39.992, -62.818].
-  Ensure you update this in your 3DOCKING.py script before the final screening run.
-
-  [+] LaTeX variable definitions saved to: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/latex/redocking_variables.tex
-================================================================================
-[DONE] Redocking Validation Pipeline completed in 7.17s.
-       Logs saved in: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/logs/06_redocking_validation.log
-================================================================================
-================================================================================
-REDOCKING VALIDATION PIPELINE — Crystal Ligand Re-Docking
-Timestamp: 2026-09-20 12:32:08
-Receptor setup: Chain B (DHFR active site) of PDB 6AOG
-================================================================================
-Target Criterion: Centroid distance < 2.0 Å = Protocol Validated
-
-[1/4] EXTRACTING CRYSTAL LIGAND (CP6)
-  [+] Chain B extracted: 17 heavy atoms detected.
-  [+] Centroid calculated (Active Site Center): [  3.689  39.992 -62.818]
-
-  [NOTE] Active site center for chain B: [3.689, 39.992, -62.818]
-  [NOTE] (Original script used average of both chains: [17.394, 68.757, -68.051])
-  [NOTE] Re-running docking procedure with the corrected specific center.
-  [+] Extraction completed in 0.00s
-
-[2/4] LIGAND PREPARATION AND CONVERSION
-  [+] Crystal ligand PDB successfully written to: crystal_ligand.pdb
-  [+] Ligand successfully converted to crystal_ligand.pdbqt via RDKit + Meeko.
-  [+] Preparation completed in 0.60s
-
-[3/4] AUTODOCK VINA REDOCKING
-  [-] Re-docking ligand 'CP6' into chain 'B'...
-  [-] Grid Center: [3.689, 39.992, -62.818] | Box Size: 20.0Å | Exhaustiveness: 32
-  [+] Docking completed in 6.56s
-  [+] Best Pose Binding Affinity: -7.902 kcal/mol
-
-[4/4] VALIDATION RESULT
---------------------------------------------------------------------------------
-  [-] Crystal Reference Centroid : [  3.689  39.992 -62.818]
-  [-] Docked Output Centroid     : [  3.875  40.036 -62.695]
-  [>] Calculated Centroid Distance: 0.228 Å
---------------------------------------------------------------------------------
-  [SUCCESS] ✓ PROTOCOL VALIDATED
-
-  [DRAFT] SUGGESTED METHODS SENTENCE FOR MANUSCRIPT:
-  "Docking protocol validation was performed by re-docking
-  pyrimethamine (CP6, PDB: 6AOG, chain B)
-  into the TgDHFR active site. The top-ranked pose reproduced
-  the crystallographic binding mode with a centroid distance
-  of 0.23 Å (threshold: 2.0 Å)."
-
-  [IMPORTANT WARNING]: The corrected active site center
-  for the DHFR site (chain B) is [3.689, 39.992, -62.818].
-  Ensure you update this in your 3DOCKING.py script before the final screening run.
-
-  [+] LaTeX variable definitions saved to: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/latex/redocking_variables.tex
-================================================================================
-[DONE] Redocking Validation Pipeline completed in 7.17s.
-       Logs saved in: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/logs/06_redocking_validation.log
-================================================================================
+Computing Vina grid ... done.
+WARNING: At low exhaustiveness, it may be impossible to utilize all CPUs.
+Performing docking (random seed: 42) ... 
+0%   10   20   30   40   50   60   70   80   90   100%
+|----|----|----|----|----|----|----|----|----|----|
+***************************************************
 
 mode |   affinity | dist from best mode
      | (kcal/mol) | rmsd l.b.| rmsd u.b.
 -----+------------+----------+----------
-   1       -7.902          0          0
+   1       -7.906          0          0
+  [+] Docking completed in 6.81s
+  [+] Best Pose Binding Affinity: -7.906 kcal/mol
+
+[4/4] VALIDATION RESULT
+--------------------------------------------------------------------------------
+  [-] Crystal Reference Centroid : [  3.689  39.992 -62.818]
+  [-] Docked Output Centroid     : [  3.899  40.17  -62.661]
+  [>] Calculated Centroid Distance: 0.317 Å
+--------------------------------------------------------------------------------
+  [SUCCESS] ✓ PROTOCOL VALIDATED
+
+  [DRAFT] SUGGESTED METHODS SENTENCE FOR MANUSCRIPT:
+  "Docking protocol validation was performed by re-docking
+  pyrimethamine (CP6, PDB: 6AOG, chain B)
+  into the TgDHFR active site. The top-ranked pose reproduced
+  the crystallographic binding mode with a centroid distance
+  of 0.32 Å (threshold: 2.0 Å)."
+
+  [IMPORTANT WARNING]: The corrected active site center
+  for the DHFR site (chain B) is [3.689, 39.992, -62.818].
+  Ensure CENTER_X/Y/Z in paths_config.py (used by 07_molecular_docking.py) match this center.
+
+  [+] LaTeX variable definitions saved to: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/latex/redocking_variables.tex
+================================================================================
+[DONE] Redocking Validation Pipeline completed in 7.41s.
+       Logs saved in: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/logs/06_redocking_validation.log
+================================================================================
 
 === END LOG: 06_redocking_validation.py [EXIT CODE: 0] ===
 

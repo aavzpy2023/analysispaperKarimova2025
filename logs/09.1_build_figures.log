@@ -1,4 +1,4 @@
-=== START LOG: 09.1_build_figures.py [2026-09-20 13:50:01] ===
+=== START LOG: 09.1_build_figures.py [2026-09-22 02:19:46] ===
 
 [-] Reading GNN benchmark results from: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/gnn_results.csv
 [+] Enhanced GNN benchmark figure saved at: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/figures/09_gnn_benchmark_comparison.png
