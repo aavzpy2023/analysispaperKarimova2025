@@ -209,7 +209,8 @@ LIPINSKI_MAX_LOGP       = 5.0
 # GNN BASELINE CONFIGURATION
 # =========================================================
 # Result files
-GNN_RESULTS_CSV = os.path.join(RESULTS_DIR, "gnn_results.csv")
+GNN_RESULTS_CSV        = os.path.join(RESULTS_DIR, "gnn_results.csv")
+GNN_OOF_PREDICTIONS_CSV = os.path.join(RESULTS_DIR, "gnn_oof_predictions.csv")
 LATEX_GNN       = os.path.join(LATEX_DIR, "gnn_variables.tex")
 FIGURE_GNN      = os.path.join(FIGURES_DIR, "gnn_comparison.png")
 
@@ -228,43 +229,61 @@ PAPER_R2 = {
 
 def get_classical_r2(results_file):
     """
-    Dynamically loads the best classical ML R2 scores from script 01 results.
+    Dynamically loads the best classical ML R2 scores (mean AND std) from script 01 results.
     Prevents hardcoding values and adapts to new runs.
+    Returns a tuple (means_dict, stds_dict) with matching keys.
     """
     # Fallback values in case script 01 hasn't been run yet
     default_r2 = {
         'Morgan FP (RF+XGB+SVM)': 0.7407,
         'RDKit 2D+FP (best)': 0.7322,
     }
+    default_std = {
+        'Morgan FP (RF+XGB+SVM)': 0.0,
+        'RDKit 2D+FP (best)': 0.0,
+    }
 
     if not os.path.exists(results_file):
-        return default_r2
+        return default_r2, default_std
 
     try:
         import csv
-        results = {}
+        means, stds = {}, {}
         with open(results_file, mode='r', encoding='utf-8') as f:
             reader = csv.DictReader(f)
             for row in reader:
-                results[row['Mode']] = float(row['mean'])
+                means[row['Mode']] = float(row['mean'])
+                stds[row['Mode']] = float(row['std'])
 
         # Extract dynamic values
-        morgan_val = results.get('morgan', default_r2['Morgan FP (RF+XGB+SVM)'])
+        morgan_mean = means.get('morgan', default_r2['Morgan FP (RF+XGB+SVM)'])
+        morgan_std = stds.get('morgan', default_std['Morgan FP (RF+XGB+SVM)'])
 
-        # Get the best RDKit score from all modes that contain 'rdkit'
-        rdkit_vals = [v for k, v in results.items() if 'rdkit' in k]
-        rdkit_best = max(rdkit_vals) if rdkit_vals else default_r2['RDKit 2D+FP (best)']
+        # Get the best RDKit score from all modes that contain 'rdkit' (same mode used for its std)
+        rdkit_modes = [k for k in means if 'rdkit' in k]
+        if rdkit_modes:
+            best_rdkit_mode = max(rdkit_modes, key=lambda k: means[k])
+            rdkit_mean = means[best_rdkit_mode]
+            rdkit_std = stds[best_rdkit_mode]
+        else:
+            rdkit_mean = default_r2['RDKit 2D+FP (best)']
+            rdkit_std = default_std['RDKit 2D+FP (best)']
 
-        return {
-            'Morgan FP (Best Ensemble)': round(morgan_val, 4),
-            'RDKit (Best Ensemble)': round(rdkit_best, 4),
+        r2 = {
+            'Morgan FP (Best Ensemble)': round(morgan_mean, 4),
+            'RDKit (Best Ensemble)': round(rdkit_mean, 4),
         }
+        std = {
+            'Morgan FP (Best Ensemble)': round(morgan_std, 4),
+            'RDKit (Best Ensemble)': round(rdkit_std, 4),
+        }
+        return r2, std
     except Exception:
-        return default_r2
+        return default_r2, default_std
 
 
-# Generate the dictionary dynamically reading the nested_cv_final_results.csv
-CLASSICAL_R2 = get_classical_r2(FINAL_RESULTS_FILE)
+# Generate the dictionaries dynamically reading the nested_cv_final_results.csv
+CLASSICAL_R2, CLASSICAL_R2_STD = get_classical_r2(FINAL_RESULTS_FILE)
 
 # Ensure all output directories exist
 for d in [RESULTS_DIR, LATEX_DIR, FIGURES_DIR, LOGS_DIR]:

@@ -235,6 +235,18 @@ def main():
         df_res.to_csv(GNN_RESULTS_CSV, index=False)
         print(f"[EXPORT] Summary CSV saved to {GNN_RESULTS_CSV}")
 
+        # Export per-compound out-of-fold predictions (best model) for downstream figure
+        # generation (09.1_build_figures.py). The summary CSV above only holds one row
+        # per model, so the underlying y_test/y_pred arrays never survive into it.
+        best = max(valid, key=lambda r: r['r2'])
+        df_oof = pd.DataFrame({
+            'Model': best['model'],
+            'y_test': best['y_test'],
+            'y_pred': best['y_pred'],
+        })
+        df_oof.to_csv(GNN_OOF_PREDICTIONS_CSV, index=False)
+        print(f"[EXPORT] Out-of-fold predictions ({best['model']}) saved to {GNN_OOF_PREDICTIONS_CSV}")
+
     t_elapsed = time.time() - t0
     mins, secs = divmod(t_elapsed, 60)
     print(f"[TIME] Total execution: {int(mins)}m {int(secs)}s")

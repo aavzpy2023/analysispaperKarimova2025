@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-from paths_config import GNN_RESULTS_CSV, FIGURES_DIR, CLASSICAL_R2, PAPER_R2
+from paths_config import GNN_RESULTS_CSV, GNN_OOF_PREDICTIONS_CSV, FIGURES_DIR, CLASSICAL_R2, CLASSICAL_R2_STD, PAPER_R2
 
 def plot_gnn_benchmark():
     print(f"[-] Reading GNN benchmark results from: {GNN_RESULTS_CSV}")
@@ -12,7 +12,13 @@ def plot_gnn_benchmark():
         print(f"[ERROR] Results file not found at {GNN_RESULTS_CSV}")
         return
 
+    if not os.path.exists(GNN_OOF_PREDICTIONS_CSV):
+        print(f"[ERROR] Out-of-fold predictions file not found at {GNN_OOF_PREDICTIONS_CSV}. "
+              f"Re-run 09_gnn_baseline.py (it now exports this file) before generating this figure.")
+        return
+
     df_gnn = pd.read_csv(GNN_RESULTS_CSV)
+    df_oof = pd.read_csv(GNN_OOF_PREDICTIONS_CSV)
 
     fig, axes = plt.subplots(1, 2, figsize=(13, 6))
     sns.set_theme(style="whitegrid", context="paper")
@@ -22,7 +28,8 @@ def plot_gnn_benchmark():
     # ---------------------------------------------------------
     labels = list(CLASSICAL_R2.keys())
     means = list(CLASSICAL_R2.values())
-    errs = [0.05] * len(CLASSICAL_R2)
+    # Real per-mode std from the nested CV results (nested_cv_final_results.csv), not a placeholder.
+    errs = [CLASSICAL_R2_STD.get(label, 0.0) for label in labels]
 
     for _, row in df_gnn.iterrows():
         labels.append(row['Model'])
@@ -83,11 +90,9 @@ def plot_gnn_benchmark():
     # ---------------------------------------------------------
     best_gnn = df_gnn.sort_values(by='R2', ascending=False).iloc[0]
 
-    if 'y_test' in best_gnn and 'y_pred' in best_gnn:
-        y_test, y_pred = best_gnn['y_test'], best_gnn['y_pred']
-    else:
-        y_test = np.random.uniform(2.0, 9.0, 150)
-        y_pred = y_test + np.random.normal(0, 0.45, 150)
+    # Real out-of-fold predictions for the best GNN model (from 09_gnn_baseline.py's export).
+    y_test = df_oof['y_test'].values
+    y_pred = df_oof['y_pred'].values
 
     axes[1].scatter(
         y_test,
