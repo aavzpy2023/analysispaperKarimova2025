@@ -1,8 +1,8 @@
-=== START LOG: 06_redocking_validation.py [2026-09-22 01:04:13] ===
+=== START LOG: 06_redocking_validation.py [2026-09-23 13:17:02] ===
 
 ================================================================================
 REDOCKING VALIDATION PIPELINE — Crystal Ligand Re-Docking
-Timestamp: 2026-09-22 01:04:14
+Timestamp: 2026-09-23 13:17:03
 Receptor setup: Chain B (DHFR active site) of PDB 6AOG
 ================================================================================
 Target Criterion: Centroid distance < 2.0 Å = Protocol Validated
@@ -20,7 +20,7 @@ Target Criterion: Centroid distance < 2.0 Å = Protocol Validated
 [2/4] LIGAND PREPARATION AND CONVERSION
   [+] Crystal ligand PDB successfully written to: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/receptor/crystal_ligand.pdb
   [+] Ligand successfully converted to /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/receptor/crystal_ligand.pdbqt via RDKit + Meeko.
-  [+] Preparation completed in 0.59s
+  [+] Preparation completed in 0.76s
 
 [3/4] AUTODOCK VINA REDOCKING
   [-] Re-docking ligand 'CP6' into chain 'B'...
@@ -36,7 +36,7 @@ mode |   affinity | dist from best mode
      | (kcal/mol) | rmsd l.b.| rmsd u.b.
 -----+------------+----------+----------
    1       -7.906          0          0
-  [+] Docking completed in 6.81s
+  [+] Docking completed in 7.57s
   [+] Best Pose Binding Affinity: -7.906 kcal/mol
 
 [4/4] VALIDATION RESULT
@@ -60,7 +60,7 @@ mode |   affinity | dist from best mode
 
   [+] LaTeX variable definitions saved to: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/latex/redocking_variables.tex
 ================================================================================
-[DONE] Redocking Validation Pipeline completed in 7.41s.
+[DONE] Redocking Validation Pipeline completed in 8.34s.
        Logs saved in: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/logs/06_redocking_validation.log
 ================================================================================
 

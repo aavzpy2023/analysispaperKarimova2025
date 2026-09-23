@@ -1,4 +1,161 @@
-=== START LOG: 07_molecular_docking.py [2026-09-23 13:17:11] ===
+Python 3.11.16 | Linux 7.0.0-30-generic | 48 CPU threads | profile=workstation
+  numpy==1.26.4
+  pandas==2.3.3
+  scipy==1.16.3
+  scikit-learn==1.6.0
+  xgboost==3.1.2
+  lightgbm==4.6.0
+  rdkit==2025.9.3
+  meeko==0.8.0
+  vina==1.2.7
+  torch==2.5.1
+  lightning==2.6.5
+  chemprop==2.2.4
+  PyTDC==0.4.1
+  seaborn==0.13.2
+  adjustText==1.4.0
+  matplotlib==3.10.8
+  joblib==1.5.2
+  setuptools==69.5.1
+
+Figure saved to: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/figures/04_augment_r2_comparison.png / .pdf
+
+=== END LOG: 04.1_build_figures.py [EXIT CODE: 0] ===
+
+====================================================================================================
+VIRTUAL SCREENING PIPELINE — TgDHFR Inhibitor Search
+Timestamp: 2026-09-23 13:16:50
+====================================================================================================
+
+[1/5] ML ARCHITECTURE LOADING
+  [-] Model path: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/best_model.joblib
+  [+] Ensembled model loaded successfully (0.16s)
+  [-] Mask path: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/selected_features_mask.npy
+  [+] Mask applied: 1212 / 2048 features (59.18% retention)
+
+[2/5] APPLICABILITY DOMAIN CONFIGURATION (ISOLATION FOREST)
+  [-] Training source: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/data/V2-df_ic50_chmbl_CID_myFill.csv
+  [+] Training matrix generated: (756, 1212)
+  [+] Isolation Forest fitted (Contamination: 5.0%) in 0.81s
+
+[3/5] FDA LIBRARY PROCESSING
+  [-] Screening source: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/data/PubChem_FDA-approved_NoInorganics.csv
+  [+] Raw compounds imported: 3378
+  [+] Physical/Structural Filtering (MW < 1000.0, Allowed Atoms): 2516 candidates retained (74.5%)
+  [+] In-Domain Filtering (Isolation Forest): 1701 compounds retained (67.6%)
+  [+] Total filtering time: 2.59s
+
+[4/5] ML INFERENCE - BIOACTIVITY PREDICTION (pIC50)
+  [+] Inferences completed in 1.137s
+  [-] Prediction Statistics -> Mean: 5.6646 | Max: 7.5470 | Min: 3.8683
+
+[5/5] PERFORMANCE REPORTS AND EXPORT
+
+--------------------------------------------------------------------------------
+REPORT A: Internal Validation vs Known TgDHFR Controls
+--------------------------------------------------------------------------------
+Drug               |   pIC50 Exp. |  pIC50 Pred. |  Abs Error | Status
+--------------------------------------------------------------------------------
+Pyrimethamine      |         6.56 |       6.3175 |     0.2425 | EXCELLENT
+Trimethoprim       |         5.57 |       6.0106 |     0.4406 | EXCELLENT
+
+----------------------------------------------------------------------------------------------------
+REPORT B: Top 10 FDA Candidates (Sorted by Predicted Affinity)
+----------------------------------------------------------------------------------------------------
+Rank  Compound Name                    pIC50     LE     BEI    LLE    SEI
+----------------------------------------------------------------------------------------------------
+1     Methotrexate                    7.5470   0.31   16.61   7.28   3.58
+2     CID 336805                      7.3500   0.25   13.04   7.90   2.91
+3     Trimetrexate Glucuronate        7.3500   0.25   13.04   7.90   2.91
+4     Pralatrexate                    7.1884   0.28   15.05   6.21   3.47
+5     Folic Acid                      7.1448   0.31   16.19   7.19   3.35
+6     Bendamustine Hydrochloride      6.9405   0.40   17.58   3.25  11.89
+7     Methylene Blue                  6.9123   0.45   21.61   7.41  36.11
+8     Trifarotene                     6.8626   0.28   14.93   0.88   9.80
+9     Fentanyl Citrate                6.8592   0.25   12.98   3.97   4.41
+10    Chlorambucil                    6.8371   0.49   22.47   3.46  16.87
+
+====================================================================================================
+[SUCCESS] 19 candidates safely exported to:
+        -> /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/FDA_Candidates_For_Docking.csv
+        Logs saved in: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/logs/05_virtual_screening.log
+        Total execution time: 6.61s
+====================================================================================================
+
+=== END LOG: 05_virtual_screening.py [EXIT CODE: 0] ===
+
+Generating plots...
+[SUCCESS] Saved: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/figures/05_pIC50_candidates_comparison.png
+[SUCCESS] Saved: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/figures/05_pIC50_vs_LE_scatter.png
+[SUCCESS] Saved: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/figures/05_candidates_metrics_heatmap.png
+
+=== END LOG: 05.1_build_figures.py [EXIT CODE: 0] ===
+
+================================================================================
+REDOCKING VALIDATION PIPELINE — Crystal Ligand Re-Docking
+Timestamp: 2026-09-23 13:17:03
+Receptor setup: Chain B (DHFR active site) of PDB 6AOG
+================================================================================
+Target Criterion: Centroid distance < 2.0 Å = Protocol Validated
+
+[1/4] EXTRACTING CRYSTAL LIGAND (CP6)
+  [+] Chain B extracted: 17 heavy atoms detected.
+  [+] Centroid calculated (Active Site Center): [  3.689  39.992 -62.818]
+  [CHECK] Distance between this centroid and the screening box center in paths_config.py (used by step 07): 0.001 A
+
+  [NOTE] Active site center for chain B: [3.689, 39.992, -62.818]
+  [NOTE] (Original script used average of both chains: [17.394, 68.757, -68.051])
+  [NOTE] Re-running docking procedure with the corrected specific center.
+  [+] Extraction completed in 0.00s
+
+[2/4] LIGAND PREPARATION AND CONVERSION
+  [+] Crystal ligand PDB successfully written to: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/receptor/crystal_ligand.pdb
+  [+] Ligand successfully converted to /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/receptor/crystal_ligand.pdbqt via RDKit + Meeko.
+  [+] Preparation completed in 0.76s
+
+[3/4] AUTODOCK VINA REDOCKING
+  [-] Re-docking ligand 'CP6' into chain 'B'...
+  [-] Grid Center: [3.689, 39.992, -62.818] | Box Size: 20.0Å | Exhaustiveness: 32
+Computing Vina grid ... done.
+WARNING: At low exhaustiveness, it may be impossible to utilize all CPUs.
+Performing docking (random seed: 42) ... 
+0%   10   20   30   40   50   60   70   80   90   100%
+|----|----|----|----|----|----|----|----|----|----|
+***************************************************
+
+mode |   affinity | dist from best mode
+     | (kcal/mol) | rmsd l.b.| rmsd u.b.
+-----+------------+----------+----------
+   1       -7.906          0          0
+  [+] Docking completed in 7.57s
+  [+] Best Pose Binding Affinity: -7.906 kcal/mol
+
+[4/4] VALIDATION RESULT
+--------------------------------------------------------------------------------
+  [-] Crystal Reference Centroid : [  3.689  39.992 -62.818]
+  [-] Docked Output Centroid     : [  3.899  40.17  -62.661]
+  [>] Calculated Centroid Distance: 0.317 Å
+--------------------------------------------------------------------------------
+  [SUCCESS] ✓ PROTOCOL VALIDATED
+
+  [DRAFT] SUGGESTED METHODS SENTENCE FOR MANUSCRIPT:
+  "Docking protocol validation was performed by re-docking
+  pyrimethamine (CP6, PDB: 6AOG, chain B)
+  into the TgDHFR active site. The top-ranked pose reproduced
+  the crystallographic binding mode with a centroid distance
+  of 0.32 Å (threshold: 2.0 Å)."
+
+  [IMPORTANT WARNING]: The corrected active site center
+  for the DHFR site (chain B) is [3.689, 39.992, -62.818].
+  Ensure CENTER_X/Y/Z in paths_config.py (used by 07_molecular_docking.py) match this center.
+
+  [+] LaTeX variable definitions saved to: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/latex/redocking_variables.tex
+================================================================================
+[DONE] Redocking Validation Pipeline completed in 8.34s.
+       Logs saved in: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/logs/06_redocking_validation.log
+================================================================================
+
+=== END LOG: 06_redocking_validation.py [EXIT CODE: 0] ===
 
 ==========================================================================================
 07_molecular_docking.py — Fully Agnostic Docking Pipeline
@@ -293,4 +450,54 @@ Chlorambucil              |    6.8371 |    -6.43 |  -0.339 | ML FALSE POSITIVE
 [DONE] 07_molecular_docking.py complete.
 
 === END LOG: 07_molecular_docking.py [EXIT CODE: 0] ===
+
+[-] Reading data from: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/Final_Validation_Hybrid.csv
+Looks like you are using a tranform that doesn't support FancyArrowPatch, using ax.annotate instead. The arrows might strike through texts. Increasing shrinkA in arrowprops might help.
+[+] Enhanced figure saved successfully at: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/figures/07_docking_scatter.png
+
+=== END LOG: 07.1_build_figures.py [EXIT CODE: 0] ===
+
+==========================================================================================
+08_admet_profiling.py — ADMET Profiling & Toxicity Risk Assessment
+Log file: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/logs/08_admet_profiling.log
+==========================================================================================
+[1] Total initial candidates from docking: 19
+[1] Evaluating Lipinski rule of five on 48 cores...
+[1] Candidates passing Lipinski: 13
+Found local copy...
+Loading...
+Done!
+
+[2] Training hERG Cardiotoxicity Classifier (TDC Dataset: 655 samples)...
+Found local copy...
+Loading...
+Done!
+
+[3] Training Caco-2 Permeability Regressor (TDC Dataset: 910 samples)...
+
+[EXPORT] Full analytical dataset (for plotting) saved to /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/ADMET_CANDIDATES_For_Docking_FULL_PRE_FILTER.csv
+
+[4] Flagged by hERG toxicity: 7 compounds
+
+=========================================================================================================
+ADMET PROFILING RESULTS SUMMARY
+=========================================================================================================
+Pralatrexate                 | hERG Prob: 0.312 | Caco-2:  -5.41 | Profile: Parenteral Candidate (Low Caco-2)
+Methotrexate                 | hERG Prob: 0.400 | Caco-2:  -5.87 | Profile: Parenteral Candidate (Low Caco-2)
+Pyrimethamine                | hERG Prob: 0.125 | Caco-2:  -4.42 | Profile: ADMET-Compliant (Oral)
+Methylene Blue               | hERG Prob: 0.460 | Caco-2:  -4.61 | Profile: ADMET-Compliant (Oral)
+Trimethoprim Hydrochloride   | hERG Prob: 0.140 | Caco-2:  -4.77 | Profile: ADMET-Compliant (Oral)
+Trimethoprim                 | hERG Prob: 0.140 | Caco-2:  -4.77 | Profile: ADMET-Compliant (Oral)
+
+[EXPORT] Safe candidates (6) saved to /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/ADMET_CANDIDATES_For_Docking.csv
+[TIME] Total execution: 0m 2s
+[DONE] 08_admet_profiling.py complete.
+
+=== END LOG: 08_admet_profiling.py [EXIT CODE: 0] ===
+
+[-] Reading full ADMET dataset from: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/ADMET_CANDIDATES_For_Docking_FULL_PRE_FILTER.csv
+Looks like you are using a tranform that doesn't support FancyArrowPatch, using ax.annotate instead. The arrows might strike through texts. Increasing shrinkA in arrowprops might help.
+[+] ADMET figure saved successfully at: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/figures/08_admet_quadrants.png
+
+=== END LOG: 08.1_build_figures.py [EXIT CODE: 0] ===
 

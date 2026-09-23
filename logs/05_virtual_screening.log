@@ -1,31 +1,31 @@
-=== START LOG: 05_virtual_screening.py [2026-09-22 01:04:02] ===
+=== START LOG: 05_virtual_screening.py [2026-09-23 13:16:48] ===
 
 ====================================================================================================
 VIRTUAL SCREENING PIPELINE — TgDHFR Inhibitor Search
-Timestamp: 2026-09-22 01:04:03
+Timestamp: 2026-09-23 13:16:50
 ====================================================================================================
 
 [1/5] ML ARCHITECTURE LOADING
   [-] Model path: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/best_model.joblib
-  [+] Ensembled model loaded successfully (0.12s)
+  [+] Ensembled model loaded successfully (0.16s)
   [-] Mask path: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/selected_features_mask.npy
-  [+] Mask applied: 1254 / 2048 features (61.23% retention)
+  [+] Mask applied: 1212 / 2048 features (59.18% retention)
 
 [2/5] APPLICABILITY DOMAIN CONFIGURATION (ISOLATION FOREST)
   [-] Training source: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/data/V2-df_ic50_chmbl_CID_myFill.csv
-  [+] Training matrix generated: (756, 1254)
-  [+] Isolation Forest fitted (Contamination: 5.0%) in 0.75s
+  [+] Training matrix generated: (756, 1212)
+  [+] Isolation Forest fitted (Contamination: 5.0%) in 0.81s
 
 [3/5] FDA LIBRARY PROCESSING
   [-] Screening source: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/data/PubChem_FDA-approved_NoInorganics.csv
   [+] Raw compounds imported: 3378
   [+] Physical/Structural Filtering (MW < 1000.0, Allowed Atoms): 2516 candidates retained (74.5%)
-  [+] In-Domain Filtering (Isolation Forest): 1674 compounds retained (66.5%)
-  [+] Total filtering time: 2.21s
+  [+] In-Domain Filtering (Isolation Forest): 1701 compounds retained (67.6%)
+  [+] Total filtering time: 2.59s
 
 [4/5] ML INFERENCE - BIOACTIVITY PREDICTION (pIC50)
-  [+] Inferences completed in 1.283s
-  [-] Prediction Statistics -> Mean: 5.6563 | Max: 7.5652 | Min: 4.7977
+  [+] Inferences completed in 1.137s
+  [-] Prediction Statistics -> Mean: 5.6646 | Max: 7.5470 | Min: 3.8683
 
 [5/5] PERFORMANCE REPORTS AND EXPORT
 
@@ -34,30 +34,30 @@ REPORT A: Internal Validation vs Known TgDHFR Controls
 --------------------------------------------------------------------------------
 Drug               |   pIC50 Exp. |  pIC50 Pred. |  Abs Error | Status
 --------------------------------------------------------------------------------
-Pyrimethamine      |         6.56 |       6.3180 |     0.2420 | EXCELLENT
-Trimethoprim       |         5.57 |       6.0307 |     0.4607 | EXCELLENT
+Pyrimethamine      |         6.56 |       6.3175 |     0.2425 | EXCELLENT
+Trimethoprim       |         5.57 |       6.0106 |     0.4406 | EXCELLENT
 
 ----------------------------------------------------------------------------------------------------
 REPORT B: Top 10 FDA Candidates (Sorted by Predicted Affinity)
 ----------------------------------------------------------------------------------------------------
 Rank  Compound Name                    pIC50     LE     BEI    LLE    SEI
 ----------------------------------------------------------------------------------------------------
-1     Methotrexate                    7.5652   0.31   16.65   7.30   3.59
-2     Trimetrexate Glucuronate        7.3220   0.25   12.99   7.87   2.90
-3     CID 336805                      7.3220   0.25   12.99   7.87   2.90
-4     Pralatrexate                    7.2222   0.28   15.13   6.24   3.48
-5     Folic Acid                      7.1078   0.30   16.10   7.15   3.33
-6     Bendamustine Hydrochloride      6.9281   0.40   17.55   3.24  11.87
-7     Methylene Blue                  6.9109   0.45   21.61   7.41  36.11
-8     Fentanyl Citrate                6.8720   0.25   13.00   3.98   4.41
-9     Trifarotene                     6.8495   0.28   14.90   0.86   9.78
-10    Chlorambucil                    6.8381   0.49   22.48   3.46  16.87
+1     Methotrexate                    7.5470   0.31   16.61   7.28   3.58
+2     CID 336805                      7.3500   0.25   13.04   7.90   2.91
+3     Trimetrexate Glucuronate        7.3500   0.25   13.04   7.90   2.91
+4     Pralatrexate                    7.1884   0.28   15.05   6.21   3.47
+5     Folic Acid                      7.1448   0.31   16.19   7.19   3.35
+6     Bendamustine Hydrochloride      6.9405   0.40   17.58   3.25  11.89
+7     Methylene Blue                  6.9123   0.45   21.61   7.41  36.11
+8     Trifarotene                     6.8626   0.28   14.93   0.88   9.80
+9     Fentanyl Citrate                6.8592   0.25   12.98   3.97   4.41
+10    Chlorambucil                    6.8371   0.49   22.47   3.46  16.87
 
 ====================================================================================================
 [SUCCESS] 19 candidates safely exported to:
         -> /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/FDA_Candidates_For_Docking.csv
         Logs saved in: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/logs/05_virtual_screening.log
-        Total execution time: 5.91s
+        Total execution time: 6.61s
 ====================================================================================================
 
 === END LOG: 05_virtual_screening.py [EXIT CODE: 0] ===
