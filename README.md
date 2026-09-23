@@ -42,7 +42,7 @@ bash setup_env.sh
 
 `setup_env.sh` creates/updates the conda environment from `conda_environment.yml` (which in turn installs everything pinned in `requirements.txt`), then installs `PyTDC==0.4.1` separately with `pip install --no-deps` — PyTDC declares an old `rdkit-pypi` build as a dependency that would silently downgrade/duplicate the pinned RDKit if installed normally — and finally runs `python run_pipeline.py --check` to confirm every third-party module actually imports.
 
-Key pinned versions (full list and rationale in `requirements.txt`):
+Key pinned versions (full list and rationale in `requirements.txt`; the complete resolved environment, including transitive dependencies, is captured in `requirements-lock.txt` via `pip freeze` on the validated workstation):
 
 | Library | Version | Notes |
 | :--- | :--- | :--- |
