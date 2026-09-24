@@ -1,5 +1,3 @@
-=== START LOG: 09_gnn_baseline.py [2026-09-22 01:08:52] ===
-
 =========================================================================================================
 09_gnn_baseline.py — Graph Neural Network (GNN) Benchmarking: ChemProp D-MPNN, 5x5 repeated CV
 Log file: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/logs/09_gnn_baseline.log
@@ -11,320 +9,318 @@ Log file: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/l
 
   [ChemProp] Starting 5x5 CV (N=756 compounds)...
 INFO: Seed set to 42
-2026-09-22 01:08:58,293 | INFO | Seed set to 42
-  --> [2026-09-22 01:08:58] Training Fold 1/25...
+2026-09-23 19:28:06,890 | INFO | Seed set to 42
+  --> [2026-09-23 19:28:06] Training Fold 1/25...
 INFO: GPU available: False, used: False
-2026-09-22 01:08:58,655 | INFO | GPU available: False, used: False
+2026-09-23 19:28:07,254 | INFO | GPU available: False, used: False
 INFO: TPU available: False, using: 0 TPU cores
-2026-09-22 01:08:58,656 | INFO | TPU available: False, using: 0 TPU cores
+2026-09-23 19:28:07,254 | INFO | TPU available: False, using: 0 TPU cores
 INFO: Loading `train_dataloader` to estimate number of stepping batches.
-2026-09-22 01:08:58,659 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
+2026-09-23 19:28:07,257 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
 INFO: `Trainer.fit` stopped: `max_epochs=100` reached.
-2026-09-22 01:11:31,254 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
-  --> [2026-09-22 01:11:31] Fold 1/25 OK | R2=0.7122 | MAE=0.5509 | 153.3s
+2026-09-23 19:30:58,080 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
+  --> [2026-09-23 19:30:58] Fold 1/25 OK | R2=0.7266 | MAE=0.5417 | 171.5s
 INFO: Seed set to 43
-2026-09-22 01:11:31,593 | INFO | Seed set to 43
-  --> [2026-09-22 01:11:31] Training Fold 2/25...
+2026-09-23 19:30:58,411 | INFO | Seed set to 43
+  --> [2026-09-23 19:30:58] Training Fold 2/25...
 INFO: GPU available: False, used: False
-2026-09-22 01:11:32,078 | INFO | GPU available: False, used: False
+2026-09-23 19:30:58,889 | INFO | GPU available: False, used: False
 INFO: TPU available: False, using: 0 TPU cores
-2026-09-22 01:11:32,078 | INFO | TPU available: False, using: 0 TPU cores
+2026-09-23 19:30:58,889 | INFO | TPU available: False, using: 0 TPU cores
 INFO: Loading `train_dataloader` to estimate number of stepping batches.
-2026-09-22 01:11:32,082 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
+2026-09-23 19:30:58,893 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
 INFO: `Trainer.fit` stopped: `max_epochs=100` reached.
-2026-09-22 01:14:23,856 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
-  --> [2026-09-22 01:14:24] Fold 2/25 OK | R2=0.6055 | MAE=0.5608 | 172.6s
+2026-09-23 19:34:04,931 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
+  --> [2026-09-23 19:34:05] Fold 2/25 OK | R2=0.6003 | MAE=0.5789 | 186.9s
 INFO: Seed set to 44
-2026-09-22 01:14:24,173 | INFO | Seed set to 44
-  --> [2026-09-22 01:14:24] Training Fold 3/25...
+2026-09-23 19:34:05,266 | INFO | Seed set to 44
+  --> [2026-09-23 19:34:05] Training Fold 3/25...
 INFO: GPU available: False, used: False
-2026-09-22 01:14:24,658 | INFO | GPU available: False, used: False
+2026-09-23 19:34:05,773 | INFO | GPU available: False, used: False
 INFO: TPU available: False, using: 0 TPU cores
-2026-09-22 01:14:24,658 | INFO | TPU available: False, using: 0 TPU cores
+2026-09-23 19:34:05,773 | INFO | TPU available: False, using: 0 TPU cores
 INFO: Loading `train_dataloader` to estimate number of stepping batches.
-2026-09-22 01:14:24,662 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
+2026-09-23 19:34:05,777 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
 INFO: `Trainer.fit` stopped: `max_epochs=100` reached.
-2026-09-22 01:17:17,161 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
-  --> [2026-09-22 01:17:17] Fold 3/25 OK | R2=0.6827 | MAE=0.5707 | 173.3s
+2026-09-23 19:37:11,176 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
+  --> [2026-09-23 19:37:11] Fold 3/25 OK | R2=0.6799 | MAE=0.5763 | 186.3s
 INFO: Seed set to 45
-2026-09-22 01:17:17,488 | INFO | Seed set to 45
-  --> [2026-09-22 01:17:17] Training Fold 4/25...
+2026-09-23 19:37:11,534 | INFO | Seed set to 45
+  --> [2026-09-23 19:37:11] Training Fold 4/25...
 INFO: GPU available: False, used: False
-2026-09-22 01:17:17,977 | INFO | GPU available: False, used: False
+2026-09-23 19:37:12,035 | INFO | GPU available: False, used: False
 INFO: TPU available: False, using: 0 TPU cores
-2026-09-22 01:17:17,977 | INFO | TPU available: False, using: 0 TPU cores
+2026-09-23 19:37:12,036 | INFO | TPU available: False, using: 0 TPU cores
 INFO: Loading `train_dataloader` to estimate number of stepping batches.
-2026-09-22 01:17:17,981 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
+2026-09-23 19:37:12,039 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
 INFO: `Trainer.fit` stopped: `max_epochs=100` reached.
-2026-09-22 01:20:07,994 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
-  --> [2026-09-22 01:20:08] Fold 4/25 OK | R2=0.7652 | MAE=0.4741 | 170.8s
+2026-09-23 19:40:13,779 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
+  --> [2026-09-23 19:40:14] Fold 4/25 OK | R2=0.7495 | MAE=0.4903 | 182.6s
 INFO: Seed set to 46
-2026-09-22 01:20:08,312 | INFO | Seed set to 46
-  --> [2026-09-22 01:20:08] Training Fold 5/25...
+2026-09-23 19:40:14,121 | INFO | Seed set to 46
+  --> [2026-09-23 19:40:14] Training Fold 5/25...
 INFO: GPU available: False, used: False
-2026-09-22 01:20:08,798 | INFO | GPU available: False, used: False
+2026-09-23 19:40:14,631 | INFO | GPU available: False, used: False
 INFO: TPU available: False, using: 0 TPU cores
-2026-09-22 01:20:08,798 | INFO | TPU available: False, using: 0 TPU cores
+2026-09-23 19:40:14,631 | INFO | TPU available: False, using: 0 TPU cores
 INFO: Loading `train_dataloader` to estimate number of stepping batches.
-2026-09-22 01:20:08,802 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
+2026-09-23 19:40:14,635 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
 INFO: `Trainer.fit` stopped: `max_epochs=100` reached.
-2026-09-22 01:22:57,427 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
-  --> [2026-09-22 01:22:57] Fold 5/25 OK | R2=0.6512 | MAE=0.4928 | 169.4s
+2026-09-23 19:43:17,563 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
+  --> [2026-09-23 19:43:17] Fold 5/25 OK | R2=0.6559 | MAE=0.4838 | 183.8s
 INFO: Seed set to 47
-2026-09-22 01:22:57,746 | INFO | Seed set to 47
-  --> [2026-09-22 01:22:57] Training Fold 6/25...
+2026-09-23 19:43:17,891 | INFO | Seed set to 47
+  --> [2026-09-23 19:43:17] Training Fold 6/25...
 INFO: GPU available: False, used: False
-2026-09-22 01:22:58,231 | INFO | GPU available: False, used: False
+2026-09-23 19:43:18,392 | INFO | GPU available: False, used: False
 INFO: TPU available: False, using: 0 TPU cores
-2026-09-22 01:22:58,231 | INFO | TPU available: False, using: 0 TPU cores
+2026-09-23 19:43:18,392 | INFO | TPU available: False, using: 0 TPU cores
 INFO: Loading `train_dataloader` to estimate number of stepping batches.
-2026-09-22 01:22:58,234 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
+2026-09-23 19:43:18,395 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
 INFO: `Trainer.fit` stopped: `max_epochs=100` reached.
-2026-09-22 01:25:48,732 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
-  --> [2026-09-22 01:25:49] Fold 6/25 OK | R2=0.7756 | MAE=0.4950 | 171.3s
+2026-09-23 19:46:21,901 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
+  --> [2026-09-23 19:46:22] Fold 6/25 OK | R2=0.7675 | MAE=0.4880 | 184.4s
 INFO: Seed set to 48
-2026-09-22 01:25:49,054 | INFO | Seed set to 48
-  --> [2026-09-22 01:25:49] Training Fold 7/25...
+2026-09-23 19:46:22,243 | INFO | Seed set to 48
+  --> [2026-09-23 19:46:22] Training Fold 7/25...
 INFO: GPU available: False, used: False
-2026-09-22 01:25:49,542 | INFO | GPU available: False, used: False
+2026-09-23 19:46:22,748 | INFO | GPU available: False, used: False
 INFO: TPU available: False, using: 0 TPU cores
-2026-09-22 01:25:49,542 | INFO | TPU available: False, using: 0 TPU cores
+2026-09-23 19:46:22,748 | INFO | TPU available: False, using: 0 TPU cores
 INFO: Loading `train_dataloader` to estimate number of stepping batches.
-2026-09-22 01:25:49,545 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
+2026-09-23 19:46:22,752 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
 INFO: `Trainer.fit` stopped: `max_epochs=100` reached.
-2026-09-22 01:28:41,665 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
-  --> [2026-09-22 01:28:41] Fold 7/25 OK | R2=0.6932 | MAE=0.5396 | 172.9s
+2026-09-23 19:49:23,161 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
+  --> [2026-09-23 19:49:23] Fold 7/25 OK | R2=0.7109 | MAE=0.5166 | 181.3s
 INFO: Seed set to 49
-2026-09-22 01:28:41,976 | INFO | Seed set to 49
-  --> [2026-09-22 01:28:41] Training Fold 8/25...
+2026-09-23 19:49:23,497 | INFO | Seed set to 49
+  --> [2026-09-23 19:49:23] Training Fold 8/25...
 INFO: GPU available: False, used: False
-2026-09-22 01:28:42,457 | INFO | GPU available: False, used: False
+2026-09-23 19:49:23,995 | INFO | GPU available: False, used: False
 INFO: TPU available: False, using: 0 TPU cores
-2026-09-22 01:28:42,457 | INFO | TPU available: False, using: 0 TPU cores
+2026-09-23 19:49:23,995 | INFO | TPU available: False, using: 0 TPU cores
 INFO: Loading `train_dataloader` to estimate number of stepping batches.
-2026-09-22 01:28:42,460 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
+2026-09-23 19:49:23,998 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
 INFO: `Trainer.fit` stopped: `max_epochs=100` reached.
-2026-09-22 01:31:35,639 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
-  --> [2026-09-22 01:31:35] Fold 8/25 OK | R2=0.6792 | MAE=0.5463 | 174.0s
+2026-09-23 19:52:23,140 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
+  --> [2026-09-23 19:52:23] Fold 8/25 OK | R2=0.6965 | MAE=0.5140 | 180.0s
 INFO: Seed set to 50
-2026-09-22 01:31:35,961 | INFO | Seed set to 50
-  --> [2026-09-22 01:31:35] Training Fold 9/25...
+2026-09-23 19:52:23,470 | INFO | Seed set to 50
+  --> [2026-09-23 19:52:23] Training Fold 9/25...
 INFO: GPU available: False, used: False
-2026-09-22 01:31:36,448 | INFO | GPU available: False, used: False
+2026-09-23 19:52:23,966 | INFO | GPU available: False, used: False
 INFO: TPU available: False, using: 0 TPU cores
-2026-09-22 01:31:36,449 | INFO | TPU available: False, using: 0 TPU cores
+2026-09-23 19:52:23,967 | INFO | TPU available: False, using: 0 TPU cores
 INFO: Loading `train_dataloader` to estimate number of stepping batches.
-2026-09-22 01:31:36,452 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
+2026-09-23 19:52:23,970 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
 INFO: `Trainer.fit` stopped: `max_epochs=100` reached.
-2026-09-22 01:34:31,310 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
-  --> [2026-09-22 01:34:31] Fold 9/25 OK | R2=0.7412 | MAE=0.4861 | 175.7s
+2026-09-23 19:55:27,689 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
+  --> [2026-09-23 19:55:28] Fold 9/25 OK | R2=0.7430 | MAE=0.4760 | 184.5s
 INFO: Seed set to 51
-2026-09-22 01:34:31,627 | INFO | Seed set to 51
-  --> [2026-09-22 01:34:31] Training Fold 10/25...
+2026-09-23 19:55:28,013 | INFO | Seed set to 51
+  --> [2026-09-23 19:55:28] Training Fold 10/25...
 INFO: GPU available: False, used: False
-2026-09-22 01:34:32,117 | INFO | GPU available: False, used: False
+2026-09-23 19:55:28,506 | INFO | GPU available: False, used: False
 INFO: TPU available: False, using: 0 TPU cores
-2026-09-22 01:34:32,117 | INFO | TPU available: False, using: 0 TPU cores
+2026-09-23 19:55:28,507 | INFO | TPU available: False, using: 0 TPU cores
 INFO: Loading `train_dataloader` to estimate number of stepping batches.
-2026-09-22 01:34:32,121 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
+2026-09-23 19:55:28,510 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
 INFO: `Trainer.fit` stopped: `max_epochs=100` reached.
-2026-09-22 01:37:18,780 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
-  --> [2026-09-22 01:37:19] Fold 10/25 OK | R2=0.5774 | MAE=0.5679 | 167.5s
+2026-09-23 19:58:27,196 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
+  --> [2026-09-23 19:58:27] Fold 10/25 OK | R2=0.6012 | MAE=0.5675 | 179.5s
 INFO: Seed set to 52
-2026-09-22 01:37:19,098 | INFO | Seed set to 52
-  --> [2026-09-22 01:37:19] Training Fold 11/25...
+2026-09-23 19:58:27,519 | INFO | Seed set to 52
+  --> [2026-09-23 19:58:27] Training Fold 11/25...
 INFO: GPU available: False, used: False
-2026-09-22 01:37:19,589 | INFO | GPU available: False, used: False
+2026-09-23 19:58:28,015 | INFO | GPU available: False, used: False
 INFO: TPU available: False, using: 0 TPU cores
-2026-09-22 01:37:19,589 | INFO | TPU available: False, using: 0 TPU cores
+2026-09-23 19:58:28,016 | INFO | TPU available: False, using: 0 TPU cores
 INFO: Loading `train_dataloader` to estimate number of stepping batches.
-2026-09-22 01:37:19,593 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
+2026-09-23 19:58:28,019 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
 INFO: `Trainer.fit` stopped: `max_epochs=100` reached.
-2026-09-22 01:40:09,514 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
-  --> [2026-09-22 01:40:09] Fold 11/25 OK | R2=0.6838 | MAE=0.5657 | 170.7s
+2026-09-23 20:01:26,770 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
+  --> [2026-09-23 20:01:27] Fold 11/25 OK | R2=0.6969 | MAE=0.5680 | 179.6s
 INFO: Seed set to 53
-2026-09-22 01:40:09,833 | INFO | Seed set to 53
-  --> [2026-09-22 01:40:09] Training Fold 12/25...
+2026-09-23 20:01:27,105 | INFO | Seed set to 53
+  --> [2026-09-23 20:01:27] Training Fold 12/25...
 INFO: GPU available: False, used: False
-2026-09-22 01:40:10,326 | INFO | GPU available: False, used: False
+2026-09-23 20:01:27,608 | INFO | GPU available: False, used: False
 INFO: TPU available: False, using: 0 TPU cores
-2026-09-22 01:40:10,326 | INFO | TPU available: False, using: 0 TPU cores
+2026-09-23 20:01:27,608 | INFO | TPU available: False, using: 0 TPU cores
 INFO: Loading `train_dataloader` to estimate number of stepping batches.
-2026-09-22 01:40:10,329 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
+2026-09-23 20:01:27,611 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
 INFO: `Trainer.fit` stopped: `max_epochs=100` reached.
-2026-09-22 01:43:01,430 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
-  --> [2026-09-22 01:43:01] Fold 12/25 OK | R2=0.7481 | MAE=0.5007 | 171.9s
+2026-09-23 20:04:31,614 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
+  --> [2026-09-23 20:04:31] Fold 12/25 OK | R2=0.7327 | MAE=0.5101 | 184.8s
 INFO: Seed set to 54
-2026-09-22 01:43:01,752 | INFO | Seed set to 54
-  --> [2026-09-22 01:43:01] Training Fold 13/25...
+2026-09-23 20:04:31,950 | INFO | Seed set to 54
+  --> [2026-09-23 20:04:31] Training Fold 13/25...
 INFO: GPU available: False, used: False
-2026-09-22 01:43:02,243 | INFO | GPU available: False, used: False
+2026-09-23 20:04:32,468 | INFO | GPU available: False, used: False
 INFO: TPU available: False, using: 0 TPU cores
-2026-09-22 01:43:02,243 | INFO | TPU available: False, using: 0 TPU cores
+2026-09-23 20:04:32,469 | INFO | TPU available: False, using: 0 TPU cores
 INFO: Loading `train_dataloader` to estimate number of stepping batches.
-2026-09-22 01:43:02,247 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
+2026-09-23 20:04:32,472 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
 INFO: `Trainer.fit` stopped: `max_epochs=100` reached.
-2026-09-22 01:45:56,006 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
-  --> [2026-09-22 01:45:56] Fold 13/25 OK | R2=0.6007 | MAE=0.5558 | 174.6s
+2026-09-23 20:07:37,415 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
+  --> [2026-09-23 20:07:37] Fold 13/25 OK | R2=0.5939 | MAE=0.5608 | 185.8s
 INFO: Seed set to 55
-2026-09-22 01:45:56,340 | INFO | Seed set to 55
-  --> [2026-09-22 01:45:56] Training Fold 14/25...
+2026-09-23 20:07:37,766 | INFO | Seed set to 55
+  --> [2026-09-23 20:07:37] Training Fold 14/25...
 INFO: GPU available: False, used: False
-2026-09-22 01:45:56,831 | INFO | GPU available: False, used: False
+2026-09-23 20:07:38,286 | INFO | GPU available: False, used: False
 INFO: TPU available: False, using: 0 TPU cores
-2026-09-22 01:45:56,831 | INFO | TPU available: False, using: 0 TPU cores
+2026-09-23 20:07:38,286 | INFO | TPU available: False, using: 0 TPU cores
 INFO: Loading `train_dataloader` to estimate number of stepping batches.
-2026-09-22 01:45:56,834 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
+2026-09-23 20:07:38,290 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
 INFO: `Trainer.fit` stopped: `max_epochs=100` reached.
-2026-09-22 01:48:47,669 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
-  --> [2026-09-22 01:48:47] Fold 14/25 OK | R2=0.7193 | MAE=0.4736 | 171.6s
+2026-09-23 20:10:41,429 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
+  --> [2026-09-23 20:10:41] Fold 14/25 OK | R2=0.7129 | MAE=0.4846 | 184.0s
 INFO: Seed set to 56
-2026-09-22 01:48:47,986 | INFO | Seed set to 56
-  --> [2026-09-22 01:48:47] Training Fold 15/25...
+2026-09-23 20:10:41,763 | INFO | Seed set to 56
+  --> [2026-09-23 20:10:41] Training Fold 15/25...
 INFO: GPU available: False, used: False
-2026-09-22 01:48:48,479 | INFO | GPU available: False, used: False
+2026-09-23 20:10:42,271 | INFO | GPU available: False, used: False
 INFO: TPU available: False, using: 0 TPU cores
-2026-09-22 01:48:48,479 | INFO | TPU available: False, using: 0 TPU cores
+2026-09-23 20:10:42,271 | INFO | TPU available: False, using: 0 TPU cores
 INFO: Loading `train_dataloader` to estimate number of stepping batches.
-2026-09-22 01:48:48,483 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
+2026-09-23 20:10:42,274 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
 INFO: `Trainer.fit` stopped: `max_epochs=100` reached.
-2026-09-22 01:51:40,242 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
-  --> [2026-09-22 01:51:40] Fold 15/25 OK | R2=0.6563 | MAE=0.5803 | 172.6s
+2026-09-23 20:13:41,380 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
+  --> [2026-09-23 20:13:41] Fold 15/25 OK | R2=0.6400 | MAE=0.6012 | 179.9s
 INFO: Seed set to 57
-2026-09-22 01:51:40,566 | INFO | Seed set to 57
-  --> [2026-09-22 01:51:40] Training Fold 16/25...
+2026-09-23 20:13:41,713 | INFO | Seed set to 57
+  --> [2026-09-23 20:13:41] Training Fold 16/25...
 INFO: GPU available: False, used: False
-2026-09-22 01:51:41,058 | INFO | GPU available: False, used: False
+2026-09-23 20:13:42,212 | INFO | GPU available: False, used: False
 INFO: TPU available: False, using: 0 TPU cores
-2026-09-22 01:51:41,058 | INFO | TPU available: False, using: 0 TPU cores
+2026-09-23 20:13:42,212 | INFO | TPU available: False, using: 0 TPU cores
 INFO: Loading `train_dataloader` to estimate number of stepping batches.
-2026-09-22 01:51:41,061 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
+2026-09-23 20:13:42,216 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
 INFO: `Trainer.fit` stopped: `max_epochs=100` reached.
-2026-09-22 01:54:33,576 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
-  --> [2026-09-22 01:54:33] Fold 16/25 OK | R2=0.6137 | MAE=0.5463 | 173.3s
+2026-09-23 20:16:42,720 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
+  --> [2026-09-23 20:16:43] Fold 16/25 OK | R2=0.6294 | MAE=0.5604 | 181.3s
 INFO: Seed set to 58
-2026-09-22 01:54:33,901 | INFO | Seed set to 58
-  --> [2026-09-22 01:54:33] Training Fold 17/25...
+2026-09-23 20:16:43,052 | INFO | Seed set to 58
+  --> [2026-09-23 20:16:43] Training Fold 17/25...
 INFO: GPU available: False, used: False
-2026-09-22 01:54:34,395 | INFO | GPU available: False, used: False
+2026-09-23 20:16:43,557 | INFO | GPU available: False, used: False
 INFO: TPU available: False, using: 0 TPU cores
-2026-09-22 01:54:34,395 | INFO | TPU available: False, using: 0 TPU cores
+2026-09-23 20:16:43,558 | INFO | TPU available: False, using: 0 TPU cores
 INFO: Loading `train_dataloader` to estimate number of stepping batches.
-2026-09-22 01:54:34,398 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
+2026-09-23 20:16:43,561 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
 INFO: `Trainer.fit` stopped: `max_epochs=100` reached.
-2026-09-22 01:57:28,192 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
-  --> [2026-09-22 01:57:28] Fold 17/25 OK | R2=0.7388 | MAE=0.5023 | 174.6s
+2026-09-23 20:19:42,645 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
+  --> [2026-09-23 20:19:42] Fold 17/25 OK | R2=0.7575 | MAE=0.4887 | 179.9s
 INFO: Seed set to 59
-2026-09-22 01:57:28,515 | INFO | Seed set to 59
-  --> [2026-09-22 01:57:28] Training Fold 18/25...
+2026-09-23 20:19:42,977 | INFO | Seed set to 59
+  --> [2026-09-23 20:19:42] Training Fold 18/25...
 INFO: GPU available: False, used: False
-2026-09-22 01:57:29,006 | INFO | GPU available: False, used: False
+2026-09-23 20:19:43,481 | INFO | GPU available: False, used: False
 INFO: TPU available: False, using: 0 TPU cores
-2026-09-22 01:57:29,006 | INFO | TPU available: False, using: 0 TPU cores
+2026-09-23 20:19:43,481 | INFO | TPU available: False, using: 0 TPU cores
 INFO: Loading `train_dataloader` to estimate number of stepping batches.
-2026-09-22 01:57:29,010 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
+2026-09-23 20:19:43,484 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
 INFO: `Trainer.fit` stopped: `max_epochs=100` reached.
-2026-09-22 02:00:17,589 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
-  --> [2026-09-22 02:00:17] Fold 18/25 OK | R2=0.6871 | MAE=0.4886 | 169.4s
+2026-09-23 20:22:46,602 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
+  --> [2026-09-23 20:22:46] Fold 18/25 OK | R2=0.7184 | MAE=0.4747 | 184.0s
 INFO: Seed set to 60
-2026-09-22 02:00:17,911 | INFO | Seed set to 60
-  --> [2026-09-22 02:00:17] Training Fold 19/25...
+2026-09-23 20:22:46,940 | INFO | Seed set to 60
+  --> [2026-09-23 20:22:46] Training Fold 19/25...
 INFO: GPU available: False, used: False
-2026-09-22 02:00:18,405 | INFO | GPU available: False, used: False
+2026-09-23 20:22:47,446 | INFO | GPU available: False, used: False
 INFO: TPU available: False, using: 0 TPU cores
-2026-09-22 02:00:18,406 | INFO | TPU available: False, using: 0 TPU cores
+2026-09-23 20:22:47,447 | INFO | TPU available: False, using: 0 TPU cores
 INFO: Loading `train_dataloader` to estimate number of stepping batches.
-2026-09-22 02:00:18,409 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
+2026-09-23 20:22:47,450 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
 INFO: `Trainer.fit` stopped: `max_epochs=100` reached.
-2026-09-22 02:03:05,827 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
-  --> [2026-09-22 02:03:06] Fold 19/25 OK | R2=0.6798 | MAE=0.5614 | 168.2s
+2026-09-23 20:25:48,814 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
+  --> [2026-09-23 20:25:49] Fold 19/25 OK | R2=0.6878 | MAE=0.5427 | 182.2s
 INFO: Seed set to 61
-2026-09-22 02:03:06,143 | INFO | Seed set to 61
-  --> [2026-09-22 02:03:06] Training Fold 20/25...
+2026-09-23 20:25:49,133 | INFO | Seed set to 61
+  --> [2026-09-23 20:25:49] Training Fold 20/25...
 INFO: GPU available: False, used: False
-2026-09-22 02:03:06,635 | INFO | GPU available: False, used: False
+2026-09-23 20:25:49,644 | INFO | GPU available: False, used: False
 INFO: TPU available: False, using: 0 TPU cores
-2026-09-22 02:03:06,636 | INFO | TPU available: False, using: 0 TPU cores
+2026-09-23 20:25:49,644 | INFO | TPU available: False, using: 0 TPU cores
 INFO: Loading `train_dataloader` to estimate number of stepping batches.
-2026-09-22 02:03:06,639 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
+2026-09-23 20:25:49,647 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
 INFO: `Trainer.fit` stopped: `max_epochs=100` reached.
-2026-09-22 02:05:52,098 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
-  --> [2026-09-22 02:05:52] Fold 20/25 OK | R2=0.6541 | MAE=0.5460 | 166.3s
+2026-09-23 20:28:47,472 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
+  --> [2026-09-23 20:28:47] Fold 20/25 OK | R2=0.6528 | MAE=0.5311 | 178.7s
 INFO: Seed set to 62
-2026-09-22 02:05:52,407 | INFO | Seed set to 62
-  --> [2026-09-22 02:05:52] Training Fold 21/25...
+2026-09-23 20:28:47,800 | INFO | Seed set to 62
+  --> [2026-09-23 20:28:47] Training Fold 21/25...
 INFO: GPU available: False, used: False
-2026-09-22 02:05:52,902 | INFO | GPU available: False, used: False
+2026-09-23 20:28:48,307 | INFO | GPU available: False, used: False
 INFO: TPU available: False, using: 0 TPU cores
-2026-09-22 02:05:52,902 | INFO | TPU available: False, using: 0 TPU cores
+2026-09-23 20:28:48,307 | INFO | TPU available: False, using: 0 TPU cores
 INFO: Loading `train_dataloader` to estimate number of stepping batches.
-2026-09-22 02:05:52,905 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
+2026-09-23 20:28:48,310 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
 INFO: `Trainer.fit` stopped: `max_epochs=100` reached.
-2026-09-22 02:08:36,582 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
-  --> [2026-09-22 02:08:36] Fold 21/25 OK | R2=0.5585 | MAE=0.6227 | 164.5s
+2026-09-23 20:31:45,693 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
+  --> [2026-09-23 20:31:46] Fold 21/25 OK | R2=0.5799 | MAE=0.6066 | 178.2s
 INFO: Seed set to 63
-2026-09-22 02:08:36,916 | INFO | Seed set to 63
-  --> [2026-09-22 02:08:36] Training Fold 22/25...
+2026-09-23 20:31:46,044 | INFO | Seed set to 63
+  --> [2026-09-23 20:31:46] Training Fold 22/25...
 INFO: GPU available: False, used: False
-2026-09-22 02:08:37,415 | INFO | GPU available: False, used: False
+2026-09-23 20:31:46,552 | INFO | GPU available: False, used: False
 INFO: TPU available: False, using: 0 TPU cores
-2026-09-22 02:08:37,415 | INFO | TPU available: False, using: 0 TPU cores
+2026-09-23 20:31:46,552 | INFO | TPU available: False, using: 0 TPU cores
 INFO: Loading `train_dataloader` to estimate number of stepping batches.
-2026-09-22 02:08:37,419 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
+2026-09-23 20:31:46,556 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
 INFO: `Trainer.fit` stopped: `max_epochs=100` reached.
-2026-09-22 02:11:23,443 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
-  --> [2026-09-22 02:11:23] Fold 22/25 OK | R2=0.7162 | MAE=0.5112 | 166.8s
+2026-09-23 20:34:45,075 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
+  --> [2026-09-23 20:34:45] Fold 22/25 OK | R2=0.6977 | MAE=0.5225 | 179.4s
 INFO: Seed set to 64
-2026-09-22 02:11:23,761 | INFO | Seed set to 64
-  --> [2026-09-22 02:11:23] Training Fold 23/25...
+2026-09-23 20:34:45,411 | INFO | Seed set to 64
+  --> [2026-09-23 20:34:45] Training Fold 23/25...
 INFO: GPU available: False, used: False
-2026-09-22 02:11:24,255 | INFO | GPU available: False, used: False
+2026-09-23 20:34:45,919 | INFO | GPU available: False, used: False
 INFO: TPU available: False, using: 0 TPU cores
-2026-09-22 02:11:24,256 | INFO | TPU available: False, using: 0 TPU cores
+2026-09-23 20:34:45,919 | INFO | TPU available: False, using: 0 TPU cores
 INFO: Loading `train_dataloader` to estimate number of stepping batches.
-2026-09-22 02:11:24,259 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
+2026-09-23 20:34:45,923 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
 INFO: `Trainer.fit` stopped: `max_epochs=100` reached.
-2026-09-22 02:14:10,298 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
-  --> [2026-09-22 02:14:10] Fold 23/25 OK | R2=0.6002 | MAE=0.5997 | 166.8s
+2026-09-23 20:37:44,886 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
+  --> [2026-09-23 20:37:45] Fold 23/25 OK | R2=0.5906 | MAE=0.5990 | 179.8s
 INFO: Seed set to 65
-2026-09-22 02:14:10,611 | INFO | Seed set to 65
-  --> [2026-09-22 02:14:10] Training Fold 24/25...
+2026-09-23 20:37:45,220 | INFO | Seed set to 65
+  --> [2026-09-23 20:37:45] Training Fold 24/25...
 INFO: GPU available: False, used: False
-2026-09-22 02:14:11,107 | INFO | GPU available: False, used: False
+2026-09-23 20:37:45,726 | INFO | GPU available: False, used: False
 INFO: TPU available: False, using: 0 TPU cores
-2026-09-22 02:14:11,108 | INFO | TPU available: False, using: 0 TPU cores
+2026-09-23 20:37:45,727 | INFO | TPU available: False, using: 0 TPU cores
 INFO: Loading `train_dataloader` to estimate number of stepping batches.
-2026-09-22 02:14:11,111 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
+2026-09-23 20:37:45,730 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
 INFO: `Trainer.fit` stopped: `max_epochs=100` reached.
-2026-09-22 02:16:57,778 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
-  --> [2026-09-22 02:16:58] Fold 24/25 OK | R2=0.7155 | MAE=0.5337 | 167.5s
+2026-09-23 20:40:43,450 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
+  --> [2026-09-23 20:40:43] Fold 24/25 OK | R2=0.7300 | MAE=0.5313 | 178.6s
 INFO: Seed set to 66
-2026-09-22 02:16:58,096 | INFO | Seed set to 66
-  --> [2026-09-22 02:16:58] Training Fold 25/25...
+2026-09-23 20:40:43,787 | INFO | Seed set to 66
+  --> [2026-09-23 20:40:43] Training Fold 25/25...
 INFO: GPU available: False, used: False
-2026-09-22 02:16:58,591 | INFO | GPU available: False, used: False
+2026-09-23 20:40:44,308 | INFO | GPU available: False, used: False
 INFO: TPU available: False, using: 0 TPU cores
-2026-09-22 02:16:58,591 | INFO | TPU available: False, using: 0 TPU cores
+2026-09-23 20:40:44,308 | INFO | TPU available: False, using: 0 TPU cores
 INFO: Loading `train_dataloader` to estimate number of stepping batches.
-2026-09-22 02:16:58,594 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
+2026-09-23 20:40:44,312 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
 INFO: `Trainer.fit` stopped: `max_epochs=100` reached.
-2026-09-22 02:19:44,134 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
-  --> [2026-09-22 02:19:44] Fold 25/25 OK | R2=0.7496 | MAE=0.5107 | 166.4s
+2026-09-23 20:43:39,523 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
+  --> [2026-09-23 20:43:39] Fold 25/25 OK | R2=0.7623 | MAE=0.5065 | 176.1s
 
   [ChemProp] 5x5 CV Completed.
-  [ChemProp Result] R2=0.6802 ± 0.0595 | MAE=0.5353 | 95% CI [0.6569, 0.7035]
+  [ChemProp Result] R2=0.6846 ± 0.0580 | MAE=0.5329 | 95% CI [0.6618, 0.7073]
 
 =========================================================================================================
 GNN BENCHMARK SUMMARY
 =========================================================================================================
-ChemProp (D-MPNN Fold)              | R2: 0.6802 | MAE: 0.5353 | 95% CI: [0.6569, 0.7035]
+ChemProp (D-MPNN Fold)              | R2: 0.6846 | MAE: 0.5329 | 95% CI: [0.6618, 0.7073]
 
 [3] Exporting artifacts...
 [EXPORT] LaTeX variables saved to /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/latex/gnn_variables.tex
 [EXPORT] Comparison plot saved to /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/figures/gnn_comparison.png
 [EXPORT] Summary CSV saved to /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/gnn_results.csv
-[TIME] Total execution: 70m 51s
+[EXPORT] Out-of-fold predictions (ChemProp (D-MPNN Fold)) saved to /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/gnn_oof_predictions.csv
+[TIME] Total execution: 75m 39s
 [DONE] 09_gnn_baseline.py complete.
-
-=== END LOG: 09_gnn_baseline.py [EXIT CODE: 0] ===
-
