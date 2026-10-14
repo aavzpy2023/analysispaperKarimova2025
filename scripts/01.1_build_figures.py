@@ -1,6 +1,6 @@
 """
 Figures for publication - v4
-Narrative: "When Simple Wins" — Classical ML vs GNNs in low-data QSAR
+Narrative: "When Simple Is Enough" — Classical ML vs GNNs in low-data QSAR
 
 Fig 1 — R2 distribution per molecular representation (boxplot + reference lines)
 Fig 2 — Our model vs Karimova progressive pipeline (horizontal bars)
@@ -31,6 +31,31 @@ except ImportError:
     CHECKPOINT_FILE = os.path.join(RESULTS_DIR, "nested_cv_checkpoint.csv")
 
 os.makedirs(FIGURES_DIR, exist_ok=True)
+
+from logger_utils import explain
+
+FIGURE_NOTES = {
+    "01_nested_cv_stability_boxplot": """
+        Fig 1. One box per molecular description; each point is the R2 of one outer test fold. The box shows the middle 50%
+        of folds and the line the median. A tall box means unstable results (depends on which molecules were in the test
+        fold). Dashed lines are the R2 values reported in the original paper: boxes above them mean we match or beat it.""",
+    "01_nested_cv_benchmark_comparison": """
+        Fig 2. Mean R2 of this study next to the successive stages of the reference (original paper) pipeline. Stars mark a
+        statistically significant difference after the Nadeau-Bengio correction (n.s. = not significant = equivalent).""",
+    "01_nested_cv_algorithm_selection": """
+        Fig 3. Which algorithm families were chosen by the inner selection (A) and how many algorithms the winning stack had
+        (B). Frequent winners are the ones the data supports; if simple ensembles win as often as large stacks, the extra
+        complexity is not buying accuracy.""",
+    "01_nested_cv_performance_summary": """
+        Fig 4. Per-description mean R2 (A) and MAE (B) with 95% confidence intervals. Overlapping intervals mean the
+        descriptions cannot be told apart. MAE is in pIC50 units (0.5 = about a 3-fold error in IC50).""",
+    "01_nested_cv_time_vs_performance": """
+        Fig 5. Accuracy against compute time per fold. Points far to the right with no gain in R2 are expensive without
+        benefit (e.g. 3D descriptors); the best trade-off is up and to the left.""",
+    "S1_nested_cv_selection_full_heatmap": """
+        Fig S1. The exact algorithm combination selected in every outer fold, for every description.""",
+}
+
 TTESTS_PATH = os.path.join(RESULTS_DIR, "nested_cv_final_results_ttests.csv")
 
 # ------------------------------------------------------------------
@@ -124,6 +149,7 @@ def save(fig, name):
     for ext in ("png", "pdf"):
         fig.savefig(os.path.join(FIGURES_DIR, f"{name}.{ext}"))
     plt.close(fig)
+    explain(f"Figure saved: {name}", FIGURE_NOTES.get(name, "No description available."))
 
 # ------------------------------------------------------------------
 # Load data

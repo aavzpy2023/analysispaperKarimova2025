@@ -3,6 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from paths_config import DOCKING_RESULTS_CSV, FIGURES_DIR
+from logger_utils import explain
 from adjustText import adjust_text
 
 def plot_docking_validation():
@@ -10,9 +11,19 @@ def plot_docking_validation():
 
     if not os.path.exists(DOCKING_RESULTS_CSV):
         print(f"[ERROR] CSV file not found: {DOCKING_RESULTS_CSV}")
-        return
+        raise SystemExit(1)
 
     df = pd.read_csv(DOCKING_RESULTS_CSV)
+    ml_threshold = 6.0
+    dock_threshold = -7.5
+    explain("What this figure shows", f"""
+        Each dot is a drug: horizontal = AutoDock Vina docking score (further right = better predicted binding), vertical =
+        ML-predicted pIC50 (higher = more potent). Dots in the top-right corner are supported by both methods. Colours
+        follow the 'Agreement' categories of step 07 (validated, false positive, false negative, neutral). The dotted
+        lines are drawn at ML pIC50 = {ml_threshold} and docking = {dock_threshold} kcal/mol. Note for reviewers: step 07
+        classifies 'active' with stricter cut-offs (pIC50 > 6.5 and docking < -8.0), so a dot can sit in the top-right
+        region of the figure and still be labelled Neutral.
+    """)
 
     fig, ax = plt.subplots(figsize=(10, 6.5))
     sns.set_theme(style="whitegrid", context="paper")
@@ -26,8 +37,6 @@ def plot_docking_validation():
         'Neutral': '#1f77b4'
     }
 
-    ml_threshold = 6.0
-    dock_threshold = -7.5
 
     # Set X-axis boundaries with data padding and reverse direction (lower score on right)
     x_max = df['Docking_Score'].max() + 0.5

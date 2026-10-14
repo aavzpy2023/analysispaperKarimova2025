@@ -22,7 +22,7 @@ from scipy import stats
 # Link root directory to import paths_config and logger_utils
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from paths_config import *
-from logger_utils import setup_logger
+from logger_utils import setup_logger, explain
 
 from rdkit import Chem, RDLogger
 from rdkit.Chem import AllChem, Descriptors, Descriptors3D
@@ -288,33 +288,50 @@ def build_pipeline(combo_dict, is_binary):
     ])
 
 
-def evaluate_combo_inner(combo, X_tr, y_tr, inner_splits, is_binary):
+def evaluate_combo_inner_fold(combo, X_tr, y_tr, train_idx, val_idx, is_binary):
+    """One inner-CV fit of one combo; returns (clipped R2, clipped MAE) on the validation split."""
     warnings.filterwarnings("ignore")
-    combo_id = "+".join(combo.keys())
     pipe = build_pipeline(combo, is_binary)
-    kf = KFold(n_splits=inner_splits, shuffle=True, random_state=RANDOM_STATE)
-
     lo, hi = get_clip_bounds(y_tr)
+    pipe.fit(X_tr[train_idx], y_tr[train_idx])
+    y_pred, _ = clip_predictions(pipe.predict(X_tr[val_idx]), lo, hi)
+    return r2_score(y_tr[val_idx], y_pred), mean_absolute_error(y_tr[val_idx], y_pred)
 
-    def clipped_r2(y_true, y_pred):
-        y_pred_c, _ = clip_predictions(y_pred, lo, hi)
-        return r2_score(y_true, y_pred_c)
 
-    def clipped_neg_mae(y_true, y_pred):
-        y_pred_c, _ = clip_predictions(y_pred, lo, hi)
-        return -mean_absolute_error(y_true, y_pred_c)
+# Rough relative fit cost per base model; only used to dispatch the heaviest tasks first.
+_MODEL_COST = {'RF': 3.0, 'ET': 2.0, 'LGBM': 1.0, 'XGB': 1.5, 'SVM': 0.3, 'kNN': 0.1}
 
-    scoring = {
-        'r2': make_scorer(clipped_r2),
-        'mae': make_scorer(clipped_neg_mae),
-    }
-    scores = cross_validate(pipe, X_tr, y_tr, cv=kf, scoring=scoring, n_jobs=1)
-    return {
-        'Model': combo_id,
-        'R2_inner_mean': scores['test_r2'].mean(),
-        'R2_inner_std': scores['test_r2'].std(),
-        'MAE_inner_mean': -scores['test_mae'].mean(),
-    }
+
+def _combo_cost(combo):
+    cost = 3.0 + sum(_MODEL_COST[n] for n in combo)  # 3.0 = SelectFromModel RF
+    return cost * 6 if len(combo) > 1 else cost  # StackingRegressor: cv=5 + final refit
+
+
+def evaluate_combos_inner(all_combos, X_tr, y_tr, inner_splits, is_binary, n_jobs):
+    """Inner CV of every combo, parallelised over (combo, inner fold) so that no worker idles behind
+    the few expensive stacked combos. Per-fold fits are identical to the sequential evaluation."""
+    kf = KFold(n_splits=inner_splits, shuffle=True, random_state=RANDOM_STATE)
+    splits = list(kf.split(X_tr))
+    tasks = [(ci, fi) for ci in range(len(all_combos)) for fi in range(len(splits))]
+    tasks.sort(key=lambda t: -_combo_cost(all_combos[t[0]]))
+    out = Parallel(n_jobs=n_jobs, batch_size=1)(
+        delayed(evaluate_combo_inner_fold)(all_combos[ci], X_tr, y_tr, *splits[fi], is_binary)
+        for ci, fi in tasks
+    )
+    per_combo = {}
+    for (ci, fi), res in zip(tasks, out):
+        per_combo.setdefault(ci, {})[fi] = res
+    rows = []
+    for ci, combo in enumerate(all_combos):
+        r2 = np.array([per_combo[ci][fi][0] for fi in range(len(splits))])
+        mae = np.array([per_combo[ci][fi][1] for fi in range(len(splits))])
+        rows.append({
+            'Model': "+".join(combo.keys()),
+            'R2_inner_mean': r2.mean(),
+            'R2_inner_std': r2.std(),
+            'MAE_inner_mean': mae.mean(),
+        })
+    return rows
 
 
 # =========================================================
@@ -372,10 +389,7 @@ def nested_cv_for_mode(mode, df_clean, cfg):
         y_tr, y_te = y[train_idx], y[test_idx]
 
         start = time.time()
-        inner_results = Parallel(n_jobs=cfg['N_JOBS'], verbose=0)(
-            delayed(evaluate_combo_inner)(combo, X_tr, y_tr, cfg['INNER_N_SPLITS'], is_binary)
-            for combo in all_combos
-        )
+        inner_results = evaluate_combos_inner(all_combos, X_tr, y_tr, cfg['INNER_N_SPLITS'], is_binary, cfg['N_JOBS'])
 
         df_inner = pd.DataFrame(inner_results).sort_values(by='R2_inner_mean', ascending=False)
         append_selection_log(df_inner, mode, fold_idx)
@@ -503,6 +517,18 @@ def summarize_and_test():
 
     summary = df.groupby('Mode')['R2_outer'].agg(['mean', 'std', 'count']).reset_index()
     summary = summary.sort_values(by='mean', ascending=False)
+    explain("How to read the summary tables", """
+        Table 1: mean R2 over all outer folds for each molecular description, with its standard deviation (spread between
+        folds) and the number of folds. The top row is the best-performing description. Differences smaller than about one
+        standard deviation are usually not meaningful.
+
+        Table 2: tests whether our R2 differs from the R2 values reported in the original publication (PAPER_R2). The
+        Nadeau-Bengio correction is applied because cross-validation folds overlap and share training data, which makes a
+        naive t-test over-confident. 'Significant_p<0.05' = True means our result is really different from the reference
+        (higher or lower: compare Our_R2_mean with Paper_R2); False means we reproduce it within statistical noise.
+
+        The paired comparison at the end tests whether the two best descriptions differ from each other on the same folds.
+    """)
     print("\nTable 1. R² by molecular representation:", flush=True)
     print(summary.to_string(index=False), flush=True)
 
@@ -562,6 +588,12 @@ def summarize_and_test():
             out_path = os.path.join(RESULTS_DIR, 'architecture_selection_frequency.csv')
             freq_df.to_csv(out_path, index=False)
             print(f"\n[SUPPLEMENTARY CSV] Selection frequency exported to: {out_path}", flush=True)
+            explain("Architecture selection frequency", """
+                For each description, how often each algorithm combination won the inner selection across folds. If one
+                combination wins most folds, it is a stable choice; if many different ones win, the data cannot clearly
+                distinguish them (many are about equally good). Step 03 uses the most frequent winner. SVM appearing very often
+                suggests smooth, similarity-based models fit this dataset well.
+            """)
 
     # Export to LaTeX and generate figure
     generate_latex_file(df, summary, df_ttest, top2, paired_stats)
@@ -576,6 +608,33 @@ def run_benchmark():
     print(f"[INFO] Active profile: {PROFILE} | N_JOBS={CFG['N_JOBS']} | Outer folds={CFG['OUTER_N_SPLITS']}x{CFG['OUTER_N_REPEATS']}={total_folds}", flush=True)
     df = pd.read_csv(TRAIN_FILE, on_bad_lines='skip')
     df_clean = df.dropna(subset=['Smiles', 'pIC50 Value']).reset_index(drop=True)
+    y_all = df_clean['pIC50 Value']
+    print(f"[DATA] {TRAIN_FILE}: {len(df)} rows read, {len(df_clean)} usable (SMILES and pIC50 present). "
+          f"pIC50 range {y_all.min():.2f} - {y_all.max():.2f}, mean {y_all.mean():.2f}, SD {y_all.std():.2f}.", flush=True)
+    explain("What this step does", f"""
+        Builds and honestly evaluates machine-learning models that predict how potently a molecule inhibits TgDHFR (pIC50, higher
+        = more potent) from its structure. The dataset has {len(df_clean)} molecules with measured potency.
+
+        Molecules must be converted to numbers before a model can use them. Several descriptions are compared:
+        {'; '.join(MODE_DESCRIPTION.get(m, m) for m in CFG['FEATURE_MODES'])}.
+        A fingerprint is a long 0/1 list saying which small substructures are present; a descriptor is a number such as
+        molecular weight, polarity or number of rotatable bonds; '3D' descriptors also depend on the molecule's shape.
+
+        For each description, the models tried are single algorithms (Random Forest, Extra Trees, LightGBM, XGBoost, SVM,
+        kNN) and stacks of up to {CFG['MAX_COMBO_SIZE']} of them combined by a final Ridge regression. NESTED cross-validation
+        is used so the reported score is not optimistic: the data is split into {CFG['OUTER_N_SPLITS']} parts and the whole
+        split is repeated {CFG['OUTER_N_REPEATS']} times (= {total_folds} outer folds). Inside every outer fold the training part is
+        split again ({CFG['INNER_N_SPLITS']} inner folds) to choose the best algorithm combination; only then is that choice
+        scored on the outer test part, which it has never seen. Selecting and scoring on the same data would inflate R2.
+
+        This is by far the slowest step of the pipeline (each outer fold fits hundreds of models). Progress is saved after every
+        fold (results/nested_cv_checkpoint.csv), so an interrupted run resumes where it stopped. IMPORTANT: if the training
+        data changes, delete that checkpoint first or old-data folds would be silently reused.
+
+        Per-fold line: 'Best' = the algorithm combination that won the inner selection; R2_outer = fraction of the variance in
+        potency explained on the unseen part (1 = perfect, 0 = no better than predicting the mean); MAE = average error in
+        pIC50 units (0.5 = about a 3-fold error in IC50); the time is for that fold.
+    """)
 
     for mode in CFG['FEATURE_MODES']:
         try:

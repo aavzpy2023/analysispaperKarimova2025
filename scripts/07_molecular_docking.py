@@ -8,7 +8,7 @@ import pandas as pd
 from rdkit import Chem, RDLogger
 from rdkit.Chem import AllChem, Descriptors, Lipinski
 from scipy import stats
-from logger_utils import setup_logger
+from logger_utils import setup_logger, explain
 
 # =========================================================
 # LOGGING SYSTEM SETUP
@@ -137,6 +137,23 @@ def run():
     print(f"Box: {BOX_SIZE}A | Exhaustiveness: {EXHAUSTIVENESS}")
     print(f"Log file: {log_file_path}")
     print("=" * 90)
+    explain("What this step does", f"""
+        Second, independent opinion on the drugs ranked by the machine-learning model. The top {TOP_CANDIDATES_COUNT} candidates
+        from step 05, plus the reference/control drugs, are physically docked into the TgDHFR active site with AutoDock Vina:
+        each molecule is converted to 3D, many positions/orientations are tried inside the search box, and the best-scoring
+        poses are kept ({N_POSES} per drug). ML looks at chemical similarity to known inhibitors; docking looks at 3D
+        shape/chemical fit to the real protein pocket, so agreement between the two is stronger evidence than either alone.
+
+        Docking score (kcal/mol): more negative = predicted tighter binding. Rule of thumb used here: below {DOCK_ACTIVE_THRESH}
+        = binding confirmed. Scores are approximate (errors of 1-2 kcal/mol are normal) and rank-ordering is more reliable
+        than absolute values. LE here is score per heavy atom (more negative = more efficient binder).
+
+        'Agreement' column: VALIDATED (+) = ML says active (pIC50 > {ML_ACTIVE_THRESH}) AND docking confirms; VALIDATED (-) =
+        both say inactive; ML FALSE POSITIVE = ML active but docking does not confirm; ML FALSE NEGATIVE = the reverse;
+        Neutral = in between. Energy_Gap_P1_Pn is how much worse the 3rd pose is than the 1st (small gap = several similar
+        alternative poses, i.e. a less defined binding mode). Max_RMSD_UB is how different the extra poses are (Å).
+        Limitation: the receptor is rigid and water/protonation states are not modelled.
+    """)
 
     if not os.path.exists(RECEPTOR_PDBQT) or not os.path.exists(FDA_CANDIDATES_CSV):
         print("[ERROR] Input files missing (receptor PDBQT or candidates CSV from step 05).")
@@ -240,6 +257,12 @@ def run():
 
     df_res = pd.DataFrame(results).sort_values('Docking_Score').reset_index(drop=True)
 
+    explain("Reading the final table", """
+        Sorted from best (most negative) docking score. Look for compounds that are strong in BOTH columns (high ML pIC50
+        and very negative Vina score): those are the best candidates for experimental testing. Reference drugs (e.g.
+        pyrimethamine, methotrexate) give the benchmark: a new candidate scoring close to or better than them is interesting;
+        one far worse is probably not worth pursuing even if the ML score is high.
+    """)
     print("\n" + "=" * 100)
     print("FINAL RESULTS ENRICHED — ML Prediction vs. Physics (AutoDock Vina)")
     print("=" * 100)

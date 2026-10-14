@@ -12,7 +12,7 @@ from tdc.single_pred import ADME, Tox
 # Link root directory to import paths_config and logger
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from paths_config import *
-from logger_utils import setup_logger
+from logger_utils import setup_logger, explain
 
 RDLogger.DisableLog('rdApp.*')
 
@@ -71,6 +71,23 @@ def main():
     print("08_admet_profiling.py — ADMET Profiling & Toxicity Risk Assessment")
     print(f"Log file: {log_file_path}")
     print("=" * 90)
+    explain("What this step does", f"""
+        A molecule that binds the target is useless as a drug if it is toxic or cannot reach the bloodstream. This step
+        screens the docked candidates for three drug-likeness properties, using fast models trained on public data (TDC):
+
+        1) Lipinski rule of five: a rule of thumb for oral drugs (limits on hydrogen-bond donors <= {LIPINSKI_MAX_HDONORS},
+        acceptors <= {LIPINSKI_MAX_HACCEPTORS}, logP <= {LIPINSKI_MAX_LOGP}, plus molecular weight). Molecules that break it
+        tend to be poorly absorbed.
+        2) hERG: probability that the drug blocks the hERG potassium channel in the heart, a main cause of dangerous heart
+        rhythm side effects (QT prolongation). Probability < {HERG_THRESH} is treated as low risk. Candidates above it are removed.
+        3) Caco-2: predicted permeability through a model of the intestinal wall (log cm/s, less negative = better absorbed).
+        Above {CACO2_THRESH} = moderate/high oral absorption; below it the drug is labelled 'Parenteral Candidate' (better
+        given by injection) but is NOT removed.
+
+        Limitations: both models are Random Forests on molecular fingerprints trained on a few hundred to a few thousand
+        compounds, so values are screening-level estimates, not experimental toxicity. Not modelled: liver metabolism,
+        blood-brain barrier (important for Toxoplasma, which infects the brain), and other off-target toxicity.
+    """)
 
     if not os.path.exists(INPUT_PATH):
         print(f"[ERROR] Input file not found at {INPUT_PATH}")
@@ -150,6 +167,12 @@ def main():
 
     df_final.to_csv(OUTPUT_PATH, index=False)
 
+    explain("Reading the summary", f"""
+        Of {len(df_filtered)} candidates that passed Lipinski, {flagged_herg} were dropped for hERG risk and {len(df_final)}
+        remain. 'ADMET-Compliant (Oral)' = low hERG risk and good predicted absorption. 'Parenteral Candidate' = low hERG risk
+        but poor predicted gut permeability. Both lists (before and after the hERG cut) are saved so the full picture can be
+        plotted in 08.1.
+    """)
     print("\n" + "=" * 105)
     print("ADMET PROFILING RESULTS SUMMARY")
     print("=" * 105)

@@ -15,8 +15,19 @@ LATEX_DIR     = os.path.join(ROOT, "latex")
 FIGURES_DIR   = os.path.join(ROOT, "figures")
 LOGS_DIR      = os.path.join(ROOT, "logs")
 
+# Sensitivity analysis: run_pipeline.py sets MLGNN_OUT_DIR so that a second run never overwrites the main outputs
+SENS_DIR = os.environ.get("MLGNN_SENS_DIR") or os.path.join(ROOT, "sensitivity")
+if os.environ.get("MLGNN_OUT_DIR"):
+    _out = os.environ["MLGNN_OUT_DIR"]
+    RESULTS_DIR, LATEX_DIR, FIGURES_DIR, LOGS_DIR = (os.path.join(_out, d) for d in ("results", "latex", "figures", "logs"))
+    for _d in (RESULTS_DIR, LATEX_DIR, FIGURES_DIR, LOGS_DIR):
+        os.makedirs(_d, exist_ok=True)
+
 # Data files
-TRAIN_FILE    = os.path.join(DATA_DIR, "V2-df_ic50_chmbl_CID_myFill.csv")
+RAW_FILE      = os.path.join(DATA_DIR, "V2-combined_bd_chmbl_unique_full.csv")
+MAIN_FILE     = os.path.join(DATA_DIR, "V2-combined_bd_chmbl_unique_dedup.csv")
+SENS_FILE     = os.path.join(DATA_DIR, "V2-combined_bd_chmbl_unique_dedup_with_outliers.csv")
+TRAIN_FILE    = os.environ.get("MLGNN_TRAIN_FILE") or MAIN_FILE
 FDA_FILE      = os.path.join(DATA_DIR, "PubChem_FDA-approved_NoInorganics.csv")
 
 # Receptor files

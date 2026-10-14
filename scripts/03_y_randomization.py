@@ -13,7 +13,7 @@ warnings.filterwarnings("ignore", category=UserWarning)
 # Link root directory to import paths_config and logger_utils
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from paths_config import *
-from logger_utils import setup_logger
+from logger_utils import setup_logger, explain
 
 from sklearn.ensemble import RandomForestRegressor, ExtraTreesRegressor, StackingRegressor
 from sklearn.svm import SVR
@@ -115,6 +115,16 @@ def main():
     logger.info("=" * 80)
     logger.info("03_y_randomization.py — Model Robustness Test (Y-Randomization)")
     logger.info("=" * 80)
+    explain("What this step does", """
+        Sanity check that the model really learned chemistry and did not just memorise noise or benefit from a data leak.
+
+        Procedure (Y-randomization): the measured potencies (pIC50) are randomly shuffled between molecules, which destroys any
+        true structure-activity relationship, and the same model is trained and cross-validated again. This is repeated many
+        times. A healthy model scores well on the real data and about R2 = 0 (or negative) on the shuffled data.
+
+        R2 is the fraction of the variation in potency that the model explains: 1.0 is perfect, 0 is no better than always
+        predicting the average potency, negative is worse than that.
+    """)
 
     best_mode, best_architecture = get_winning_architecture()
     logger.info(f"Audit Result -> Best representation: '{best_mode}'")
@@ -164,6 +174,14 @@ def main():
     std_random = float(np.std(random_scores))
     z_score = (true_r2 - mean_random) / std_random if std_random > 0 else 0.0
 
+    explain("How to read the report below", f"""
+        'Baseline R2' is the real model ({true_r2:.2f}). 'Random R2' is what the same model achieves when potencies are shuffled
+        ({mean_random:.2f} on average over {N_PERMUTATIONS} shuffles). The Z-score counts how many standard deviations the real
+        result sits above the shuffled results; the pass criterion used here is real R2 > mean + 2.33 SD (~99% confidence).
+
+        If the verdict is PASSED, the predictive signal is not a chance correlation. Note that this test uses Morgan
+        fingerprints and the most frequently selected stacking architecture from step 01.
+    """)
     logger.info("-" * 80)
     logger.info("Y-RANDOMIZATION INTEGRITY REPORT")
     logger.info("-" * 80)

@@ -18,7 +18,7 @@ from sklearn.metrics import r2_score, mean_absolute_error
 # Link root directory to import paths_config and logger_utils
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from paths_config import *
-from logger_utils import setup_logger
+from logger_utils import setup_logger, explain
 
 # Filter PyTorch Lightning tips
 class TipFilter(logging.Filter):
@@ -209,6 +209,21 @@ def main():
     print("09_gnn_baseline.py — Graph Neural Network (GNN) Benchmarking: ChemProp D-MPNN, 5x5 repeated CV")
     print(f"Log file: {log_file_path}")
     print("=" * 105)
+    explain("What this step does", """
+        Compares the classical machine-learning models (steps 01/04, which describe each molecule with fixed fingerprints or
+        descriptors) against a Graph Neural Network. ChemProp's D-MPNN treats the molecule as a graph (atoms = nodes, bonds =
+        edges) and learns its own representation by passing messages between neighbouring atoms, instead of using a
+        hand-designed fingerprint.
+
+        Same evaluation protocol as the classical models: 5 x 5 repeated cross-validation (data split into 5 parts, each part
+        used once as unseen test data, whole procedure repeated 5 times with different splits). Out-of-fold predictions are
+        collected so every molecule is predicted by a model that never saw it.
+
+        Why it matters: with only a few hundred compounds, deep models often do not beat well-tuned classical models. If
+        ChemProp's R2 is not clearly above the classical R2 (taking the 95% CI into account), the simpler models are preferable
+        because they are faster, easier to interpret and not worse in accuracy. R2: 1 = perfect, 0 = no better than the mean.
+        MAE is the average error in pIC50 units (0.5 = about 3-fold in IC50).
+    """)
 
     print(f"[1] Loading dataset from {TRAIN_FILE}...")
     smiles, y = load_data()
@@ -226,6 +241,13 @@ def main():
     for res in valid:
         print(f"{res['model']:<35} | R2: {res['r2']:.4f} | MAE: {res['mae']:.4f} | 95% CI: [{res['ci_lo']:.4f}, {res['ci_hi']:.4f}]")
 
+    explain("Reading the benchmark", """
+        'R2 ± std' is the mean and spread of R2 over the cross-validation folds; the 95% CI is the range in which the true
+        performance is expected to fall. Compare it with the classical R2 values drawn as dashed lines in the figure. Large
+        std or a wide CI means the result depends strongly on which molecules landed in the test fold (typical for small data).
+        The scatter plot (right panel of the figure) shows predicted vs. experimental pIC50: points on the diagonal are perfect
+        predictions; systematic curvature at the extremes means the model compresses very high/low potencies toward the mean.
+    """)
     print("\n[3] Exporting artifacts...")
     export_latex(results)
     export_figure(results)

@@ -7,6 +7,7 @@ Usage (from any directory):
     python run_pipeline.py --check            # verify Python dependencies, run nothing
     python run_pipeline.py --from 05          # resume from step 05 onwards
     python run_pipeline.py --only 04 04.1     # run selected steps only
+    python run_pipeline.py --no-sensitivity   # skip the with-extreme-values re-run (steps S01, S02, 10)
     python run_pipeline.py --strict           # error (instead of silent skip) if ChemProp cannot load
 Environment variables (optional): MLGNN_PROFILE (laptop|workstation), MLGNN_N_JOBS.
 """
@@ -25,6 +26,7 @@ LOGS_DIR = os.path.join(ROOT, "logs")
 os.makedirs(LOGS_DIR, exist_ok=True)
 
 PIPELINE = [
+    "scripts/00_prepare_dataset.py",
     "scripts/01_nested_cv_stacking.py",
     "scripts/01.1_build_figures.py",
     "scripts/02_statistical_tests.py",
@@ -40,6 +42,17 @@ PIPELINE = [
     "scripts/08.1_build_figures.py",
     "scripts/09_gnn_baseline.py",
     "scripts/09.1_build_figures.py",
+]
+
+# Outlier sensitivity analysis: steps 01 and 02 re-run on the set that keeps the extreme pIC50 values, writing to
+# sensitivity/ (paths_config honours MLGNN_OUT_DIR); step 10 then compares both runs. Entries are (step id, script).
+SENS_DIR = os.environ.get("MLGNN_SENS_DIR") or os.path.join(ROOT, "sensitivity")
+SENS_ENV = {"MLGNN_OUT_DIR": SENS_DIR,
+            "MLGNN_TRAIN_FILE": os.path.join(ROOT, "data", "V2-combined_bd_chmbl_unique_dedup_with_outliers.csv")}
+SENSITIVITY = [
+    ("S01", "scripts/01_nested_cv_stacking.py", SENS_ENV),
+    ("S02", "scripts/02_statistical_tests.py", SENS_ENV),
+    ("10", "scripts/10_outlier_sensitivity.py", {}),
 ]
 
 # Import names always checked by --check, in addition to EVERY third-party module that
@@ -147,9 +160,17 @@ def check_dependencies():
     return not bad
 
 
-def execute_and_log(script_path, master_log_path):
+def all_steps(include_sensitivity=True):
+    """Ordered (step id, script, extra environment) triples: the main pipeline, then the sensitivity analysis."""
+    steps = [(step_id(s), s, {}) for s in PIPELINE]
+    return steps + SENSITIVITY if include_sensitivity else steps
+
+
+def execute_and_log(script_path, master_log_path, extra_env=None):
     script_filename = os.path.basename(script_path)
-    step_log_path = os.path.join(LOGS_DIR, script_filename.replace(".py", ".log"))
+    logs_dir = os.path.join(extra_env["MLGNN_OUT_DIR"], "logs") if extra_env and "MLGNN_OUT_DIR" in extra_env else LOGS_DIR
+    os.makedirs(logs_dir, exist_ok=True)
+    step_log_path = os.path.join(logs_dir, script_filename.replace(".py", ".log"))
 
     with open(step_log_path, "w", encoding="utf-8") as f:
         f.write(f"=== START LOG: {script_filename} [{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] ===\n\n")
@@ -157,7 +178,9 @@ def execute_and_log(script_path, master_log_path):
     writer = MasterStreamWriter([step_log_path, master_log_path])
 
     # MLGNN_LOG_MANAGED: tells logger_utils not to open the step log itself (this runner owns it)
-    env = dict(os.environ, MLGNN_LOG_MANAGED="1", PYTHONUNBUFFERED="1", PYTHONIOENCODING="utf-8")
+    # MPLBACKEND=Agg: figure scripts must not need a display (headless/SSH runs crash with the Tk backend)
+    env = dict(os.environ, MLGNN_LOG_MANAGED="1", PYTHONUNBUFFERED="1", PYTHONIOENCODING="utf-8",
+               MPLBACKEND="Agg", **(extra_env or {}))
 
     process = subprocess.Popen(
         [sys.executable, os.path.join(ROOT, script_path)],
@@ -181,15 +204,14 @@ def execute_and_log(script_path, master_log_path):
 
 
 def select_steps(args):
-    steps = list(PIPELINE)
+    steps = all_steps(include_sensitivity=not args.no_sensitivity)
+    ids = [sid for sid, _, _ in steps]
     if args.only:
-        wanted = set(args.only)
-        unknown = wanted - {step_id(s) for s in steps}
+        unknown = set(args.only) - set(ids)
         if unknown:
             sys.exit(f"Unknown step(s): {sorted(unknown)}. Use --list.")
-        return [s for s in steps if step_id(s) in wanted]
+        return [st for st in steps if st[0] in set(args.only)]
     if args.start:
-        ids = [step_id(s) for s in steps]
         if args.start not in ids:
             sys.exit(f"Unknown step '{args.start}'. Use --list.")
         return steps[ids.index(args.start):]
@@ -197,7 +219,7 @@ def select_steps(args):
 
 
 def run_pipeline(steps=None):
-    steps = steps if steps is not None else list(PIPELINE)
+    steps = steps if steps is not None else all_steps()
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     master_log_path = os.path.join(LOGS_DIR, f"master_pipeline_{timestamp}.log")
 
@@ -212,22 +234,22 @@ def run_pipeline(steps=None):
 
     timings = []
     t_start = time.time()
-    for script in steps:
-        print(f"\n[>>>] Executing {script}...")
+    for sid, script, extra_env in steps:
+        print(f"\n[>>>] Executing {sid}: {script}...")
         t0 = time.time()
         try:
-            execute_and_log(script, master_log_path)
+            execute_and_log(script, master_log_path, extra_env)
         except subprocess.CalledProcessError as e:
             print(f"\n[FATAL ERROR] {script} failed with exit code {e.returncode}.")
             print("Halting pipeline to prevent cascading data corruption.")
-            print(f"Fix the problem and resume with:  python run_pipeline.py --from {step_id(script)}")
+            print(f"Fix the problem and resume with:  python run_pipeline.py --from {sid}")
             sys.exit(1)
-        timings.append((script, time.time() - t0))
+        timings.append((f"{sid} {os.path.basename(script)}", time.time() - t0))
         print(f"[OK] {script} completed successfully ({timings[-1][1]:.0f}s).")
 
     print("\nStep timings:")
-    for script, secs in timings:
-        print(f"  {os.path.basename(script):<40} {secs / 60:7.1f} min")
+    for label, secs in timings:
+        print(f"  {label:<40} {secs / 60:7.1f} min")
     print(f"  {'TOTAL':<40} {(time.time() - t_start) / 60:7.1f} min")
     print("\n[SUCCESS] Entire pipeline executed flawlessly.")
 
@@ -238,13 +260,15 @@ def main():
     ap.add_argument("--check", action="store_true", help="check Python dependencies and exit")
     ap.add_argument("--from", dest="start", metavar="STEP", help="resume from this step (e.g. 05 or 04.1)")
     ap.add_argument("--only", nargs="+", metavar="STEP", help="run only these steps (e.g. 04 04.1)")
+    ap.add_argument("--no-sensitivity", action="store_true",
+                    help="skip the outlier sensitivity analysis (steps S01, S02, 10) in a full run")
     ap.add_argument("--strict", action="store_true",
                     help="fail instead of silently skipping a model whose libraries cannot be imported (step 09)")
     args = ap.parse_args()
 
     if args.list:
-        for s in PIPELINE:
-            print(f"{step_id(s):>5}  {s}")
+        for sid, script, _ in all_steps():
+            print(f"{sid:>5}  {script}")
         return
     if args.check:
         sys.exit(0 if check_dependencies() else 1)

@@ -27,7 +27,7 @@ from sklearn.inspection import permutation_importance
 # Link root directory to import paths_config and logger_utils
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from paths_config import *
-from logger_utils import setup_logger
+from logger_utils import setup_logger, explain
 
 RDLogger.DisableLog('rdApp.*')
 warnings.filterwarnings("ignore")
@@ -281,6 +281,24 @@ def run():
     logger.info("04_augmentation_training.py — Feature Selection & Gaussian Augmentation Benchmark")
     logger.info("Evaluates classical ML pipeline parity against reported DNN benchmarks")
     logger.info("=" * 80)
+    explain("What this step does", """
+        Trains the final predictive model and tests three variants on compounds the model never saw (15% of the data is set
+        aside before anything else happens, so the test is honest):
+
+        Exp A - baseline: a stacking ensemble (several different algorithms whose predictions are combined by a final model).
+        Exp B - A plus feature selection: keeps only the fingerprint bits that actually help prediction (permutation
+        importance: a bit is useful if randomly scrambling it makes predictions worse).
+        Exp C - B plus data augmentation: adds slightly noisy copies of the training molecules' potencies (Gaussian noise) to
+        see whether this makes the model more robust.
+
+        Metrics: R2 (1 = perfect, 0 = no better than predicting the mean potency) and MAE (average error in pIC50 units;
+        0.5 means a typical error of ~3-fold in IC50). The 95% CI comes from bootstrap resampling of the test set: it shows how
+        much the score would move if a different sample of test molecules had been drawn. With so few test molecules the CI is
+        wide, so small R2 differences between experiments are often not meaningful.
+
+        Outputs used downstream: results/best_model.joblib (the un-augmented model used for the virtual screening in step 05)
+        and results/selected_features_mask.npy (which fingerprint bits are kept).
+    """)
 
     # 1. Load Data
     df = pd.read_csv(TRAIN_FILE).dropna(subset=['Smiles', 'pIC50 Value']).reset_index(drop=True)
@@ -301,7 +319,7 @@ def run():
     # EXPERIMENT A: Baseline Stacking Ensemble (No Feature Selection, No Augmentation)
     # ──────────────────────────────────────────────────────────────────────────
     logger.info("-" * 80)
-    logger.info("EXPERIMENT A: ML Stacking Baseline")
+    logger.info("EXPERIMENT A: ML Stacking Baseline (all fingerprint bits, original data only)")
     logger.info("-" * 80)
     t0 = time.time()
     y_pred_a = ensemble_predict(X_dev, y_dev, X_test)
@@ -376,6 +394,14 @@ def run():
     logger.info("=" * 80)
     logger.info("EXECUTIVE SUMMARY — RIGOROUS STATISTICAL AUDIT")
     logger.info("=" * 80)
+    explain("How to read the summary", """
+        Each experiment is compared with R2 values reported in the original paper (PAPER_R2). 'NOT significantly different'
+        means the published value lies inside our 95% CI, i.e. we reproduce it within sampling uncertainty. p_boot is the
+        fraction of bootstrap resamples that fall on the other side of the reference value (small = real difference).
+
+        The paired delta R2 lines then ask whether adding feature selection (B vs A) or augmentation (C vs B / C vs A) truly
+        improved the model. If the CI of a delta includes 0, the improvement cannot be distinguished from noise.
+    """)
 
     for exp_key, exp_label in [('A', 'Exp A (baseline)'), ('B', 'Exp B (+feat.sel.)'), ('C', 'Exp C (+augment.)')]:
         exp = results[exp_key]

@@ -8,7 +8,7 @@ from scipy import stats
 # Link root directory to import paths_config and logger_utils
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from paths_config import CHECKPOINT_FILE, LATEX_DIR, LOGS_DIR
-from logger_utils import setup_logger
+from logger_utils import setup_logger, explain
 
 NADEAU_BENGIO_LATEX_FILE = os.path.join(LATEX_DIR, "nadeau_bengio_variables.tex")
 
@@ -22,6 +22,18 @@ def main():
     logger.info("=" * 80)
     logger.info("02_statistical_tests.py — Nadeau-Bengio Variance Correction Test")
     logger.info("=" * 80)
+    explain("What this step does", """
+        Step 01 produced one error value (MAE, in pIC50 units) for every test fold, for each way of describing the molecules
+        (Morgan fingerprints vs. RDKit 2D + 3D descriptors + fingerprints). This step asks a single question: is the difference
+        between those two descriptions real, or could it be just luck of how the compounds were split into folds?
+
+        The test used is a paired t-test with the Nadeau-Bengio correction. A plain t-test would be over-confident here because
+        the folds share most of their training compounds (they are not independent); the correction widens the uncertainty to
+        compensate.
+
+        How to read the result: p < 0.05 means the two descriptions truly differ in accuracy; p >= 0.05 means we cannot claim
+        one is better than the other, and the simpler/cheaper one (Morgan) is then the reasonable choice.
+    """)
 
     # Validate Checkpoint Data
     if not os.path.exists(CHECKPOINT_FILE):
@@ -91,6 +103,13 @@ def main():
         t_corrected = 0.0
         p_corrected = 1.0
 
+    explain("How to read the numbers below", f"""
+        Mean difference in MAE (Morgan minus 2D/3D/FP) = {mean_diff:+.4f} pIC50 units. A negative value means Morgan makes smaller
+        errors on average. For scale: 0.3 pIC50 units is roughly a 2-fold change in potency (IC50).
+
+        The t-statistic is the mean difference divided by its corrected uncertainty; |t| around 2 or more usually gives p < 0.05.
+        Only {n_obs} folds are compared, so the test has limited power to detect small differences.
+    """)
     logger.info("-" * 80)
     logger.info("Nadeau-Bengio Corrected Paired t-test Results:")
     logger.info(f"  t-statistic = {t_corrected:.3f}")

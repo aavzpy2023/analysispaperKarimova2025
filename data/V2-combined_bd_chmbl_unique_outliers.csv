@@ -1,0 +1,3 @@
+cid,Smiles,Standard Value,pIC50 Value,fence_violated
+269323.0,Nc1nc(N)c2cc(CNc3ccc(cc3)C(=O)NC(CCC(O)=O)C(O)=O)cnc2n1,0.0021,11.67778070526608,high
+44424991.0,CCc1c(Sc2ccc(Cl)c(Cl)c2)[nH]c2nc(C)nc(N)c12,27600000.0,1.559090918,low

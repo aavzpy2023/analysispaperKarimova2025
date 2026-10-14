@@ -4,6 +4,7 @@ os.environ["OMP_NUM_THREADS"] = "1"
 os.environ["MKL_NUM_THREADS"] = "1"
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
 
+import sys
 import warnings
 import time
 import numpy as np
@@ -16,7 +17,7 @@ from sklearn.ensemble import IsolationForest
 
 # ── Configuration and Logging Integration ────────────────────────────────────
 from paths_config import *
-from logger_utils import setup_logger
+from logger_utils import setup_logger, explain
 
 RDLogger.DisableLog('rdApp.*')
 warnings.filterwarnings("ignore")
@@ -83,13 +84,26 @@ def run():
     print("VIRTUAL SCREENING PIPELINE — TgDHFR Inhibitor Search")
     print(f"Timestamp: {time.strftime('%Y-%m-%d %H:%M:%S')}")
     print("=" * 100)
+    explain("What this step does", """
+        Uses the trained model from step 04 to predict how strongly each FDA-approved drug would inhibit the parasite enzyme
+        TgDHFR (Toxoplasma gondii dihydrofolate reductase), without doing any lab work (virtual screening).
+
+        1) Load the model. 2) Learn what the training molecules look like and flag drugs that are too different from them
+        (Applicability Domain, via an Isolation Forest): the model is only trustworthy for molecules similar to those it was
+        trained on, so unusual drugs are dropped instead of receiving a made-up prediction. 3) Drop drugs that are very large
+        (MW above the limit) or contain atoms outside the allowed set (H, C, N, O, F, P, S, Cl, Br, I). 4) Predict pIC50.
+        5) Report and export the ranking.
+
+        pIC50 = -log10(IC50 in molar). Higher means more potent: 6 is IC50 = 1 uM, 7 is 100 nM, 8 is 10 nM.
+        Candidates are later confirmed by docking (step 07) and filtered for drug-likeness/safety (step 08).
+    """)
 
     # ── ML Architecture Loading ──────────────────────────────────────────────
     print(f"\n[1/5] ML ARCHITECTURE LOADING")
     print(f"  [-] Model path: {MODEL_FILE}")
     if not os.path.exists(MODEL_FILE):
         print(f"  [ERROR] {MODEL_FILE} not found. Interrupting execution.")
-        return
+        sys.exit(1)
 
     t0 = time.time()
     model = joblib.load(MODEL_FILE)
@@ -121,13 +135,18 @@ def run():
 
     print(f"  [+] Training matrix generated: {X_train.shape}")
     print(f"  [+] Isolation Forest fitted (Contamination: {ISO_CONTAMINATION * 100}%) in {time.time() - t0:.2f}s")
+    explain("Applicability Domain", f"""
+        The Isolation Forest learns the 'normal' region of chemical space covered by the {len(df_train)} training molecules.
+        By construction about {ISO_CONTAMINATION * 100:.0f}% of the training molecules themselves sit at the edge and are treated
+        as outliers. Any FDA drug that falls outside this region is excluded below, because the model would be extrapolating.
+    """)
 
     # ── FDA Library Ingestion and Structural Filtering ────────────────────────
     print(f"\n[3/5] FDA LIBRARY PROCESSING")
     print(f"  [-] Screening source: {FDA_FILE}")
     if not os.path.exists(FDA_FILE):
         print(f"  [ERROR] {FDA_FILE} not found.")
-        return
+        sys.exit(1)
 
     df_fda = pd.read_csv(FDA_FILE)
     df_fda.columns = df_fda.columns.str.strip()
@@ -171,6 +190,11 @@ def run():
     ad_retention = (len(final) / len(candidates)) * 100
     print(f"  [+] In-Domain Filtering (Isolation Forest): {len(final)} compounds retained ({ad_retention:.1f}%)")
     print(f"  [+] Total filtering time: {time.time() - t0:.2f}s")
+    explain("Reading the filter counts", f"""
+        {initial_fda_count} drugs in the library -> {len(candidates)} after size/atom filters -> {len(final)} inside the model's
+        domain. Drugs lost at each stage were never scored. A very low retention in the last stage would mean the FDA library
+        is chemically far from the training set (then predictions are less reliable and more training data would help).
+    """)
 
     # ── ML Inference ──────────────────────────────────────────────────────────
     print(f"\n[4/5] ML INFERENCE - BIOACTIVITY PREDICTION (pIC50)")
@@ -195,6 +219,12 @@ def run():
 
     # ── Reports and Export ────────────────────────────────────────────────────
     print(f"\n[5/5] PERFORMANCE REPORTS AND EXPORT")
+    explain("Report A: sanity check against known drugs", """
+        Pyrimethamine and trimethoprim are classic DHFR inhibitors with known experimental pIC50. If the model predicts them
+        close to the lab value it is behaving sensibly. Status: absolute error < 0.5 = EXCELLENT, < 1.0 = ACCEPTABLE, else ALERT.
+        Caution: if these drugs (or close analogues) are in the training set, a good match is partly memorisation and not a
+        true test of generalisation.
+    """)
     print("\n" + "-" * 80)
     print("REPORT A: Internal Validation vs Known TgDHFR Controls")
     print("-" * 80)
@@ -210,6 +240,12 @@ def run():
         else:
             print(f"{drug:<18} | [Excluded in previous filters]")
 
+    explain("Report B: ranking and efficiency metrics", """
+        Besides predicted potency (pIC50), the table gives metrics that judge whether the potency is 'earned' efficiently:
+        LE (ligand efficiency) = potency per heavy atom, >= 0.3 is generally considered good; BEI = potency per kDa of mass;
+        LLE = pIC50 minus logP, >= 5 suggests potency is not just coming from greasiness (lipophilicity); SEI = potency per
+        polar surface area. A high pIC50 with poor LE/LLE usually means a big or greasy molecule that is a weaker lead.
+    """)
     print("\n" + "-" * 100)
     print("REPORT B: Top 10 FDA Candidates (Sorted by Predicted Affinity)")
     print("-" * 100)

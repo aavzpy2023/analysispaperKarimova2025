@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from paths_config import RESULTS_DIR, FIGURES_DIR, CSV_04_OUTPUT_FILE
+from logger_utils import explain
 
 CSV_FILE = os.path.join(RESULTS_DIR, CSV_04_OUTPUT_FILE)
 FIG_BASE = os.path.join(FIGURES_DIR, "04_augment_r2_comparison")
@@ -30,7 +31,13 @@ plt.rcParams.update({'font.size': 10, 'axes.spines.top': False,
 def generate_figure():
     if not os.path.exists(CSV_FILE):
         print(f"Error: file not found: {CSV_FILE}. Run 04_augmentation_training.py first.")
-        return
+        raise SystemExit(1)
+    explain("What this figure shows", """
+        R2 on the held-out test molecules for the three experiments of step 04 (A baseline, B + feature selection, C +
+        augmentation), each with its 95% bootstrap confidence interval, next to the values reported in the original paper
+        (dashed lines). Bars whose intervals overlap are not statistically distinguishable: with a small test set, apparent
+        gains from feature selection or augmentation are often within noise.
+    """)
     df = pd.read_csv(CSV_FILE).set_index('Experiment')
     keys = ['Exp_A', 'Exp_B', 'Exp_C']
     r2 = df.loc[keys, 'R2'].values

@@ -8,7 +8,7 @@ from rdkit.Chem import AllChem
 
 # ── Configuration and Logging Integration ────────────────────────────────────
 from paths_config import *
-from logger_utils import setup_logger
+from logger_utils import setup_logger, explain
 
 warnings.filterwarnings("ignore")
 RDLogger.DisableLog('rdApp.*')
@@ -159,6 +159,19 @@ def run_redocking_validation():
     print(f"Receptor setup: Chain {CHAIN} (DHFR active site) of PDB 6AOG")
     print("=" * 80)
     print(f"Target Criterion: Centroid distance < {RMSD_THRESHOLD} Å = Protocol Validated\n")
+    explain("What this step does", f"""
+        Before trusting docking scores for new drugs, we check that the docking software can reproduce a known answer. The
+        crystal structure 6AOG contains the real inhibitor pyrimethamine ({LIGAND_CODE}) bound to the TgDHFR active site. We
+        take that ligand out, place it back with AutoDock Vina (a physics-based scoring program that searches positions and
+        orientations of a molecule inside a search box), and compare where Vina puts it with where it sits in the crystal.
+
+        Pass criterion: the docked ligand's geometric centre must lie within {RMSD_THRESHOLD} Å of the crystal position
+        (1 Å = 0.1 nm, about one bond length). Methodological note for reviewers: this compares centres only, which is more
+        lenient than the usual heavy-atom RMSD (that also checks orientation of the ligand); a stricter check could be added.
+
+        The same search box (centre and size in paths_config.py) is then reused for all FDA drugs in step 07.
+        Binding affinity is in kcal/mol: more negative = predicted tighter binding.
+    """)
 
     # ── 1. Ligand Extraction ─────────────────────────────────────────────────
     print(f"[1/4] EXTRACTING CRYSTAL LIGAND ({LIGAND_CODE})")

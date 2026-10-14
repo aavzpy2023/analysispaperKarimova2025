@@ -4,21 +4,28 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from paths_config import GNN_RESULTS_CSV, GNN_OOF_PREDICTIONS_CSV, FIGURES_DIR, CLASSICAL_R2, CLASSICAL_R2_STD, PAPER_R2
+from logger_utils import explain
 
 def plot_gnn_benchmark():
     print(f"[-] Reading GNN benchmark results from: {GNN_RESULTS_CSV}")
 
     if not os.path.exists(GNN_RESULTS_CSV):
         print(f"[ERROR] Results file not found at {GNN_RESULTS_CSV}")
-        return
+        raise SystemExit(1)
 
     if not os.path.exists(GNN_OOF_PREDICTIONS_CSV):
         print(f"[ERROR] Out-of-fold predictions file not found at {GNN_OOF_PREDICTIONS_CSV}. "
               f"Re-run 09_gnn_baseline.py (it now exports this file) before generating this figure.")
-        return
+        raise SystemExit(1)
 
     df_gnn = pd.read_csv(GNN_RESULTS_CSV)
     df_oof = pd.read_csv(GNN_OOF_PREDICTIONS_CSV)
+    explain("What this figure shows", """
+        (A) R2 of the classical models (steps 01/04) and of the GNN (ChemProp) under the same cross-validation, with
+        confidence intervals; dashed lines are the values from the original paper. (B) Out-of-fold predicted vs. experimental
+        pIC50 for the best GNN: points on the diagonal are perfect; scatter around it is the prediction error.
+        Interpretation: if the GNN bar is not clearly higher than the classical ones, extra model complexity is not justified.
+    """)
 
     fig, axes = plt.subplots(1, 2, figsize=(13, 6))
     sns.set_theme(style="whitegrid", context="paper")

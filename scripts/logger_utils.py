@@ -72,3 +72,18 @@ def setup_logger(log_file_path, level=logging.INFO):
         stream=sys.stdout,   # the tee writer created above
         force=True,          # replace any pre-existing root handlers
     )
+
+
+def explain(title, text, width=100):
+    """Print a plain-language block meant for reviewers who do not read Python.
+
+    Each pipeline log gets these blocks next to the numbers they interpret, so a
+    biologist/chemist can follow what was done and why from the log alone.
+    """
+    import textwrap
+    bar = "~" * width
+    body = "\n".join(
+        textwrap.fill(p.strip(), width=width - 2, initial_indent="  ", subsequent_indent="  ")
+        for p in text.strip().split("\n\n") if p.strip()
+    )
+    print(f"\n{bar}\n[EXPLAIN] {title}\n{bar}\n{body}\n{bar}", flush=True)

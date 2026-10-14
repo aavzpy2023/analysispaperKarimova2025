@@ -10,6 +10,7 @@ from matplotlib.patches import Patch
 # Link root directory to import paths_config
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from paths_config import RESULTS_DIR, FIGURES_DIR
+from logger_utils import explain
 
 # =========================================================
 # CONFIGURATION
@@ -25,9 +26,17 @@ def generate_plots():
     # Load data
     if not os.path.exists(CSV_FILE):
         print(f"[ERROR] File not found: {CSV_FILE}")
-        return
+        raise SystemExit(1)
 
     df = pd.read_csv(CSV_FILE)
+    explain("What these figures show", """
+        Three views of the virtual-screening candidates from step 05 (top ML predictions plus reference drugs):
+        (1) predicted pIC50 per compound - longer bar = more potent; reference drugs show where a real, known inhibitor
+        lands. (2) predicted pIC50 against ligand efficiency (LE, potency per heavy atom): the top-right corner is both
+        potent and efficient, the best place for a lead. (3) a multi-metric profile (LE, BEI, LLE, SEI) per compound, to see
+        whether high potency is accompanied by good efficiency or comes only from molecular size/lipophilicity.
+        All values are model predictions, not measurements.
+    """)
     print("Generating plots...")
 
     # Ensure output directory exists
