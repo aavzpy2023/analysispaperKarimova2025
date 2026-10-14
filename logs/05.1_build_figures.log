@@ -1,5 +1,17 @@
-=== START LOG: 05.1_build_figures.py [2026-09-23 13:16:56] ===
+=== START LOG: 05.1_build_figures.py [2026-10-13 16:51:41] ===
 
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] What these figures show
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Three views of the virtual-screening candidates from step 05 (top ML predictions plus reference
+  drugs):         (1) predicted pIC50 per compound - longer bar = more potent; reference drugs
+  show where a real, known inhibitor         lands. (2) predicted pIC50 against ligand efficiency
+  (LE, potency per heavy atom): the top-right corner is both         potent and efficient, the
+  best place for a lead. (3) a multi-metric profile (LE, BEI, LLE, SEI) per compound, to see
+  whether high potency is accompanied by good efficiency or comes only from molecular
+  size/lipophilicity.         All values are model predictions, not measurements.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Generating plots...
 [SUCCESS] Saved: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/figures/05_pIC50_candidates_comparison.png
 [SUCCESS] Saved: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/figures/05_pIC50_vs_LE_scatter.png

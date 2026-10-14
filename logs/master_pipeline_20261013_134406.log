@@ -1,0 +1,1687 @@
+Python 3.11.16 | Linux 7.0.0-38-generic | 48 CPU threads | profile=workstation
+  numpy==1.26.4
+  pandas==2.3.3
+  scipy==1.16.3
+  scikit-learn==1.6.0
+  xgboost==3.1.2
+  lightgbm==4.6.0
+  rdkit==2025.9.3
+  meeko==0.8.0
+  vina==1.2.7
+  torch==2.5.1
+  lightning==2.6.5
+  chemprop==2.2.4
+  PyTDC==0.4.1
+  seaborn==0.13.2
+  adjustText==1.4.0
+  matplotlib==3.10.8
+  joblib==1.5.2
+  setuptools==69.5.1
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] What this step does
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Builds the two training sets from the raw table. Extreme potencies are those outside Q1 -
+  1.5*IQR and Q3 + 1.5*IQR         (Tukey fences) of the pIC50 distribution. They are removed for
+  the main analysis; a second set keeps them so the         pipeline can later measure how much
+  they change the conclusions (sensitivity analysis, steps S01/S02/10).         Then structures
+  that appear more than once (same canonical SMILES, different identifiers) are collapsed to one
+  row,         because a duplicate in both the training and the test part of a fold would leak the
+  answer.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[DATA] 875 raw rows | pIC50 Tukey fences [2.060, 10.800] | 2 outside
+[OUTLIER] cid=269323 pIC50=11.678 (high fence)
+[OUTLIER] cid=44424991 pIC50=1.559 (low fence)
+[DATA] main set: 859 rows -> V2-combined_bd_chmbl_unique_dedup.csv
+[DATA] sensitivity set (extremes kept): 861 rows -> V2-combined_bd_chmbl_unique_dedup_with_outliers.csv
+[DATA] 14 duplicated structures (14 rows removed) -> V2-combined_bd_chmbl_unique_duplicates.csv
+
+=== END LOG: 00_prepare_dataset.py [EXIT CODE: 0] ===
+
+[INFO] Active profile: workstation | N_JOBS=46 | Outer folds=5x5=25
+[DATA] /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/data/V2-combined_bd_chmbl_unique_dedup.csv: 859 rows read, 859 usable (SMILES and pIC50 present). pIC50 range 3.30 - 9.34, mean 6.37, SD 1.26.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] What this step does
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Builds and honestly evaluates machine-learning models that predict how potently a molecule
+  inhibits TgDHFR (pIC50, higher         = more potent) from its structure. The dataset has 859
+  molecules with measured potency.
+  Molecules must be converted to numbers before a model can use them. Several descriptions are
+  compared:         Morgan fingerprints (ECFP4, 2048 bits); RDKit 2D physicochemical descriptors;
+  RDKit 2D descriptors + Morgan FP; 2D + 3D (ETKDGv3 + MMFF94s) descriptors + Morgan FP.         A
+  fingerprint is a long 0/1 list saying which small substructures are present; a descriptor is a
+  number such as         molecular weight, polarity or number of rotatable bonds; '3D' descriptors
+  also depend on the molecule's shape.
+  For each description, the models tried are single algorithms (Random Forest, Extra Trees,
+  LightGBM, XGBoost, SVM,         kNN) and stacks of up to 3 of them combined by a final Ridge
+  regression. NESTED cross-validation         is used so the reported score is not optimistic: the
+  data is split into 5 parts and the whole         split is repeated 5 times (= 25 outer folds).
+  Inside every outer fold the training part is         split again (5 inner folds) to choose the
+  best algorithm combination; only then is that choice         scored on the outer test part,
+  which it has never seen. Selecting and scoring on the same data would inflate R2.
+  This is by far the slowest step of the pipeline (each outer fold fits hundreds of models).
+  Progress is saved after every         fold (results/nested_cv_checkpoint.csv), so an interrupted
+  run resumes where it stopped. IMPORTANT: if the training         data changes, delete that
+  checkpoint first or old-data folds would be silently reused.
+  Per-fold line: 'Best' = the algorithm combination that won the inner selection; R2_outer =
+  fraction of the variance in         potency explained on the unseen part (1 = perfect, 0 = no
+  better than predicting the mean); MAE = average error in         pIC50 units (0.5 = about a
+  3-fold error in IC50); the time is for that fold.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+####################################################################################################
+# NESTED CV (5x5=25 Folds) — REPRESENTATION: morgan
+####################################################################################################
+[CHECKPOINT] 25/25 folds already completed for 'morgan', resuming...
+
+####################################################################################################
+# NESTED CV (5x5=25 Folds) — REPRESENTATION: rdkit2d
+####################################################################################################
+[CHECKPOINT] 25/25 folds already completed for 'rdkit2d', resuming...
+
+####################################################################################################
+# NESTED CV (5x5=25 Folds) — REPRESENTATION: rdkit2d_fp
+####################################################################################################
+[CHECKPOINT] 25/25 folds already completed for 'rdkit2d_fp', resuming...
+
+####################################################################################################
+# NESTED CV (5x5=25 Folds) — REPRESENTATION: rdkit2d3d_fp
+####################################################################################################
+    [INFO] Generating 3D conformers (ETKDGv3 + MMFF)...
+[CHECKPOINT] 25/25 folds already completed for 'rdkit2d3d_fp', resuming...
+
+====================================================================================================
+RESULTS SUMMARY (Nested CV 5x5)
+====================================================================================================
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] How to read the summary tables
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Table 1: mean R2 over all outer folds for each molecular description, with its standard
+  deviation (spread between         folds) and the number of folds. The top row is the best-
+  performing description. Differences smaller than about one         standard deviation are
+  usually not meaningful.
+  Table 2: tests whether our R2 differs from the R2 values reported in the original publication
+  (PAPER_R2). The         Nadeau-Bengio correction is applied because cross-validation folds
+  overlap and share training data, which makes a         naive t-test over-confident.
+  'Significant_p<0.05' = True means our result is really different from the reference
+  (higher or lower: compare Our_R2_mean with Paper_R2); False means we reproduce it within
+  statistical noise.
+  The paired comparison at the end tests whether the two best descriptions differ from each other
+  on the same folds.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Table 1. R² by molecular representation:
+        Mode     mean      std  count
+  rdkit2d_fp 0.769970 0.046746     25
+rdkit2d3d_fp 0.768044 0.043738     25
+      morgan 0.759225 0.044895     25
+     rdkit2d 0.722514 0.049238     25
+
+Table 2. t-tests (Nadeau-Bengio Corrected) vs Original Publication:
+        Mode Paper_reference_label  Paper_R2  Our_R2_mean  Our_R2_std    t_stat  p_value  Significant_p<0.05
+      morgan         PaperBaseline      0.75     0.759225    0.043988  0.381544 0.706157               False
+      morgan         PaperSelected      0.82     0.759225    0.043988 -2.513785 0.019060                True
+      morgan            PaperFinal      0.85     0.759225    0.043988 -3.754640 0.000977                True
+     rdkit2d         PaperBaseline      0.75     0.722514    0.048243 -1.036614 0.310248               False
+     rdkit2d         PaperSelected      0.82     0.722514    0.048243 -3.676604 0.001188                True
+     rdkit2d            PaperFinal      0.85     0.722514    0.048243 -4.808027 0.000068                True
+  rdkit2d_fp         PaperBaseline      0.75     0.769970    0.045801  0.793305 0.435374               False
+  rdkit2d_fp         PaperSelected      0.82     0.769970    0.045801 -1.987414 0.058403               False
+  rdkit2d_fp            PaperFinal      0.85     0.769970    0.045801 -3.179151 0.004039                True
+rdkit2d3d_fp         PaperBaseline      0.75     0.768044    0.042855  0.766068 0.451105               False
+rdkit2d3d_fp         PaperSelected      0.82     0.768044    0.042855 -2.205856 0.037214                True
+rdkit2d3d_fp            PaperFinal      0.85     0.768044    0.042855 -3.479538 0.001938                True
+
+Paired comparison (Nadeau-Bengio) between rdkit2d_fp and rdkit2d3d_fp:
+  t = 0.322, p = 0.7505
+
+[SUPPLEMENTARY CSV] Selection frequency exported to: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/architecture_selection_frequency.csv
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] Architecture selection frequency
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  For each description, how often each algorithm combination won the inner selection across folds.
+  If one                 combination wins most folds, it is a stable choice; if many different
+  ones win, the data cannot clearly                 distinguish them (many are about equally
+  good). Step 03 uses the most frequent winner. SVM appearing very often                 suggests
+  smooth, similarity-based models fit this dataset well.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[LATEX] Variables successfully exported to: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/latex/paper_variables.tex
+
+=== END LOG: 01_nested_cv_stacking.py [EXIT CODE: 0] ===
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] Figure saved: 01_nested_cv_stability_boxplot
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Fig 1. One box per molecular description; each point is the R2 of one outer test fold. The box
+  shows the middle 50%         of folds and the line the median. A tall box means unstable results
+  (depends on which molecules were in the test         fold). Dashed lines are the R2 values
+  reported in the original paper: boxes above them mean we match or beat it.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] Figure saved: 01_nested_cv_benchmark_comparison
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Fig 2. Mean R2 of this study next to the successive stages of the reference (original paper)
+  pipeline. Stars mark a         statistically significant difference after the Nadeau-Bengio
+  correction (n.s. = not significant = equivalent).
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] Figure saved: 01_nested_cv_algorithm_selection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Fig 3. Which algorithm families were chosen by the inner selection (A) and how many algorithms
+  the winning stack had         (B). Frequent winners are the ones the data supports; if simple
+  ensembles win as often as large stacks, the extra         complexity is not buying accuracy.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] Figure saved: 01_nested_cv_performance_summary
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Fig 4. Per-description mean R2 (A) and MAE (B) with 95% confidence intervals. Overlapping
+  intervals mean the         descriptions cannot be told apart. MAE is in pIC50 units (0.5 = about
+  a 3-fold error in IC50).
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] Figure saved: 01_nested_cv_time_vs_performance
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Fig 5. Accuracy against compute time per fold. Points far to the right with no gain in R2 are
+  expensive without         benefit (e.g. 3D descriptors); the best trade-off is up and to the
+  left.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] Figure saved: S1_nested_cv_selection_full_heatmap
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Fig S1. The exact algorithm combination selected in every outer fold, for every description.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+All figures generated in: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/figures
+
+=== END LOG: 01.1_build_figures.py [EXIT CODE: 0] ===
+
+2026-10-13 13:44:34,635 | INFO | ================================================================================
+2026-10-13 13:44:34,635 | INFO | 02_statistical_tests.py — Nadeau-Bengio Variance Correction Test
+2026-10-13 13:44:34,635 | INFO | ================================================================================
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] What this step does
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Step 01 produced one error value (MAE, in pIC50 units) for every test fold, for each way of
+  describing the molecules         (Morgan fingerprints vs. RDKit 2D + 3D descriptors +
+  fingerprints). This step asks a single question: is the difference         between those two
+  descriptions real, or could it be just luck of how the compounds were split into folds?
+  The test used is a paired t-test with the Nadeau-Bengio correction. A plain t-test would be
+  over-confident here because         the folds share most of their training compounds (they are
+  not independent); the correction widens the uncertainty to         compensate.
+  How to read the result: p < 0.05 means the two descriptions truly differ in accuracy; p >= 0.05
+  means we cannot claim         one is better than the other, and the simpler/cheaper one (Morgan)
+  is then the reasonable choice.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+2026-10-13 13:44:34,635 | INFO | Loading nested CV results from: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/nested_cv_checkpoint.csv
+2026-10-13 13:44:34,640 | INFO | Total records loaded: 100. Available modes: ['morgan', 'rdkit2d', 'rdkit2d_fp', 'rdkit2d3d_fp']
+2026-10-13 13:44:34,640 | INFO | Extracting performance metrics for 'morgan' and 'rdkit2d3d_fp' modes...
+2026-10-13 13:44:34,642 | INFO | Data points extracted: 25 outer folds per mode.
+2026-10-13 13:44:34,643 | INFO | Morgan MAE Distribution     -> Mean: 0.4477 | Std: 0.0328 | Min: 0.3804 | Max: 0.4992
+2026-10-13 13:44:34,643 | INFO | 2D/3D/FP MAE Distribution -> Mean: 0.4315 | Std: 0.0328 | Min: 0.3663 | Max: 0.4993
+2026-10-13 13:44:34,643 | INFO | Initializing Nadeau-Bengio variance correction calculations...
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] How to read the numbers below
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Mean difference in MAE (Morgan minus 2D/3D/FP) = +0.0162 pIC50 units. A negative value means
+  Morgan makes smaller         errors on average. For scale: 0.3 pIC50 units is roughly a 2-fold
+  change in potency (IC50).
+  The t-statistic is the mean difference divided by its corrected uncertainty; |t| around 2 or
+  more usually gives p < 0.05.         Only 25 folds are compared, so the test has limited power
+  to detect small differences.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+2026-10-13 13:44:34,644 | INFO | --------------------------------------------------------------------------------
+2026-10-13 13:44:34,644 | INFO | Nadeau-Bengio Corrected Paired t-test Results:
+2026-10-13 13:44:34,644 | INFO |   t-statistic = 2.030
+2026-10-13 13:44:34,644 | INFO |   p-value     = 0.0536
+2026-10-13 13:44:34,644 | INFO | --------------------------------------------------------------------------------
+2026-10-13 13:44:34,644 | INFO | TEST CONCLUSION: No statistically significant difference between Morgan and 2D/3D/FP representations (p >= 0.05).
+2026-10-13 13:44:34,644 | INFO | Writing statistical variables to LaTeX file: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/latex/nadeau_bengio_variables.tex
+2026-10-13 13:44:34,645 | INFO | LaTeX variable export completed successfully.
+
+=== END LOG: 02_statistical_tests.py [EXIT CODE: 0] ===
+
+2026-10-13 13:44:36,665 | INFO | ================================================================================
+2026-10-13 13:44:36,665 | INFO | 03_y_randomization.py — Model Robustness Test (Y-Randomization)
+2026-10-13 13:44:36,665 | INFO | ================================================================================
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] What this step does
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Sanity check that the model really learned chemistry and did not just memorise noise or benefit
+  from a data leak.
+  Procedure (Y-randomization): the measured potencies (pIC50) are randomly shuffled between
+  molecules, which destroys any         true structure-activity relationship, and the same model
+  is trained and cross-validated again. This is repeated many         times. A healthy model
+  scores well on the real data and about R2 = 0 (or negative) on the shuffled data.
+  R2 is the fraction of the variation in potency that the model explains: 1.0 is perfect, 0 is no
+  better than always         predicting the average potency, negative is worse than that.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+2026-10-13 13:44:36,674 | INFO | Audit Result -> Best representation: 'rdkit2d_fp'
+2026-10-13 13:44:36,674 | INFO | Audit Result -> Most stable architecture: 'ET+XGB+SVM'
+2026-10-13 13:44:36,674 | INFO | Loading training data from: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/data/V2-combined_bd_chmbl_unique_dedup.csv
+2026-10-13 13:44:36,679 | INFO | Successfully loaded 859 valid SMILES and target values.
+2026-10-13 13:44:36,679 | INFO | Generating feature matrix X for representation mode 'rdkit2d_fp'...
+2026-10-13 13:44:36,679 | WARNING | Winning representation 'rdkit2d_fp' is not pure Morgan. Falling back to Morgan FP for randomization validation.
+2026-10-13 13:44:37,010 | INFO | Feature matrix dimensions: (859, 2048)
+2026-10-13 13:44:37,013 | INFO | Evaluating baseline unpermuted R2 score using 5-fold CV...
+2026-10-13 13:46:22,610 | INFO | Baseline Unpermuted R2: 0.7638
+2026-10-13 13:46:22,610 | INFO | Starting 100 target permutations using 46 worker threads...
+2026-10-13 16:25:50,481 | INFO | Y-randomization distribution saved to /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/y_randomization_scores.csv
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] How to read the report below
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  'Baseline R2' is the real model (0.76). 'Random R2' is what the same model achieves when
+  potencies are shuffled         (-0.01 on average over 100 shuffles). The Z-score counts how many
+  standard deviations the real         result sits above the shuffled results; the pass criterion
+  used here is real R2 > mean + 2.33 SD (~99% confidence).
+  If the verdict is PASSED, the predictive signal is not a chance correlation. Note that this test
+  uses Morgan         fingerprints and the most frequently selected stacking architecture from
+  step 01.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+2026-10-13 16:25:50,483 | INFO | --------------------------------------------------------------------------------
+2026-10-13 16:25:50,483 | INFO | Y-RANDOMIZATION INTEGRITY REPORT
+2026-10-13 16:25:50,484 | INFO | --------------------------------------------------------------------------------
+2026-10-13 16:25:50,484 | INFO |   Baseline R2 (True Target) : 0.7638
+2026-10-13 16:25:50,484 | INFO |   Random R2 (Mean)          : -0.0135
+2026-10-13 16:25:50,484 | INFO |   Random R2 (Std)           : 0.0084
+2026-10-13 16:25:50,484 | INFO |   Z-Score                   : 92.61
+2026-10-13 16:25:50,484 | INFO | ACADEMIC VERDICT: PASSED. Model performance on true target is significantly superior to random chance (no memory leakage/overfitting).
+2026-10-13 16:25:50,484 | INFO | Exporting Y-Randomization LaTeX variables to: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/latex/yrandom_variables.tex
+2026-10-13 16:25:50,485 | INFO | LaTeX variable export completed successfully.
+2026-10-13 16:25:50,485 | INFO | Total execution time: 9567.9 seconds
+
+=== END LOG: 03_y_randomization.py [EXIT CODE: 0] ===
+
+2026-10-13 16:25:53,494 | INFO | ================================================================================
+2026-10-13 16:25:53,494 | INFO | 04_augmentation_training.py — Feature Selection & Gaussian Augmentation Benchmark
+2026-10-13 16:25:53,494 | INFO | Evaluates classical ML pipeline parity against reported DNN benchmarks
+2026-10-13 16:25:53,494 | INFO | ================================================================================
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] What this step does
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Trains the final predictive model and tests three variants on compounds the model never saw (15%
+  of the data is set         aside before anything else happens, so the test is honest):
+  Exp A - baseline: a stacking ensemble (several different algorithms whose predictions are
+  combined by a final model).         Exp B - A plus feature selection: keeps only the fingerprint
+  bits that actually help prediction (permutation         importance: a bit is useful if randomly
+  scrambling it makes predictions worse).         Exp C - B plus data augmentation: adds slightly
+  noisy copies of the training molecules' potencies (Gaussian noise) to         see whether this
+  makes the model more robust.
+  Metrics: R2 (1 = perfect, 0 = no better than predicting the mean potency) and MAE (average error
+  in pIC50 units;         0.5 means a typical error of ~3-fold in IC50). The 95% CI comes from
+  bootstrap resampling of the test set: it shows how         much the score would move if a
+  different sample of test molecules had been drawn. With so few test molecules the CI is
+  wide, so small R2 differences between experiments are often not meaningful.
+  Outputs used downstream: results/best_model.joblib (the un-augmented model used for the virtual
+  screening in step 05)         and results/selected_features_mask.npy (which fingerprint bits are
+  kept).
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+2026-10-13 16:25:53,502 | INFO | Data Loaded: 859 compounds successfully loaded.
+2026-10-13 16:25:53,835 | INFO | Data Split: Dev=730 | Test held-out=129 (isolated from tuning/augmentation)
+2026-10-13 16:25:53,835 | INFO | --------------------------------------------------------------------------------
+2026-10-13 16:25:53,835 | INFO | EXPERIMENT A: ML Stacking Baseline (all fingerprint bits, original data only)
+2026-10-13 16:25:53,835 | INFO | --------------------------------------------------------------------------------
+2026-10-13 16:26:48,811 | INFO | Results Exp A -> R2=0.7332 | MAE=0.4373 | 95% CI [0.6259, 0.8176] | Time: 55.0s
+2026-10-13 16:26:48,811 | INFO | --------------------------------------------------------------------------------
+2026-10-13 16:26:48,811 | INFO | EXPERIMENT B: + Permutation Importance Feature Selection
+2026-10-13 16:26:48,811 | INFO | --------------------------------------------------------------------------------
+2026-10-13 16:26:48,812 | INFO | Fitting model for Permutation Importance calculation...
+2026-10-13 16:26:58,607 | INFO | Computing Permutation Importance (n_repeats=5, n_jobs=46)...
+2026-10-13 16:34:01,642 | INFO | Features selected (importance > 0): 1358/2048
+2026-10-13 16:35:29,415 | INFO | Results Exp B -> R2=0.7361 | MAE=0.4374 | 95% CI [0.6297, 0.8189] | Time: 520.6s
+2026-10-13 16:35:29,416 | INFO | Feature mask saved to: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/selected_features_mask.npy
+2026-10-13 16:35:29,417 | INFO | --------------------------------------------------------------------------------
+2026-10-13 16:35:29,417 | INFO | EXPERIMENT C: + Gaussian Data Augmentation
+2026-10-13 16:35:29,417 | INFO | --------------------------------------------------------------------------------
+2026-10-13 16:35:29,557 | INFO | Dataset expansion: 730 -> 2190 (noise levels: [0.01, 0.001])
+2026-10-13 16:48:37,541 | INFO | Results Exp C -> R2=0.7123 | MAE=0.4734 | 95% CI [0.6071, 0.7966] | Time: 788.1s
+2026-10-13 16:48:37,541 | INFO | ================================================================================
+2026-10-13 16:48:37,541 | INFO | EXECUTIVE SUMMARY — RIGOROUS STATISTICAL AUDIT
+2026-10-13 16:48:37,541 | INFO | ================================================================================
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] How to read the summary
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Each experiment is compared with R2 values reported in the original paper (PAPER_R2). 'NOT
+  significantly different'         means the published value lies inside our 95% CI, i.e. we
+  reproduce it within sampling uncertainty. p_boot is the         fraction of bootstrap resamples
+  that fall on the other side of the reference value (small = real difference).
+  The paired delta R2 lines then ask whether adding feature selection (B vs A) or augmentation (C
+  vs B / C vs A) truly         improved the model. If the CI of a delta includes 0, the
+  improvement cannot be distinguished from noise.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+2026-10-13 16:48:37,542 | INFO | Exp A (baseline): R2=0.7332 | MAE=0.4373 | 95% CI [0.6259, 0.8176]
+2026-10-13 16:48:37,542 | INFO |   vs 2D/3D/FP, no feature selection (R2=0.75): below by 0.0168 | p_boot=0.7150 -> NOT significantly different (within 95% CI)
+2026-10-13 16:48:37,542 | INFO |   vs After Permutation Importance selection (R2=0.82): below by 0.0868 | p_boot=0.0460 -> SIGNIFICANTLY different
+2026-10-13 16:48:37,543 | INFO |   vs Data augmentation + DNN ensemble (R2=0.85): below by 0.1168 | p_boot=0.0050 -> SIGNIFICANTLY different
+2026-10-13 16:48:37,543 | INFO | Exp B (+feat.sel.): R2=0.7361 | MAE=0.4374 | 95% CI [0.6297, 0.8189]
+2026-10-13 16:48:37,543 | INFO |   vs 2D/3D/FP, no feature selection (R2=0.75): below by 0.0139 | p_boot=0.7620 -> NOT significantly different (within 95% CI)
+2026-10-13 16:48:37,543 | INFO |   vs After Permutation Importance selection (R2=0.82): below by 0.0839 | p_boot=0.0470 -> SIGNIFICANTLY different
+2026-10-13 16:48:37,543 | INFO |   vs Data augmentation + DNN ensemble (R2=0.85): below by 0.1139 | p_boot=0.0050 -> SIGNIFICANTLY different
+2026-10-13 16:48:37,543 | INFO | Exp C (+augment.): R2=0.7123 | MAE=0.4734 | 95% CI [0.6071, 0.7966]
+2026-10-13 16:48:37,543 | INFO |   vs 2D/3D/FP, no feature selection (R2=0.75): below by 0.0377 | p_boot=0.4040 -> NOT significantly different (within 95% CI)
+2026-10-13 16:48:37,544 | INFO |   vs After Permutation Importance selection (R2=0.82): below by 0.1077 | p_boot=0.0120 -> SIGNIFICANTLY different
+2026-10-13 16:48:37,544 | INFO |   vs Data augmentation + DNN ensemble (R2=0.85): below by 0.1377 | p_boot=0.0010 -> SIGNIFICANTLY different
+2026-10-13 16:48:37,544 | INFO | --------------------------------------------------------------------------------
+2026-10-13 16:48:37,544 | INFO | PAIRED BOOTSTRAP DIFFERENCES (delta R2):
+2026-10-13 16:48:37,544 | INFO | Delta R2 (Exp C - Exp A): point=-0.0209 | boot mean=-0.0209 (95% CI [-0.0540, +0.0161], p_boot=0.2460)
+2026-10-13 16:48:37,545 | INFO | Delta R2 (Exp B - Exp A): point=+0.0029 | boot mean=+0.0028 (95% CI [-0.0008, +0.0073], p_boot=0.1380)
+2026-10-13 16:48:37,545 | INFO | Delta R2 (Exp C - Exp B): point=-0.0238 | boot mean=-0.0237 (95% CI [-0.0564, +0.0114], p_boot=0.1850)
+2026-10-13 16:48:37,545 | INFO | --------------------------------------------------------------------------------
+2026-10-13 16:48:37,545 | INFO | PERSISTENCE AUDIT — Matching Section 2.5 Protocol
+2026-10-13 16:48:37,545 | INFO | --------------------------------------------------------------------------------
+2026-10-13 16:48:37,545 | INFO | Fitting clean baseline model (NO augmentation) on dev set for Virtual Screening...
+2026-10-13 16:48:54,552 | INFO | Saved unaugmented clean baseline model to: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/best_model.joblib
+2026-10-13 16:51:29,325 | INFO | Saved augmented model separately to: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/best_model_augmented.joblib
+2026-10-13 16:51:29,331 | INFO | Results summary saved to /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/04_augmentation_summary.csv
+2026-10-13 16:51:29,347 | INFO | Delta R2, bootstrap distributions and test predictions saved to /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results
+2026-10-13 16:51:29,348 | INFO | Variables successfully exported to /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/latex/augment_variables.tex
+2026-10-13 16:51:29,348 | INFO | 04_augmentation_training.py execution complete with Q1 statistical rigor.
+
+=== END LOG: 04_augmentation_training.py [EXIT CODE: 0] ===
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] What this figure shows
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  R2 on the held-out test molecules for the three experiments of step 04 (A baseline, B + feature
+  selection, C +         augmentation), each with its 95% bootstrap confidence interval, next to
+  the values reported in the original paper         (dashed lines). Bars whose intervals overlap
+  are not statistically distinguishable: with a small test set, apparent         gains from
+  feature selection or augmentation are often within noise.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Figure saved to: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/figures/04_augment_r2_comparison.png / .pdf
+
+=== END LOG: 04.1_build_figures.py [EXIT CODE: 0] ===
+
+====================================================================================================
+VIRTUAL SCREENING PIPELINE — TgDHFR Inhibitor Search
+Timestamp: 2026-10-13 16:51:33
+====================================================================================================
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] What this step does
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Uses the trained model from step 04 to predict how strongly each FDA-approved drug would inhibit
+  the parasite enzyme         TgDHFR (Toxoplasma gondii dihydrofolate reductase), without doing
+  any lab work (virtual screening).
+  1) Load the model. 2) Learn what the training molecules look like and flag drugs that are too
+  different from them         (Applicability Domain, via an Isolation Forest): the model is only
+  trustworthy for molecules similar to those it was         trained on, so unusual drugs are
+  dropped instead of receiving a made-up prediction. 3) Drop drugs that are very large         (MW
+  above the limit) or contain atoms outside the allowed set (H, C, N, O, F, P, S, Cl, Br, I). 4)
+  Predict pIC50.         5) Report and export the ranking.
+  pIC50 = -log10(IC50 in molar). Higher means more potent: 6 is IC50 = 1 uM, 7 is 100 nM, 8 is 10
+  nM.         Candidates are later confirmed by docking (step 07) and filtered for drug-
+  likeness/safety (step 08).
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+[1/5] ML ARCHITECTURE LOADING
+  [-] Model path: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/best_model.joblib
+  [+] Ensembled model loaded successfully (0.17s)
+  [-] Mask path: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/selected_features_mask.npy
+  [+] Mask applied: 1358 / 2048 features (66.31% retention)
+
+[2/5] APPLICABILITY DOMAIN CONFIGURATION (ISOLATION FOREST)
+  [-] Training source: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/data/V2-combined_bd_chmbl_unique_dedup.csv
+  [+] Training matrix generated: (859, 1358)
+  [+] Isolation Forest fitted (Contamination: 5.0%) in 0.72s
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] Applicability Domain
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  The Isolation Forest learns the 'normal' region of chemical space covered by the 859 training
+  molecules.         By construction about 5% of the training molecules themselves sit at the edge
+  and are treated         as outliers. Any FDA drug that falls outside this region is excluded
+  below, because the model would be extrapolating.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+[3/5] FDA LIBRARY PROCESSING
+  [-] Screening source: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/data/PubChem_FDA-approved_NoInorganics.csv
+  [+] Raw compounds imported: 3378
+  [+] Physical/Structural Filtering (MW < 1000.0, Allowed Atoms): 2516 candidates retained (74.5%)
+  [+] In-Domain Filtering (Isolation Forest): 1803 compounds retained (71.7%)
+  [+] Total filtering time: 2.61s
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] Reading the filter counts
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  3378 drugs in the library -> 2516 after size/atom filters -> 1803 inside the model's
+  domain. Drugs lost at each stage were never scored. A very low retention in the last stage would
+  mean the FDA library         is chemically far from the training set (then predictions are less
+  reliable and more training data would help).
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+[4/5] ML INFERENCE - BIOACTIVITY PREDICTION (pIC50)
+  [+] Inferences completed in 1.643s
+  [-] Prediction Statistics -> Mean: 4.8913 | Max: 7.4867 | Min: 3.8687
+
+[5/5] PERFORMANCE REPORTS AND EXPORT
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] Report A: sanity check against known drugs
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Pyrimethamine and trimethoprim are classic DHFR inhibitors with known experimental pIC50. If the
+  model predicts them         close to the lab value it is behaving sensibly. Status: absolute
+  error < 0.5 = EXCELLENT, < 1.0 = ACCEPTABLE, else ALERT.         Caution: if these drugs (or
+  close analogues) are in the training set, a good match is partly memorisation and not a
+  true test of generalisation.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+--------------------------------------------------------------------------------
+REPORT A: Internal Validation vs Known TgDHFR Controls
+--------------------------------------------------------------------------------
+Drug               |   pIC50 Exp. |  pIC50 Pred. |  Abs Error | Status
+--------------------------------------------------------------------------------
+Pyrimethamine      |         6.56 |       6.5265 |     0.0335 | EXCELLENT
+Trimethoprim       |         5.57 |       5.8128 |     0.2428 | EXCELLENT
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] Report B: ranking and efficiency metrics
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Besides predicted potency (pIC50), the table gives metrics that judge whether the potency is
+  'earned' efficiently:         LE (ligand efficiency) = potency per heavy atom, >= 0.3 is
+  generally considered good; BEI = potency per kDa of mass;         LLE = pIC50 minus logP, >= 5
+  suggests potency is not just coming from greasiness (lipophilicity); SEI = potency per
+  polar surface area. A high pIC50 with poor LE/LLE usually means a big or greasy molecule that is
+  a weaker lead.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+----------------------------------------------------------------------------------------------------
+REPORT B: Top 10 FDA Candidates (Sorted by Predicted Affinity)
+----------------------------------------------------------------------------------------------------
+Rank  Compound Name                    pIC50     LE     BEI    LLE    SEI
+----------------------------------------------------------------------------------------------------
+1     Methotrexate                    7.4867   0.31   16.47   7.22   3.56
+2     CID 336805                      7.4048   0.25   13.14   7.95   2.93
+3     Trimetrexate Glucuronate        7.4048   0.25   13.14   7.95   2.93
+4     Pralatrexate                    6.7678   0.26   14.17   5.79   3.26
+5     Triamterene                     6.7480   0.49   26.64   5.91   5.21
+6     Pyrimethamine                   6.5265   0.53   26.24   4.00   8.39
+7     Folic Acid                      6.2701   0.27   14.20   6.31   2.94
+8     Erdafitinib                     6.1000   0.25   13.66   1.92   7.89
+9     Bendamustine Hydrochloride      6.0861   0.35   15.42   2.40  10.43
+10    Methylene Blue                  6.0606   0.40   18.95   6.56  31.66
+
+====================================================================================================
+[SUCCESS] 17 candidates safely exported to:
+        -> /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/FDA_Candidates_For_Docking.csv
+        Logs saved in: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/logs/05_virtual_screening.log
+        Total execution time: 7.20s
+====================================================================================================
+
+=== END LOG: 05_virtual_screening.py [EXIT CODE: 0] ===
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] What these figures show
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Three views of the virtual-screening candidates from step 05 (top ML predictions plus reference
+  drugs):         (1) predicted pIC50 per compound - longer bar = more potent; reference drugs
+  show where a real, known inhibitor         lands. (2) predicted pIC50 against ligand efficiency
+  (LE, potency per heavy atom): the top-right corner is both         potent and efficient, the
+  best place for a lead. (3) a multi-metric profile (LE, BEI, LLE, SEI) per compound, to see
+  whether high potency is accompanied by good efficiency or comes only from molecular
+  size/lipophilicity.         All values are model predictions, not measurements.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Generating plots...
+[SUCCESS] Saved: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/figures/05_pIC50_candidates_comparison.png
+[SUCCESS] Saved: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/figures/05_pIC50_vs_LE_scatter.png
+[SUCCESS] Saved: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/figures/05_candidates_metrics_heatmap.png
+
+=== END LOG: 05.1_build_figures.py [EXIT CODE: 0] ===
+
+================================================================================
+REDOCKING VALIDATION PIPELINE — Crystal Ligand Re-Docking
+Timestamp: 2026-10-13 16:51:47
+Receptor setup: Chain B (DHFR active site) of PDB 6AOG
+================================================================================
+Target Criterion: Centroid distance < 2.0 Å = Protocol Validated
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] What this step does
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Before trusting docking scores for new drugs, we check that the docking software can reproduce a
+  known answer. The         crystal structure 6AOG contains the real inhibitor pyrimethamine (CP6)
+  bound to the TgDHFR active site. We         take that ligand out, place it back with AutoDock
+  Vina (a physics-based scoring program that searches positions and         orientations of a
+  molecule inside a search box), and compare where Vina puts it with where it sits in the crystal.
+  Pass criterion: the docked ligand's geometric centre must lie within 2.0 Å of the crystal
+  position         (1 Å = 0.1 nm, about one bond length). Methodological note for reviewers: this
+  compares centres only, which is more         lenient than the usual heavy-atom RMSD (that also
+  checks orientation of the ligand); a stricter check could be added.
+  The same search box (centre and size in paths_config.py) is then reused for all FDA drugs in
+  step 07.         Binding affinity is in kcal/mol: more negative = predicted tighter binding.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[1/4] EXTRACTING CRYSTAL LIGAND (CP6)
+  [+] Chain B extracted: 17 heavy atoms detected.
+  [+] Centroid calculated (Active Site Center): [  3.689  39.992 -62.818]
+  [CHECK] Distance between this centroid and the screening box center in paths_config.py (used by step 07): 0.001 A
+
+  [NOTE] Active site center for chain B: [3.689, 39.992, -62.818]
+  [NOTE] (Original script used average of both chains: [17.394, 68.757, -68.051])
+  [NOTE] Re-running docking procedure with the corrected specific center.
+  [+] Extraction completed in 0.00s
+
+[2/4] LIGAND PREPARATION AND CONVERSION
+  [+] Crystal ligand PDB successfully written to: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/receptor/crystal_ligand.pdb
+  [+] Ligand successfully converted to /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/receptor/crystal_ligand.pdbqt via RDKit + Meeko.
+  [+] Preparation completed in 0.77s
+
+[3/4] AUTODOCK VINA REDOCKING
+  [-] Re-docking ligand 'CP6' into chain 'B'...
+  [-] Grid Center: [3.689, 39.992, -62.818] | Box Size: 20.0Å | Exhaustiveness: 32
+Computing Vina grid ... done.
+WARNING: At low exhaustiveness, it may be impossible to utilize all CPUs.
+Performing docking (random seed: 42) ... 
+0%   10   20   30   40   50   60   70   80   90   100%
+|----|----|----|----|----|----|----|----|----|----|
+***************************************************
+
+mode |   affinity | dist from best mode
+     | (kcal/mol) | rmsd l.b.| rmsd u.b.
+-----+------------+----------+----------
+   1       -7.906          0          0
+  [+] Docking completed in 7.67s
+  [+] Best Pose Binding Affinity: -7.906 kcal/mol
+
+[4/4] VALIDATION RESULT
+--------------------------------------------------------------------------------
+  [-] Crystal Reference Centroid : [  3.689  39.992 -62.818]
+  [-] Docked Output Centroid     : [  3.899  40.17  -62.661]
+  [>] Calculated Centroid Distance: 0.317 Å
+--------------------------------------------------------------------------------
+  [SUCCESS] ✓ PROTOCOL VALIDATED
+
+  [DRAFT] SUGGESTED METHODS SENTENCE FOR MANUSCRIPT:
+  "Docking protocol validation was performed by re-docking
+  pyrimethamine (CP6, PDB: 6AOG, chain B)
+  into the TgDHFR active site. The top-ranked pose reproduced
+  the crystallographic binding mode with a centroid distance
+  of 0.32 Å (threshold: 2.0 Å)."
+
+  [IMPORTANT WARNING]: The corrected active site center
+  for the DHFR site (chain B) is [3.689, 39.992, -62.818].
+  Ensure CENTER_X/Y/Z in paths_config.py (used by 07_molecular_docking.py) match this center.
+
+  [+] LaTeX variable definitions saved to: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/latex/redocking_variables.tex
+================================================================================
+[DONE] Redocking Validation Pipeline completed in 8.45s.
+       Logs saved in: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/logs/06_redocking_validation.log
+================================================================================
+
+=== END LOG: 06_redocking_validation.py [EXIT CODE: 0] ===
+
+==========================================================================================
+07_molecular_docking.py — Fully Agnostic Docking Pipeline
+Receptor: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/receptor/receptor.pdbqt
+Active site center: [3.689, 39.992, -62.818]
+Box: 20.0A | Exhaustiveness: 32
+Log file: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/logs/07_molecular_docking.log
+==========================================================================================
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] What this step does
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Second, independent opinion on the drugs ranked by the machine-learning model. The top 15
+  candidates         from step 05, plus the reference/control drugs, are physically docked into
+  the TgDHFR active site with AutoDock Vina:         each molecule is converted to 3D, many
+  positions/orientations are tried inside the search box, and the best-scoring         poses are
+  kept (3 per drug). ML looks at chemical similarity to known inhibitors; docking looks at 3D
+  shape/chemical fit to the real protein pocket, so agreement between the two is stronger evidence
+  than either alone.
+  Docking score (kcal/mol): more negative = predicted tighter binding. Rule of thumb used here:
+  below -8.0         = binding confirmed. Scores are approximate (errors of 1-2 kcal/mol are
+  normal) and rank-ordering is more reliable         than absolute values. LE here is score per
+  heavy atom (more negative = more efficient binder).
+  'Agreement' column: VALIDATED (+) = ML says active (pIC50 > 6.5) AND docking confirms; VALIDATED
+  (-) =         both say inactive; ML FALSE POSITIVE = ML active but docking does not confirm; ML
+  FALSE NEGATIVE = the reverse;         Neutral = in between. Energy_Gap_P1_Pn is how much worse
+  the 3rd pose is than the 1st (small gap = several similar         alternative poses, i.e. a less
+  defined binding mode). Max_RMSD_UB is how different the extra poses are (Å).         Limitation:
+  the receptor is rigid and water/protonation states are not modelled.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+[INFO] 17 candidates selected for docking
+Computing Vina grid ... done.
+
+Compound                  |     LE | Dock (kcal/mol) | Time (s)
+-----------------------------------------------------------------
+WARNING: At low exhaustiveness, it may be impossible to utilize all CPUs.
+Performing docking (random seed: 42) ... 
+0%   10   20   30   40   50   60   70   80   90   100%
+|----|----|----|----|----|----|----|----|----|----|
+***************************************************
+
+mode |   affinity | dist from best mode
+     | (kcal/mol) | rmsd l.b.| rmsd u.b.
+-----+------------+----------+----------
+   1       -8.707          0          0
+   2       -8.436      3.941      7.845
+   3       -8.436      3.781      7.798
+Methotrexate              | -0.264 |           -8.71 |    32.89s
+WARNING: At low exhaustiveness, it may be impossible to utilize all CPUs.
+Performing docking (random seed: 42) ... 
+0%   10   20   30   40   50   60   70   80   90   100%
+|----|----|----|----|----|----|----|----|----|----|
+***************************************************
+
+mode |   affinity | dist from best mode
+     | (kcal/mol) | rmsd l.b.| rmsd u.b.
+-----+------------+----------+----------
+   1       -8.485          0          0
+   2       -8.397     0.1586      2.453
+   3        -8.11      2.579      4.757
+CID 336805                | -0.314 |           -8.48 |    12.52s
+WARNING: At low exhaustiveness, it may be impossible to utilize all CPUs.
+Performing docking (random seed: 42) ... 
+0%   10   20   30   40   50   60   70   80   90   100%
+|----|----|----|----|----|----|----|----|----|----|
+***************************************************
+
+mode |   affinity | dist from best mode
+     | (kcal/mol) | rmsd l.b.| rmsd u.b.
+-----+------------+----------+----------
+   1       -8.485          0          0
+   2       -8.397     0.1586      2.453
+   3        -8.11      2.579      4.757
+Trimetrexate Glucuronate  | -0.314 |           -8.48 |    12.64s
+WARNING: At low exhaustiveness, it may be impossible to utilize all CPUs.
+Performing docking (random seed: 42) ... 
+0%   10   20   30   40   50   60   70   80   90   100%
+|----|----|----|----|----|----|----|----|----|----|
+***************************************************
+
+mode |   affinity | dist from best mode
+     | (kcal/mol) | rmsd l.b.| rmsd u.b.
+-----+------------+----------+----------
+   1       -9.499          0          0
+   2       -9.386      4.252      8.339
+   3       -9.047      3.727      7.976
+Pralatrexate              | -0.271 |           -9.50 |    42.30s
+WARNING: At low exhaustiveness, it may be impossible to utilize all CPUs.
+Performing docking (random seed: 42) ... 
+0%   10   20   30   40   50   60   70   80   90   100%
+|----|----|----|----|----|----|----|----|----|----|
+***************************************************
+
+mode |   affinity | dist from best mode
+     | (kcal/mol) | rmsd l.b.| rmsd u.b.
+-----+------------+----------+----------
+   1       -8.044          0          0
+   2       -7.866      1.517      3.024
+   3       -7.602      2.094      2.399
+Triamterene               | -0.423 |           -8.04 |     4.43s
+WARNING: At low exhaustiveness, it may be impossible to utilize all CPUs.
+Performing docking (random seed: 42) ... 
+0%   10   20   30   40   50   60   70   80   90   100%
+|----|----|----|----|----|----|----|----|----|----|
+***************************************************
+
+mode |   affinity | dist from best mode
+     | (kcal/mol) | rmsd l.b.| rmsd u.b.
+-----+------------+----------+----------
+   1       -7.355          0          0
+   2       -7.051      1.867      2.508
+   3       -6.951      3.978      6.257
+Pyrimethamine             | -0.433 |           -7.36 |     4.07s
+WARNING: At low exhaustiveness, it may be impossible to utilize all CPUs.
+Performing docking (random seed: 42) ... 
+0%   10   20   30   40   50   60   70   80   90   100%
+|----|----|----|----|----|----|----|----|----|----|
+***************************************************
+
+mode |   affinity | dist from best mode
+     | (kcal/mol) | rmsd l.b.| rmsd u.b.
+-----+------------+----------+----------
+   1       -8.566          0          0
+   2       -8.556      2.841      8.796
+   3       -8.511      2.697      8.747
+Folic Acid                | -0.268 |           -8.57 |    28.12s
+WARNING: At low exhaustiveness, it may be impossible to utilize all CPUs.
+Performing docking (random seed: 42) ... 
+0%   10   20   30   40   50   60   70   80   90   100%
+|----|----|----|----|----|----|----|----|----|----|
+***************************************************
+
+mode |   affinity | dist from best mode
+     | (kcal/mol) | rmsd l.b.| rmsd u.b.
+-----+------------+----------+----------
+   1       -8.833          0          0
+   2         -8.8     0.7832      2.297
+   3       -8.445      1.735      4.289
+Erdafitinib               | -0.268 |           -8.83 |    30.90s
+WARNING: At low exhaustiveness, it may be impossible to utilize all CPUs.
+Performing docking (random seed: 42) ... 
+0%   10   20   30   40   50   60   70   80   90   100%
+|----|----|----|----|----|----|----|----|----|----|
+***************************************************
+
+mode |   affinity | dist from best mode
+     | (kcal/mol) | rmsd l.b.| rmsd u.b.
+-----+------------+----------+----------
+   1       -6.561          0          0
+   2       -6.549      2.328      4.227
+   3       -6.508       0.73      2.282
+Bendamustine Hydrochlori  | -0.285 |           -6.56 |    11.46s
+WARNING: At low exhaustiveness, it may be impossible to utilize all CPUs.
+Performing docking (random seed: 42) ... 
+0%   10   20   30   40   50   60   70   80   90   100%
+|----|----|----|----|----|----|----|----|----|----|
+***************************************************
+
+mode |   affinity | dist from best mode
+     | (kcal/mol) | rmsd l.b.| rmsd u.b.
+-----+------------+----------+----------
+   1       -7.327          0          0
+   2       -7.211      1.264      7.389
+   3       -7.077      1.461      7.758
+Methylene Blue            | -0.366 |           -7.33 |     2.91s
+WARNING: At low exhaustiveness, it may be impossible to utilize all CPUs.
+Performing docking (random seed: 42) ... 
+0%   10   20   30   40   50   60   70   80   90   100%
+|----|----|----|----|----|----|----|----|----|----|
+***************************************************
+
+mode |   affinity | dist from best mode
+     | (kcal/mol) | rmsd l.b.| rmsd u.b.
+-----+------------+----------+----------
+   1       -7.274          0          0
+   2       -7.234      0.232      2.808
+   3        -6.84      3.781      5.513
+Sulfamethoxazole; Trimet  | -0.346 |           -7.27 |     7.82s
+WARNING: At low exhaustiveness, it may be impossible to utilize all CPUs.
+Performing docking (random seed: 42) ... 
+0%   10   20   30   40   50   60   70   80   90   100%
+|----|----|----|----|----|----|----|----|----|----|
+***************************************************
+
+mode |   affinity | dist from best mode
+     | (kcal/mol) | rmsd l.b.| rmsd u.b.
+-----+------------+----------+----------
+   1       -7.274          0          0
+   2       -7.234      0.232      2.808
+   3        -6.84      3.781      5.513
+Trimethoprim              | -0.346 |           -7.27 |     7.93s
+WARNING: At low exhaustiveness, it may be impossible to utilize all CPUs.
+Performing docking (random seed: 42) ... 
+0%   10   20   30   40   50   60   70   80   90   100%
+|----|----|----|----|----|----|----|----|----|----|
+***************************************************
+
+mode |   affinity | dist from best mode
+     | (kcal/mol) | rmsd l.b.| rmsd u.b.
+-----+------------+----------+----------
+   1       -7.274          0          0
+   2       -7.234      0.232      2.808
+   3        -6.84      3.781      5.513
+Trimethoprim sulfate      | -0.346 |           -7.27 |     7.72s
+WARNING: At low exhaustiveness, it may be impossible to utilize all CPUs.
+Performing docking (random seed: 42) ... 
+0%   10   20   30   40   50   60   70   80   90   100%
+|----|----|----|----|----|----|----|----|----|----|
+***************************************************
+
+mode |   affinity | dist from best mode
+     | (kcal/mol) | rmsd l.b.| rmsd u.b.
+-----+------------+----------+----------
+   1       -7.274          0          0
+   2       -7.234      0.232      2.808
+   3        -6.84      3.781      5.513
+Trimethoprim Hydrochlori  | -0.346 |           -7.27 |     7.77s
+WARNING: At low exhaustiveness, it may be impossible to utilize all CPUs.
+Performing docking (random seed: 42) ... 
+0%   10   20   30   40   50   60   70   80   90   100%
+|----|----|----|----|----|----|----|----|----|----|
+***************************************************
+
+mode |   affinity | dist from best mode
+     | (kcal/mol) | rmsd l.b.| rmsd u.b.
+-----+------------+----------+----------
+   1       -7.947          0          0
+   2       -7.603      2.143      5.243
+   3       -7.393      2.554      5.728
+Finerenone                | -0.284 |           -7.95 |     9.75s
+WARNING: At low exhaustiveness, it may be impossible to utilize all CPUs.
+Performing docking (random seed: 42) ... 
+0%   10   20   30   40   50   60   70   80   90   100%
+|----|----|----|----|----|----|----|----|----|----|
+***************************************************
+
+mode |   affinity | dist from best mode
+     | (kcal/mol) | rmsd l.b.| rmsd u.b.
+-----+------------+----------+----------
+   1       -7.584          0          0
+   2       -7.558      2.817      5.004
+   3       -7.276      2.708      4.219
+Etodolac                  | -0.361 |           -7.58 |     5.33s
+WARNING: At low exhaustiveness, it may be impossible to utilize all CPUs.
+Performing docking (random seed: 42) ... 
+0%   10   20   30   40   50   60   70   80   90   100%
+|----|----|----|----|----|----|----|----|----|----|
+***************************************************
+
+mode |   affinity | dist from best mode
+     | (kcal/mol) | rmsd l.b.| rmsd u.b.
+-----+------------+----------+----------
+   1       -8.765          0          0
+   2       -8.365      1.182      1.811
+   3       -8.037      1.156      7.093
+Bisacodyl                 | -0.325 |           -8.77 |    11.29s
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] Reading the final table
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Sorted from best (most negative) docking score. Look for compounds that are strong in BOTH
+  columns (high ML pIC50         and very negative Vina score): those are the best candidates for
+  experimental testing. Reference drugs (e.g.         pyrimethamine, methotrexate) give the
+  benchmark: a new candidate scoring close to or better than them is interesting;         one far
+  worse is probably not worth pursuing even if the ML score is high.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+====================================================================================================
+FINAL RESULTS ENRICHED — ML Prediction vs. Physics (AutoDock Vina)
+====================================================================================================
+Compound                  |  ML pIC50 |     Vina |      LE | Agreement
+--------------------------------------------------------------------------------
+Pralatrexate              |    6.7678 |    -9.50 |  -0.271 | VALIDATED (+)
+Erdafitinib               |    6.1000 |    -8.83 |  -0.268 | Neutral
+Bisacodyl                 |    4.8732 |    -8.76 |  -0.325 | ML FALSE NEGATIVE
+Methotrexate              |    7.4867 |    -8.71 |  -0.264 | VALIDATED (+)
+Folic Acid                |    6.2701 |    -8.57 |  -0.268 | Neutral
+CID 336805                |    7.4048 |    -8.48 |  -0.314 | VALIDATED (+)
+Trimetrexate Glucuronate  |    7.4048 |    -8.48 |  -0.314 | VALIDATED (+)
+Triamterene               |    6.7480 |    -8.04 |  -0.423 | VALIDATED (+)
+Finerenone                |    5.6537 |    -7.95 |  -0.284 | Neutral
+Etodolac                  |    5.3853 |    -7.58 |  -0.361 | Neutral
+Pyrimethamine             |    6.5265 |    -7.36 |  -0.433 | ML FALSE POSITIVE
+Methylene Blue            |    6.0606 |    -7.33 |  -0.366 | Neutral
+Sulfamethoxazole; Trimet  |    5.8128 |    -7.27 |  -0.346 | VALIDATED (-)
+Trimethoprim              |    5.7265 |    -7.27 |  -0.346 | VALIDATED (-)
+Trimethoprim sulfate      |    5.7057 |    -7.27 |  -0.346 | VALIDATED (-)
+Trimethoprim Hydrochlori  |    5.7027 |    -7.27 |  -0.346 | VALIDATED (-)
+Bendamustine Hydrochlori  |    6.0861 |    -6.56 |  -0.285 | Neutral
+
+[EXPORT] Enriched dataset saved to /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/Final_Validation_Hybrid.csv
+
+[LATEX] Attempting to write file to: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/latex/docking_variables.tex
+[LATEX] SUCCESS! Variables exported to /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/latex/docking_variables.tex
+[DONE] 07_molecular_docking.py complete.
+
+=== END LOG: 07_molecular_docking.py [EXIT CODE: 0] ===
+
+[-] Reading data from: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/Final_Validation_Hybrid.csv
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] What this figure shows
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Each dot is a drug: horizontal = AutoDock Vina docking score (further right = better predicted
+  binding), vertical =         ML-predicted pIC50 (higher = more potent). Dots in the top-right
+  corner are supported by both methods. Colours         follow the 'Agreement' categories of step
+  07 (validated, false positive, false negative, neutral). The dotted         lines are drawn at
+  ML pIC50 = 6.0 and docking = -7.5 kcal/mol. Note for reviewers: step 07         classifies
+  'active' with stricter cut-offs (pIC50 > 6.5 and docking < -8.0), so a dot can sit in the top-
+  right         region of the figure and still be labelled Neutral.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Looks like you are using a tranform that doesn't support FancyArrowPatch, using ax.annotate instead. The arrows might strike through texts. Increasing shrinkA in arrowprops might help.
+[+] Enhanced figure saved successfully at: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/figures/07_docking_scatter.png
+
+=== END LOG: 07.1_build_figures.py [EXIT CODE: 0] ===
+
+==========================================================================================
+08_admet_profiling.py — ADMET Profiling & Toxicity Risk Assessment
+Log file: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/logs/08_admet_profiling.log
+==========================================================================================
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] What this step does
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  A molecule that binds the target is useless as a drug if it is toxic or cannot reach the
+  bloodstream. This step         screens the docked candidates for three drug-likeness properties,
+  using fast models trained on public data (TDC):
+  1) Lipinski rule of five: a rule of thumb for oral drugs (limits on hydrogen-bond donors <= 5,
+  acceptors <= 10, logP <= 5.0, plus molecular weight). Molecules that break it         tend to be
+  poorly absorbed.         2) hERG: probability that the drug blocks the hERG potassium channel in
+  the heart, a main cause of dangerous heart         rhythm side effects (QT prolongation).
+  Probability < 0.5 is treated as low risk. Candidates above it are removed.         3) Caco-2:
+  predicted permeability through a model of the intestinal wall (log cm/s, less negative = better
+  absorbed).         Above -5.15 = moderate/high oral absorption; below it the drug is labelled
+  'Parenteral Candidate' (better         given by injection) but is NOT removed.
+  Limitations: both models are Random Forests on molecular fingerprints trained on a few hundred
+  to a few thousand         compounds, so values are screening-level estimates, not experimental
+  toxicity. Not modelled: liver metabolism,         blood-brain barrier (important for Toxoplasma,
+  which infects the brain), and other off-target toxicity.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[1] Total initial candidates from docking: 17
+[1] Evaluating Lipinski rule of five on 48 cores...
+[1] Candidates passing Lipinski: 12
+Found local copy...
+Loading...
+Done!
+
+[2] Training hERG Cardiotoxicity Classifier (TDC Dataset: 655 samples)...
+Found local copy...
+Loading...
+Done!
+
+[3] Training Caco-2 Permeability Regressor (TDC Dataset: 910 samples)...
+
+[EXPORT] Full analytical dataset (for plotting) saved to /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/ADMET_CANDIDATES_For_Docking_FULL_PRE_FILTER.csv
+
+[4] Flagged by hERG toxicity: 6 compounds
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] Reading the summary
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Of 12 candidates that passed Lipinski, 6 were dropped for hERG risk and 6         remain.
+  'ADMET-Compliant (Oral)' = low hERG risk and good predicted absorption. 'Parenteral Candidate' =
+  low hERG risk         but poor predicted gut permeability. Both lists (before and after the hERG
+  cut) are saved so the full picture can be         plotted in 08.1.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+=========================================================================================================
+ADMET PROFILING RESULTS SUMMARY
+=========================================================================================================
+Pralatrexate                 | hERG Prob: 0.312 | Caco-2:  -5.41 | Profile: Parenteral Candidate (Low Caco-2)
+Methotrexate                 | hERG Prob: 0.400 | Caco-2:  -5.87 | Profile: Parenteral Candidate (Low Caco-2)
+Pyrimethamine                | hERG Prob: 0.125 | Caco-2:  -4.42 | Profile: ADMET-Compliant (Oral)
+Methylene Blue               | hERG Prob: 0.460 | Caco-2:  -4.61 | Profile: ADMET-Compliant (Oral)
+Trimethoprim                 | hERG Prob: 0.140 | Caco-2:  -4.77 | Profile: ADMET-Compliant (Oral)
+Trimethoprim Hydrochloride   | hERG Prob: 0.140 | Caco-2:  -4.77 | Profile: ADMET-Compliant (Oral)
+
+[EXPORT] Safe candidates (6) saved to /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/ADMET_CANDIDATES_For_Docking.csv
+[TIME] Total execution: 0m 2s
+[DONE] 08_admet_profiling.py complete.
+
+=== END LOG: 08_admet_profiling.py [EXIT CODE: 0] ===
+
+[-] Reading full ADMET dataset from: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/ADMET_CANDIDATES_For_Docking_FULL_PRE_FILTER.csv
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] What this figure shows
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Safety/absorption map of the candidates that passed Lipinski. Horizontal = hERG blocker
+  probability (heart toxicity         risk; left is safer), vertical = predicted Caco-2 intestinal
+  permeability (higher is better absorbed orally). The         best region is the top-left
+  quadrant (low heart risk and good oral absorption). Colours are the ADMET profile
+  assigned in step 08. Predictions come from simple models trained on public data, so treat them
+  as a coarse filter.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Looks like you are using a tranform that doesn't support FancyArrowPatch, using ax.annotate instead. The arrows might strike through texts. Increasing shrinkA in arrowprops might help.
+[+] ADMET figure saved successfully at: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/figures/08_admet_quadrants.png
+
+=== END LOG: 08.1_build_figures.py [EXIT CODE: 0] ===
+
+=========================================================================================================
+09_gnn_baseline.py — Graph Neural Network (GNN) Benchmarking: ChemProp D-MPNN, 5x5 repeated CV
+Log file: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/logs/09_gnn_baseline.log
+=========================================================================================================
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] What this step does
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Compares the classical machine-learning models (steps 01/04, which describe each molecule with
+  fixed fingerprints or         descriptors) against a Graph Neural Network. ChemProp's D-MPNN
+  treats the molecule as a graph (atoms = nodes, bonds =         edges) and learns its own
+  representation by passing messages between neighbouring atoms, instead of using a         hand-
+  designed fingerprint.
+  Same evaluation protocol as the classical models: 5 x 5 repeated cross-validation (data split
+  into 5 parts, each part         used once as unseen test data, whole procedure repeated 5 times
+  with different splits). Out-of-fold predictions are         collected so every molecule is
+  predicted by a model that never saw it.
+  Why it matters: with only a few hundred compounds, deep models often do not beat well-tuned
+  classical models. If         ChemProp's R2 is not clearly above the classical R2 (taking the 95%
+  CI into account), the simpler models are preferable         because they are faster, easier to
+  interpret and not worse in accuracy. R2: 1 = perfect, 0 = no better than the mean.         MAE
+  is the average error in pIC50 units (0.5 = about 3-fold in IC50).
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[1] Loading dataset from /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/data/V2-combined_bd_chmbl_unique_dedup.csv...
+[1] Dataset loaded successfully: 859 compounds.
+
+[2] Evaluating ChemProp (D-MPNN 5x5 CV)...
+
+  [ChemProp] Starting 5x5 CV (N=859 compounds)...
+INFO: Seed set to 42
+2026-10-13 16:56:19,441 | INFO | Seed set to 42
+  --> [2026-10-13 16:56:19] Training Fold 1/25...
+INFO: GPU available: False, used: False
+2026-10-13 16:56:19,999 | INFO | GPU available: False, used: False
+INFO: TPU available: False, using: 0 TPU cores
+2026-10-13 16:56:19,999 | INFO | TPU available: False, using: 0 TPU cores
+INFO: Loading `train_dataloader` to estimate number of stepping batches.
+2026-10-13 16:56:20,004 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
+INFO: `Trainer.fit` stopped: `max_epochs=100` reached.
+2026-10-13 16:59:14,565 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
+  --> [2026-10-13 16:59:14] Fold 1/25 OK | R2=0.7046 | MAE=0.4804 | 175.4s
+INFO: Seed set to 43
+2026-10-13 16:59:14,849 | INFO | Seed set to 43
+  --> [2026-10-13 16:59:14] Training Fold 2/25...
+INFO: GPU available: False, used: False
+2026-10-13 16:59:15,258 | INFO | GPU available: False, used: False
+INFO: TPU available: False, using: 0 TPU cores
+2026-10-13 16:59:15,258 | INFO | TPU available: False, using: 0 TPU cores
+INFO: Loading `train_dataloader` to estimate number of stepping batches.
+2026-10-13 16:59:15,261 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
+INFO: `Trainer.fit` stopped: `max_epochs=100` reached.
+2026-10-13 17:02:05,348 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
+  --> [2026-10-13 17:02:05] Fold 2/25 OK | R2=0.7301 | MAE=0.4800 | 170.8s
+INFO: Seed set to 44
+2026-10-13 17:02:05,650 | INFO | Seed set to 44
+  --> [2026-10-13 17:02:05] Training Fold 3/25...
+INFO: GPU available: False, used: False
+2026-10-13 17:02:06,059 | INFO | GPU available: False, used: False
+INFO: TPU available: False, using: 0 TPU cores
+2026-10-13 17:02:06,059 | INFO | TPU available: False, using: 0 TPU cores
+INFO: Loading `train_dataloader` to estimate number of stepping batches.
+2026-10-13 17:02:06,062 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
+INFO: `Trainer.fit` stopped: `max_epochs=100` reached.
+2026-10-13 17:04:49,847 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
+  --> [2026-10-13 17:04:50] Fold 3/25 OK | R2=0.7193 | MAE=0.4712 | 164.5s
+INFO: Seed set to 45
+2026-10-13 17:04:50,130 | INFO | Seed set to 45
+  --> [2026-10-13 17:04:50] Training Fold 4/25...
+INFO: GPU available: False, used: False
+2026-10-13 17:04:50,538 | INFO | GPU available: False, used: False
+INFO: TPU available: False, using: 0 TPU cores
+2026-10-13 17:04:50,538 | INFO | TPU available: False, using: 0 TPU cores
+INFO: Loading `train_dataloader` to estimate number of stepping batches.
+2026-10-13 17:04:50,540 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
+INFO: `Trainer.fit` stopped: `max_epochs=100` reached.
+2026-10-13 17:07:43,241 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
+  --> [2026-10-13 17:07:43] Fold 4/25 OK | R2=0.7635 | MAE=0.4553 | 173.5s
+INFO: Seed set to 46
+2026-10-13 17:07:43,603 | INFO | Seed set to 46
+  --> [2026-10-13 17:07:43] Training Fold 5/25...
+INFO: GPU available: False, used: False
+2026-10-13 17:07:44,159 | INFO | GPU available: False, used: False
+INFO: TPU available: False, using: 0 TPU cores
+2026-10-13 17:07:44,159 | INFO | TPU available: False, using: 0 TPU cores
+INFO: Loading `train_dataloader` to estimate number of stepping batches.
+2026-10-13 17:07:44,163 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
+INFO: `Trainer.fit` stopped: `max_epochs=100` reached.
+2026-10-13 17:10:45,197 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
+  --> [2026-10-13 17:10:45] Fold 5/25 OK | R2=0.7847 | MAE=0.4393 | 181.9s
+INFO: Seed set to 47
+2026-10-13 17:10:45,482 | INFO | Seed set to 47
+  --> [2026-10-13 17:10:45] Training Fold 6/25...
+INFO: GPU available: False, used: False
+2026-10-13 17:10:45,888 | INFO | GPU available: False, used: False
+INFO: TPU available: False, using: 0 TPU cores
+2026-10-13 17:10:45,888 | INFO | TPU available: False, using: 0 TPU cores
+INFO: Loading `train_dataloader` to estimate number of stepping batches.
+2026-10-13 17:10:45,891 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
+INFO: `Trainer.fit` stopped: `max_epochs=100` reached.
+2026-10-13 17:13:43,768 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
+  --> [2026-10-13 17:13:44] Fold 6/25 OK | R2=0.6392 | MAE=0.5086 | 178.7s
+INFO: Seed set to 48
+2026-10-13 17:13:44,171 | INFO | Seed set to 48
+  --> [2026-10-13 17:13:44] Training Fold 7/25...
+INFO: GPU available: False, used: False
+2026-10-13 17:13:44,759 | INFO | GPU available: False, used: False
+INFO: TPU available: False, using: 0 TPU cores
+2026-10-13 17:13:44,759 | INFO | TPU available: False, using: 0 TPU cores
+INFO: Loading `train_dataloader` to estimate number of stepping batches.
+2026-10-13 17:13:44,763 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
+INFO: `Trainer.fit` stopped: `max_epochs=100` reached.
+2026-10-13 17:17:13,600 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
+  --> [2026-10-13 17:17:13] Fold 7/25 OK | R2=0.8091 | MAE=0.4014 | 209.8s
+INFO: Seed set to 49
+2026-10-13 17:17:13,966 | INFO | Seed set to 49
+  --> [2026-10-13 17:17:13] Training Fold 8/25...
+INFO: GPU available: False, used: False
+2026-10-13 17:17:14,527 | INFO | GPU available: False, used: False
+INFO: TPU available: False, using: 0 TPU cores
+2026-10-13 17:17:14,527 | INFO | TPU available: False, using: 0 TPU cores
+INFO: Loading `train_dataloader` to estimate number of stepping batches.
+2026-10-13 17:17:14,531 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
+INFO: `Trainer.fit` stopped: `max_epochs=100` reached.
+2026-10-13 17:20:38,710 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
+  --> [2026-10-13 17:20:39] Fold 8/25 OK | R2=0.7386 | MAE=0.4639 | 205.1s
+INFO: Seed set to 50
+2026-10-13 17:20:39,071 | INFO | Seed set to 50
+  --> [2026-10-13 17:20:39] Training Fold 9/25...
+INFO: GPU available: False, used: False
+2026-10-13 17:20:39,636 | INFO | GPU available: False, used: False
+INFO: TPU available: False, using: 0 TPU cores
+2026-10-13 17:20:39,637 | INFO | TPU available: False, using: 0 TPU cores
+INFO: Loading `train_dataloader` to estimate number of stepping batches.
+2026-10-13 17:20:39,640 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
+INFO: `Trainer.fit` stopped: `max_epochs=100` reached.
+2026-10-13 17:24:08,462 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
+  --> [2026-10-13 17:24:08] Fold 9/25 OK | R2=0.7323 | MAE=0.4959 | 209.8s
+INFO: Seed set to 51
+2026-10-13 17:24:08,850 | INFO | Seed set to 51
+  --> [2026-10-13 17:24:08] Training Fold 10/25...
+INFO: GPU available: False, used: False
+2026-10-13 17:24:09,426 | INFO | GPU available: False, used: False
+INFO: TPU available: False, using: 0 TPU cores
+2026-10-13 17:24:09,426 | INFO | TPU available: False, using: 0 TPU cores
+INFO: Loading `train_dataloader` to estimate number of stepping batches.
+2026-10-13 17:24:09,430 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
+INFO: `Trainer.fit` stopped: `max_epochs=100` reached.
+2026-10-13 17:27:37,258 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
+  --> [2026-10-13 17:27:37] Fold 10/25 OK | R2=0.6695 | MAE=0.5141 | 208.8s
+INFO: Seed set to 52
+2026-10-13 17:27:37,634 | INFO | Seed set to 52
+  --> [2026-10-13 17:27:37] Training Fold 11/25...
+INFO: GPU available: False, used: False
+2026-10-13 17:27:38,196 | INFO | GPU available: False, used: False
+INFO: TPU available: False, using: 0 TPU cores
+2026-10-13 17:27:38,196 | INFO | TPU available: False, using: 0 TPU cores
+INFO: Loading `train_dataloader` to estimate number of stepping batches.
+2026-10-13 17:27:38,200 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
+INFO: `Trainer.fit` stopped: `max_epochs=100` reached.
+2026-10-13 17:31:05,525 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
+  --> [2026-10-13 17:31:05] Fold 11/25 OK | R2=0.6879 | MAE=0.4917 | 208.3s
+INFO: Seed set to 53
+2026-10-13 17:31:05,924 | INFO | Seed set to 53
+  --> [2026-10-13 17:31:05] Training Fold 12/25...
+INFO: GPU available: False, used: False
+2026-10-13 17:31:06,506 | INFO | GPU available: False, used: False
+INFO: TPU available: False, using: 0 TPU cores
+2026-10-13 17:31:06,506 | INFO | TPU available: False, using: 0 TPU cores
+INFO: Loading `train_dataloader` to estimate number of stepping batches.
+2026-10-13 17:31:06,510 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
+INFO: `Trainer.fit` stopped: `max_epochs=100` reached.
+2026-10-13 17:34:31,351 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
+  --> [2026-10-13 17:34:31] Fold 12/25 OK | R2=0.6459 | MAE=0.5417 | 205.8s
+INFO: Seed set to 54
+2026-10-13 17:34:31,712 | INFO | Seed set to 54
+  --> [2026-10-13 17:34:31] Training Fold 13/25...
+INFO: GPU available: False, used: False
+2026-10-13 17:34:32,268 | INFO | GPU available: False, used: False
+INFO: TPU available: False, using: 0 TPU cores
+2026-10-13 17:34:32,268 | INFO | TPU available: False, using: 0 TPU cores
+INFO: Loading `train_dataloader` to estimate number of stepping batches.
+2026-10-13 17:34:32,272 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
+INFO: `Trainer.fit` stopped: `max_epochs=100` reached.
+2026-10-13 17:38:00,176 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
+  --> [2026-10-13 17:38:00] Fold 13/25 OK | R2=0.7398 | MAE=0.4611 | 208.8s
+INFO: Seed set to 55
+2026-10-13 17:38:00,547 | INFO | Seed set to 55
+  --> [2026-10-13 17:38:00] Training Fold 14/25...
+INFO: GPU available: False, used: False
+2026-10-13 17:38:01,102 | INFO | GPU available: False, used: False
+INFO: TPU available: False, using: 0 TPU cores
+2026-10-13 17:38:01,102 | INFO | TPU available: False, using: 0 TPU cores
+INFO: Loading `train_dataloader` to estimate number of stepping batches.
+2026-10-13 17:38:01,105 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
+INFO: `Trainer.fit` stopped: `max_epochs=100` reached.
+2026-10-13 17:41:28,326 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
+  --> [2026-10-13 17:41:28] Fold 14/25 OK | R2=0.7192 | MAE=0.4868 | 208.1s
+INFO: Seed set to 56
+2026-10-13 17:41:28,695 | INFO | Seed set to 56
+  --> [2026-10-13 17:41:28] Training Fold 15/25...
+INFO: GPU available: False, used: False
+2026-10-13 17:41:29,259 | INFO | GPU available: False, used: False
+INFO: TPU available: False, using: 0 TPU cores
+2026-10-13 17:41:29,259 | INFO | TPU available: False, using: 0 TPU cores
+INFO: Loading `train_dataloader` to estimate number of stepping batches.
+2026-10-13 17:41:29,263 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
+INFO: `Trainer.fit` stopped: `max_epochs=100` reached.
+2026-10-13 17:44:57,115 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
+  --> [2026-10-13 17:44:57] Fold 15/25 OK | R2=0.7324 | MAE=0.4895 | 208.8s
+INFO: Seed set to 57
+2026-10-13 17:44:57,487 | INFO | Seed set to 57
+  --> [2026-10-13 17:44:57] Training Fold 16/25...
+INFO: GPU available: False, used: False
+2026-10-13 17:44:58,059 | INFO | GPU available: False, used: False
+INFO: TPU available: False, using: 0 TPU cores
+2026-10-13 17:44:58,060 | INFO | TPU available: False, using: 0 TPU cores
+INFO: Loading `train_dataloader` to estimate number of stepping batches.
+2026-10-13 17:44:58,063 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
+INFO: `Trainer.fit` stopped: `max_epochs=100` reached.
+2026-10-13 17:48:27,406 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
+  --> [2026-10-13 17:48:27] Fold 16/25 OK | R2=0.7866 | MAE=0.4409 | 210.3s
+INFO: Seed set to 58
+2026-10-13 17:48:27,772 | INFO | Seed set to 58
+  --> [2026-10-13 17:48:27] Training Fold 17/25...
+INFO: GPU available: False, used: False
+2026-10-13 17:48:28,340 | INFO | GPU available: False, used: False
+INFO: TPU available: False, using: 0 TPU cores
+2026-10-13 17:48:28,340 | INFO | TPU available: False, using: 0 TPU cores
+INFO: Loading `train_dataloader` to estimate number of stepping batches.
+2026-10-13 17:48:28,344 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
+INFO: `Trainer.fit` stopped: `max_epochs=100` reached.
+2026-10-13 17:51:51,156 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
+  --> [2026-10-13 17:51:51] Fold 17/25 OK | R2=0.7999 | MAE=0.4309 | 203.8s
+INFO: Seed set to 59
+2026-10-13 17:51:51,550 | INFO | Seed set to 59
+  --> [2026-10-13 17:51:51] Training Fold 18/25...
+INFO: GPU available: False, used: False
+2026-10-13 17:51:52,514 | INFO | GPU available: False, used: False
+INFO: TPU available: False, using: 0 TPU cores
+2026-10-13 17:51:52,514 | INFO | TPU available: False, using: 0 TPU cores
+INFO: Loading `train_dataloader` to estimate number of stepping batches.
+2026-10-13 17:51:52,518 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
+INFO: `Trainer.fit` stopped: `max_epochs=100` reached.
+2026-10-13 17:55:16,928 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
+  --> [2026-10-13 17:55:17] Fold 18/25 OK | R2=0.6329 | MAE=0.4972 | 205.7s
+INFO: Seed set to 60
+2026-10-13 17:55:17,290 | INFO | Seed set to 60
+  --> [2026-10-13 17:55:17] Training Fold 19/25...
+INFO: GPU available: False, used: False
+2026-10-13 17:55:17,851 | INFO | GPU available: False, used: False
+INFO: TPU available: False, using: 0 TPU cores
+2026-10-13 17:55:17,851 | INFO | TPU available: False, using: 0 TPU cores
+INFO: Loading `train_dataloader` to estimate number of stepping batches.
+2026-10-13 17:55:17,854 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
+INFO: `Trainer.fit` stopped: `max_epochs=100` reached.
+2026-10-13 17:58:36,861 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
+  --> [2026-10-13 17:58:37] Fold 19/25 OK | R2=0.6803 | MAE=0.4996 | 200.0s
+INFO: Seed set to 61
+2026-10-13 17:58:37,242 | INFO | Seed set to 61
+  --> [2026-10-13 17:58:37] Training Fold 20/25...
+INFO: GPU available: False, used: False
+2026-10-13 17:58:37,838 | INFO | GPU available: False, used: False
+INFO: TPU available: False, using: 0 TPU cores
+2026-10-13 17:58:37,838 | INFO | TPU available: False, using: 0 TPU cores
+INFO: Loading `train_dataloader` to estimate number of stepping batches.
+2026-10-13 17:58:37,842 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
+INFO: `Trainer.fit` stopped: `max_epochs=100` reached.
+2026-10-13 18:02:02,856 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
+  --> [2026-10-13 18:02:03] Fold 20/25 OK | R2=0.7448 | MAE=0.4562 | 206.0s
+INFO: Seed set to 62
+2026-10-13 18:02:03,214 | INFO | Seed set to 62
+  --> [2026-10-13 18:02:03] Training Fold 21/25...
+INFO: GPU available: False, used: False
+2026-10-13 18:02:03,780 | INFO | GPU available: False, used: False
+INFO: TPU available: False, using: 0 TPU cores
+2026-10-13 18:02:03,780 | INFO | TPU available: False, using: 0 TPU cores
+INFO: Loading `train_dataloader` to estimate number of stepping batches.
+2026-10-13 18:02:03,784 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
+INFO: `Trainer.fit` stopped: `max_epochs=100` reached.
+2026-10-13 18:05:23,093 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
+  --> [2026-10-13 18:05:23] Fold 21/25 OK | R2=0.7163 | MAE=0.4606 | 200.2s
+INFO: Seed set to 63
+2026-10-13 18:05:23,454 | INFO | Seed set to 63
+  --> [2026-10-13 18:05:23] Training Fold 22/25...
+INFO: GPU available: False, used: False
+2026-10-13 18:05:24,017 | INFO | GPU available: False, used: False
+INFO: TPU available: False, using: 0 TPU cores
+2026-10-13 18:05:24,017 | INFO | TPU available: False, using: 0 TPU cores
+INFO: Loading `train_dataloader` to estimate number of stepping batches.
+2026-10-13 18:05:24,021 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
+INFO: `Trainer.fit` stopped: `max_epochs=100` reached.
+2026-10-13 18:08:46,342 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
+  --> [2026-10-13 18:08:46] Fold 22/25 OK | R2=0.7414 | MAE=0.4575 | 203.3s
+INFO: Seed set to 64
+2026-10-13 18:08:46,709 | INFO | Seed set to 64
+  --> [2026-10-13 18:08:46] Training Fold 23/25...
+INFO: GPU available: False, used: False
+2026-10-13 18:08:47,278 | INFO | GPU available: False, used: False
+INFO: TPU available: False, using: 0 TPU cores
+2026-10-13 18:08:47,278 | INFO | TPU available: False, using: 0 TPU cores
+INFO: Loading `train_dataloader` to estimate number of stepping batches.
+2026-10-13 18:08:47,281 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
+INFO: `Trainer.fit` stopped: `max_epochs=100` reached.
+2026-10-13 18:12:03,964 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
+  --> [2026-10-13 18:12:04] Fold 23/25 OK | R2=0.7749 | MAE=0.4709 | 197.6s
+INFO: Seed set to 65
+2026-10-13 18:12:04,335 | INFO | Seed set to 65
+  --> [2026-10-13 18:12:04] Training Fold 24/25...
+INFO: GPU available: False, used: False
+2026-10-13 18:12:04,897 | INFO | GPU available: False, used: False
+INFO: TPU available: False, using: 0 TPU cores
+2026-10-13 18:12:04,897 | INFO | TPU available: False, using: 0 TPU cores
+INFO: Loading `train_dataloader` to estimate number of stepping batches.
+2026-10-13 18:12:04,900 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
+INFO: `Trainer.fit` stopped: `max_epochs=100` reached.
+2026-10-13 18:15:20,898 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
+  --> [2026-10-13 18:15:21] Fold 24/25 OK | R2=0.7439 | MAE=0.4579 | 196.9s
+INFO: Seed set to 66
+2026-10-13 18:15:21,254 | INFO | Seed set to 66
+  --> [2026-10-13 18:15:21] Training Fold 25/25...
+INFO: GPU available: False, used: False
+2026-10-13 18:15:21,813 | INFO | GPU available: False, used: False
+INFO: TPU available: False, using: 0 TPU cores
+2026-10-13 18:15:21,813 | INFO | TPU available: False, using: 0 TPU cores
+INFO: Loading `train_dataloader` to estimate number of stepping batches.
+2026-10-13 18:15:21,817 | INFO | Loading `train_dataloader` to estimate number of stepping batches.
+INFO: `Trainer.fit` stopped: `max_epochs=100` reached.
+2026-10-13 18:18:48,004 | INFO | `Trainer.fit` stopped: `max_epochs=100` reached.
+  --> [2026-10-13 18:18:48] Fold 25/25 OK | R2=0.7764 | MAE=0.4597 | 207.1s
+
+  [ChemProp] 5x5 CV Completed.
+  [ChemProp Result] R2=0.7285 ± 0.0478 | MAE=0.4725 | 95% CI [0.7098, 0.7473]
+
+=========================================================================================================
+GNN BENCHMARK SUMMARY
+=========================================================================================================
+ChemProp (D-MPNN Fold)              | R2: 0.7285 | MAE: 0.4725 | 95% CI: [0.7098, 0.7473]
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] Reading the benchmark
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  'R2 ± std' is the mean and spread of R2 over the cross-validation folds; the 95% CI is the range
+  in which the true         performance is expected to fall. Compare it with the classical R2
+  values drawn as dashed lines in the figure. Large         std or a wide CI means the result
+  depends strongly on which molecules landed in the test fold (typical for small data).
+  The scatter plot (right panel of the figure) shows predicted vs. experimental pIC50: points on
+  the diagonal are perfect         predictions; systematic curvature at the extremes means the
+  model compresses very high/low potencies toward the mean.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+[3] Exporting artifacts...
+[EXPORT] LaTeX variables saved to /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/latex/gnn_variables.tex
+[EXPORT] Comparison plot saved to /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/figures/gnn_comparison.png
+[EXPORT] Summary CSV saved to /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/gnn_results.csv
+[EXPORT] Out-of-fold predictions (ChemProp (D-MPNN Fold)) saved to /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/gnn_oof_predictions.csv
+[TIME] Total execution: 82m 36s
+[DONE] 09_gnn_baseline.py complete.
+
+=== END LOG: 09_gnn_baseline.py [EXIT CODE: 0] ===
+
+[-] Reading GNN benchmark results from: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/gnn_results.csv
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] What this figure shows
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  (A) R2 of the classical models (steps 01/04) and of the GNN (ChemProp) under the same cross-
+  validation, with         confidence intervals; dashed lines are the values from the original
+  paper. (B) Out-of-fold predicted vs. experimental         pIC50 for the best GNN: points on the
+  diagonal are perfect; scatter around it is the prediction error.         Interpretation: if the
+  GNN bar is not clearly higher than the classical ones, extra model complexity is not justified.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[+] Enhanced GNN benchmark figure saved at: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/figures/09_gnn_benchmark_comparison.png
+
+=== END LOG: 09.1_build_figures.py [EXIT CODE: 0] ===
+
+[INFO] Active profile: workstation | N_JOBS=46 | Outer folds=5x5=25
+[DATA] /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/data/V2-combined_bd_chmbl_unique_dedup_with_outliers.csv: 861 rows read, 861 usable (SMILES and pIC50 present). pIC50 range 1.56 - 11.68, mean 6.37, SD 1.28.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] What this step does
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Builds and honestly evaluates machine-learning models that predict how potently a molecule
+  inhibits TgDHFR (pIC50, higher         = more potent) from its structure. The dataset has 861
+  molecules with measured potency.
+  Molecules must be converted to numbers before a model can use them. Several descriptions are
+  compared:         Morgan fingerprints (ECFP4, 2048 bits); RDKit 2D physicochemical descriptors;
+  RDKit 2D descriptors + Morgan FP; 2D + 3D (ETKDGv3 + MMFF94s) descriptors + Morgan FP.         A
+  fingerprint is a long 0/1 list saying which small substructures are present; a descriptor is a
+  number such as         molecular weight, polarity or number of rotatable bonds; '3D' descriptors
+  also depend on the molecule's shape.
+  For each description, the models tried are single algorithms (Random Forest, Extra Trees,
+  LightGBM, XGBoost, SVM,         kNN) and stacks of up to 3 of them combined by a final Ridge
+  regression. NESTED cross-validation         is used so the reported score is not optimistic: the
+  data is split into 5 parts and the whole         split is repeated 5 times (= 25 outer folds).
+  Inside every outer fold the training part is         split again (5 inner folds) to choose the
+  best algorithm combination; only then is that choice         scored on the outer test part,
+  which it has never seen. Selecting and scoring on the same data would inflate R2.
+  This is by far the slowest step of the pipeline (each outer fold fits hundreds of models).
+  Progress is saved after every         fold (results/nested_cv_checkpoint.csv), so an interrupted
+  run resumes where it stopped. IMPORTANT: if the training         data changes, delete that
+  checkpoint first or old-data folds would be silently reused.
+  Per-fold line: 'Best' = the algorithm combination that won the inner selection; R2_outer =
+  fraction of the variance in         potency explained on the unseen part (1 = perfect, 0 = no
+  better than predicting the mean); MAE = average error in         pIC50 units (0.5 = about a
+  3-fold error in IC50); the time is for that fold.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+####################################################################################################
+# NESTED CV (5x5=25 Folds) — REPRESENTATION: morgan
+####################################################################################################
+[morgan] Fold 1/25 -> Best: RF+LGBM+SVM     | R2_outer: 0.7978 | MAE: 0.4368 (471.8s)
+[morgan] Fold 2/25 -> Best: RF+ET+SVM       | R2_outer: 0.6997 | MAE: 0.4716 (525.8s)
+[morgan] Fold 3/25 -> Best: LGBM+XGB+SVM    | R2_outer: 0.7050 | MAE: 0.4689 (401.2s)
+[morgan] Fold 4/25 -> Best: RF+SVM          | R2_outer: 0.7748 | MAE: 0.4249 (457.6s)
+[morgan] Fold 5/25 -> Best: RF+XGB+kNN      | R2_outer: 0.7196 | MAE: 0.4905 (411.9s)
+[morgan] Fold 6/25 -> Best: RF+ET+SVM       | R2_outer: 0.7840 | MAE: 0.4480 (493.3s)
+[morgan] Fold 7/25 -> Best: RF+XGB+kNN      | R2_outer: 0.6973 | MAE: 0.4932 (425.3s)
+[morgan] Fold 8/25 -> Best: XGB+SVM         | R2_outer: 0.7839 | MAE: 0.4370 (388.4s)
+[morgan] Fold 9/25 -> Best: RF+SVM          | R2_outer: 0.8135 | MAE: 0.3945 (423.4s)
+[morgan] Fold 10/25 -> Best: SVM             | R2_outer: 0.6664 | MAE: 0.4978 (376.5s)
+[morgan] Fold 11/25 -> Best: RF+ET+SVM       | R2_outer: 0.7503 | MAE: 0.4455 (508.3s)
+[morgan] Fold 12/25 -> Best: RF+SVM+kNN      | R2_outer: 0.7548 | MAE: 0.4383 (423.2s)
+[morgan] Fold 13/25 -> Best: RF+XGB+SVM      | R2_outer: 0.7091 | MAE: 0.4654 (416.7s)
+[morgan] Fold 14/25 -> Best: XGB+SVM+kNN     | R2_outer: 0.7281 | MAE: 0.4761 (386.6s)
+[morgan] Fold 15/25 -> Best: SVM             | R2_outer: 0.7709 | MAE: 0.4618 (383.2s)
+[morgan] Fold 16/25 -> Best: XGB+SVM         | R2_outer: 0.7182 | MAE: 0.5179 (383.1s)
+[morgan] Fold 17/25 -> Best: LGBM+XGB+SVM    | R2_outer: 0.8079 | MAE: 0.4165 (391.8s)
+[morgan] Fold 18/25 -> Best: RF+SVM          | R2_outer: 0.6988 | MAE: 0.4884 (423.0s)
+[morgan] Fold 19/25 -> Best: RF+LGBM+SVM     | R2_outer: 0.7500 | MAE: 0.4471 (446.6s)
+[morgan] Fold 20/25 -> Best: RF+XGB+SVM      | R2_outer: 0.7881 | MAE: 0.4140 (451.8s)
+[morgan] Fold 21/25 -> Best: RF+LGBM+SVM     | R2_outer: 0.6751 | MAE: 0.4729 (418.0s)
+[morgan] Fold 22/25 -> Best: RF+XGB+SVM      | R2_outer: 0.7858 | MAE: 0.4362 (445.1s)
+[morgan] Fold 23/25 -> Best: RF+XGB+SVM      | R2_outer: 0.7843 | MAE: 0.4491 (449.7s)
+[morgan] Fold 24/25 -> Best: RF+XGB+SVM      | R2_outer: 0.7318 | MAE: 0.4851 (446.0s)
+[morgan] Fold 25/25 -> Best: XGB+SVM         | R2_outer: 0.7623 | MAE: 0.4655 (397.2s)
+
+####################################################################################################
+# NESTED CV (5x5=25 Folds) — REPRESENTATION: rdkit2d
+####################################################################################################
+[rdkit2d] Fold 1/25 -> Best: ET+LGBM+SVM     | R2_outer: 0.7739 | MAE: 0.4525 (273.3s)
+[rdkit2d] Fold 2/25 -> Best: ET+LGBM+SVM     | R2_outer: 0.6611 | MAE: 0.4940 (265.1s)
+[rdkit2d] Fold 3/25 -> Best: ET+LGBM+XGB     | R2_outer: 0.6870 | MAE: 0.4879 (275.8s)
+[rdkit2d] Fold 4/25 -> Best: ET+LGBM         | R2_outer: 0.7304 | MAE: 0.4821 (263.8s)
+[rdkit2d] Fold 5/25 -> Best: ET+LGBM+SVM     | R2_outer: 0.6928 | MAE: 0.4956 (265.5s)
+[rdkit2d] Fold 6/25 -> Best: ET+LGBM+SVM     | R2_outer: 0.7306 | MAE: 0.5018 (265.6s)
+[rdkit2d] Fold 7/25 -> Best: ET+LGBM+SVM     | R2_outer: 0.6579 | MAE: 0.5255 (263.6s)
+[rdkit2d] Fold 8/25 -> Best: ET+LGBM         | R2_outer: 0.7469 | MAE: 0.4558 (265.6s)
+[rdkit2d] Fold 9/25 -> Best: RF+ET+LGBM      | R2_outer: 0.7938 | MAE: 0.4098 (303.3s)
+[rdkit2d] Fold 10/25 -> Best: ET+LGBM+SVM     | R2_outer: 0.6162 | MAE: 0.5508 (264.0s)
+[rdkit2d] Fold 11/25 -> Best: ET+LGBM+SVM     | R2_outer: 0.7557 | MAE: 0.4474 (267.2s)
+[rdkit2d] Fold 12/25 -> Best: RF+SVM          | R2_outer: 0.6804 | MAE: 0.5125 (281.6s)
+[rdkit2d] Fold 13/25 -> Best: ET+XGB+SVM      | R2_outer: 0.6570 | MAE: 0.4945 (281.4s)
+[rdkit2d] Fold 14/25 -> Best: ET+LGBM+SVM     | R2_outer: 0.6682 | MAE: 0.5349 (265.3s)
+[rdkit2d] Fold 15/25 -> Best: ET+SVM+kNN      | R2_outer: 0.6759 | MAE: 0.5171 (265.8s)
+[rdkit2d] Fold 16/25 -> Best: ET+LGBM+SVM     | R2_outer: 0.7280 | MAE: 0.4785 (262.7s)
+[rdkit2d] Fold 17/25 -> Best: ET+LGBM         | R2_outer: 0.7644 | MAE: 0.4269 (261.6s)
+[rdkit2d] Fold 18/25 -> Best: RF+ET+SVM       | R2_outer: 0.5879 | MAE: 0.5574 (298.8s)
+[rdkit2d] Fold 19/25 -> Best: ET+LGBM+XGB     | R2_outer: 0.6897 | MAE: 0.4997 (273.1s)
+[rdkit2d] Fold 20/25 -> Best: ET+XGB+SVM      | R2_outer: 0.7590 | MAE: 0.4550 (270.4s)
+[rdkit2d] Fold 21/25 -> Best: ET+SVM          | R2_outer: 0.6317 | MAE: 0.4878 (255.6s)
+[rdkit2d] Fold 22/25 -> Best: ET+LGBM         | R2_outer: 0.7777 | MAE: 0.4409 (266.5s)
+[rdkit2d] Fold 23/25 -> Best: RF+ET+SVM       | R2_outer: 0.7179 | MAE: 0.4864 (297.3s)
+[rdkit2d] Fold 24/25 -> Best: RF+ET+SVM       | R2_outer: 0.7183 | MAE: 0.4718 (296.8s)
+[rdkit2d] Fold 25/25 -> Best: RF+ET+SVM       | R2_outer: 0.7075 | MAE: 0.5027 (293.4s)
+
+####################################################################################################
+# NESTED CV (5x5=25 Folds) — REPRESENTATION: rdkit2d_fp
+####################################################################################################
+[rdkit2d_fp] Fold 1/25 -> Best: ET+LGBM+SVM     | R2_outer: 0.8006 | MAE: 0.4306 (578.1s)
+[rdkit2d_fp] Fold 2/25 -> Best: ET+XGB+SVM      | R2_outer: 0.7110 | MAE: 0.4487 (576.0s)
+[rdkit2d_fp] Fold 3/25 -> Best: ET+SVM          | R2_outer: 0.7109 | MAE: 0.4590 (567.0s)
+[rdkit2d_fp] Fold 4/25 -> Best: ET+LGBM+kNN     | R2_outer: 0.7536 | MAE: 0.4433 (569.7s)
+[rdkit2d_fp] Fold 5/25 -> Best: ET+SVM          | R2_outer: 0.7305 | MAE: 0.4524 (569.9s)
+[rdkit2d_fp] Fold 6/25 -> Best: ET+SVM+kNN      | R2_outer: 0.7694 | MAE: 0.4569 (569.0s)
+[rdkit2d_fp] Fold 7/25 -> Best: RF+ET+kNN       | R2_outer: 0.7005 | MAE: 0.4715 (627.0s)
+[rdkit2d_fp] Fold 8/25 -> Best: ET+LGBM+SVM     | R2_outer: 0.7927 | MAE: 0.4250 (566.8s)
+[rdkit2d_fp] Fold 9/25 -> Best: ET+LGBM+SVM     | R2_outer: 0.8168 | MAE: 0.3955 (568.6s)
+[rdkit2d_fp] Fold 10/25 -> Best: ET+XGB+kNN      | R2_outer: 0.6704 | MAE: 0.5145 (576.4s)
+[rdkit2d_fp] Fold 11/25 -> Best: ET+XGB+SVM      | R2_outer: 0.7504 | MAE: 0.4241 (585.4s)
+[rdkit2d_fp] Fold 12/25 -> Best: ET+LGBM+SVM     | R2_outer: 0.7703 | MAE: 0.4544 (569.5s)
+[rdkit2d_fp] Fold 13/25 -> Best: ET+SVM          | R2_outer: 0.7086 | MAE: 0.4492 (552.8s)
+[rdkit2d_fp] Fold 14/25 -> Best: ET+LGBM+SVM     | R2_outer: 0.7316 | MAE: 0.4581 (571.8s)
+[rdkit2d_fp] Fold 15/25 -> Best: ET              | R2_outer: 0.7266 | MAE: 0.4659 (512.4s)
+[rdkit2d_fp] Fold 16/25 -> Best: ET+SVM          | R2_outer: 0.7185 | MAE: 0.4909 (565.8s)
+[rdkit2d_fp] Fold 17/25 -> Best: RF+ET+XGB       | R2_outer: 0.8159 | MAE: 0.3775 (641.2s)
+[rdkit2d_fp] Fold 18/25 -> Best: ET+SVM          | R2_outer: 0.6937 | MAE: 0.4825 (563.7s)
+[rdkit2d_fp] Fold 19/25 -> Best: RF+ET+SVM       | R2_outer: 0.7296 | MAE: 0.4786 (637.6s)
+[rdkit2d_fp] Fold 20/25 -> Best: ET+XGB+SVM      | R2_outer: 0.8047 | MAE: 0.3939 (586.1s)
+[rdkit2d_fp] Fold 21/25 -> Best: ET+SVM+kNN      | R2_outer: 0.6847 | MAE: 0.4620 (552.4s)
+[rdkit2d_fp] Fold 22/25 -> Best: ET+LGBM+SVM     | R2_outer: 0.8128 | MAE: 0.4089 (582.4s)
+[rdkit2d_fp] Fold 23/25 -> Best: ET+XGB+SVM      | R2_outer: 0.7377 | MAE: 0.4772 (579.9s)
+[rdkit2d_fp] Fold 24/25 -> Best: ET+SVM          | R2_outer: 0.7256 | MAE: 0.4831 (571.4s)
+[rdkit2d_fp] Fold 25/25 -> Best: RF+ET+SVM       | R2_outer: 0.7402 | MAE: 0.4730 (615.7s)
+
+####################################################################################################
+# NESTED CV (5x5=25 Folds) — REPRESENTATION: rdkit2d3d_fp
+####################################################################################################
+    [INFO] Generating 3D conformers (ETKDGv3 + MMFF)...
+[rdkit2d3d_fp] Fold 1/25 -> Best: RF+ET+SVM       | R2_outer: 0.7817 | MAE: 0.4507 (663.4s)
+[rdkit2d3d_fp] Fold 2/25 -> Best: RF+ET+SVM       | R2_outer: 0.7046 | MAE: 0.4593 (652.0s)
+[rdkit2d3d_fp] Fold 3/25 -> Best: ET+SVM          | R2_outer: 0.7046 | MAE: 0.4672 (585.2s)
+[rdkit2d3d_fp] Fold 4/25 -> Best: ET+LGBM+kNN     | R2_outer: 0.7579 | MAE: 0.4437 (589.2s)
+[rdkit2d3d_fp] Fold 5/25 -> Best: ET+SVM          | R2_outer: 0.7253 | MAE: 0.4629 (587.6s)
+[rdkit2d3d_fp] Fold 6/25 -> Best: ET+SVM+kNN      | R2_outer: 0.7766 | MAE: 0.4551 (590.4s)
+[rdkit2d3d_fp] Fold 7/25 -> Best: RF+ET+kNN       | R2_outer: 0.7029 | MAE: 0.4758 (649.9s)
+[rdkit2d3d_fp] Fold 8/25 -> Best: ET+LGBM+SVM     | R2_outer: 0.8029 | MAE: 0.4094 (587.6s)
+[rdkit2d3d_fp] Fold 9/25 -> Best: ET+LGBM+SVM     | R2_outer: 0.8056 | MAE: 0.4137 (587.9s)
+[rdkit2d3d_fp] Fold 10/25 -> Best: ET+kNN          | R2_outer: 0.6897 | MAE: 0.4951 (583.4s)
+[rdkit2d3d_fp] Fold 11/25 -> Best: ET+LGBM+SVM     | R2_outer: 0.7624 | MAE: 0.4236 (596.1s)
+[rdkit2d3d_fp] Fold 12/25 -> Best: ET+XGB+SVM      | R2_outer: 0.7899 | MAE: 0.4315 (596.1s)
+[rdkit2d3d_fp] Fold 13/25 -> Best: ET+XGB+SVM      | R2_outer: 0.7079 | MAE: 0.4559 (594.2s)
+[rdkit2d3d_fp] Fold 14/25 -> Best: ET+LGBM+SVM     | R2_outer: 0.7308 | MAE: 0.4647 (585.3s)
+[rdkit2d3d_fp] Fold 15/25 -> Best: ET              | R2_outer: 0.7399 | MAE: 0.4550 (537.9s)
+[rdkit2d3d_fp] Fold 16/25 -> Best: ET+SVM          | R2_outer: 0.7246 | MAE: 0.4913 (585.7s)
+[rdkit2d3d_fp] Fold 17/25 -> Best: RF+ET+XGB       | R2_outer: 0.8145 | MAE: 0.3862 (664.1s)
+[rdkit2d3d_fp] Fold 18/25 -> Best: ET+LGBM+SVM     | R2_outer: 0.6860 | MAE: 0.4941 (592.6s)
+[rdkit2d3d_fp] Fold 19/25 -> Best: ET+XGB+SVM      | R2_outer: 0.7264 | MAE: 0.4725 (607.4s)
+[rdkit2d3d_fp] Fold 20/25 -> Best: ET+XGB+SVM      | R2_outer: 0.8094 | MAE: 0.3919 (609.3s)
+[rdkit2d3d_fp] Fold 21/25 -> Best: ET+kNN          | R2_outer: 0.6808 | MAE: 0.4417 (575.3s)
+[rdkit2d3d_fp] Fold 22/25 -> Best: ET+XGB+SVM      | R2_outer: 0.8198 | MAE: 0.3990 (609.0s)
+[rdkit2d3d_fp] Fold 23/25 -> Best: ET+SVM          | R2_outer: 0.7837 | MAE: 0.4324 (589.8s)
+[rdkit2d3d_fp] Fold 24/25 -> Best: ET+SVM          | R2_outer: 0.7196 | MAE: 0.4875 (586.7s)
+[rdkit2d3d_fp] Fold 25/25 -> Best: ET+SVM+kNN      | R2_outer: 0.7313 | MAE: 0.4720 (576.6s)
+
+====================================================================================================
+RESULTS SUMMARY (Nested CV 5x5)
+====================================================================================================
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] How to read the summary tables
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Table 1: mean R2 over all outer folds for each molecular description, with its standard
+  deviation (spread between         folds) and the number of folds. The top row is the best-
+  performing description. Differences smaller than about one         standard deviation are
+  usually not meaningful.
+  Table 2: tests whether our R2 differs from the R2 values reported in the original publication
+  (PAPER_R2). The         Nadeau-Bengio correction is applied because cross-validation folds
+  overlap and share training data, which makes a         naive t-test over-confident.
+  'Significant_p<0.05' = True means our result is really different from the reference
+  (higher or lower: compare Our_R2_mean with Paper_R2); False means we reproduce it within
+  statistical noise.
+  The paired comparison at the end tests whether the two best descriptions differ from each other
+  on the same folds.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Table 1. R² by molecular representation:
+        Mode     mean      std  count
+rdkit2d3d_fp 0.747156 0.044300     25
+      morgan 0.746301 0.042682     25
+  rdkit2d_fp 0.744283 0.043122     25
+     rdkit2d 0.704397 0.053149     25
+
+Table 2. t-tests (Nadeau-Bengio Corrected) vs Original Publication:
+        Mode Paper_reference_label  Paper_R2  Our_R2_mean  Our_R2_std    t_stat  p_value  Significant_p<0.05
+      morgan         PaperBaseline      0.75     0.746301    0.041820 -0.160937 0.873490               False
+      morgan         PaperSelected      0.82     0.746301    0.041820 -3.206379 0.003782                True
+      morgan            PaperFinal      0.85     0.746301    0.041820 -4.511568 0.000144                True
+     rdkit2d         PaperBaseline      0.75     0.704397    0.052075 -1.593295 0.124180               False
+     rdkit2d         PaperSelected      0.82     0.704397    0.052075 -4.038988 0.000477                True
+     rdkit2d            PaperFinal      0.85     0.704397    0.052075 -5.087142 0.000033                True
+  rdkit2d_fp         PaperBaseline      0.75     0.744283    0.042251 -0.246181 0.807636               False
+  rdkit2d_fp         PaperSelected      0.82     0.744283    0.042251 -3.260547 0.003316                True
+  rdkit2d_fp            PaperFinal      0.85     0.744283    0.042251 -4.552418 0.000130                True
+rdkit2d3d_fp         PaperBaseline      0.75     0.747156    0.043405 -0.119226 0.906089               False
+rdkit2d3d_fp         PaperSelected      0.82     0.747156    0.043405 -3.053472 0.005463                True
+rdkit2d3d_fp            PaperFinal      0.85     0.747156    0.043405 -4.311006 0.000240                True
+
+Paired comparison (Nadeau-Bengio) between rdkit2d3d_fp and morgan:
+  t = 0.090, p = 0.9294
+
+[SUPPLEMENTARY CSV] Selection frequency exported to: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/sensitivity/results/architecture_selection_frequency.csv
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] Architecture selection frequency
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  For each description, how often each algorithm combination won the inner selection across folds.
+  If one                 combination wins most folds, it is a stable choice; if many different
+  ones win, the data cannot clearly                 distinguish them (many are about equally
+  good). Step 03 uses the most frequent winner. SVM appearing very often                 suggests
+  smooth, similarity-based models fit this dataset well.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[LATEX] Variables successfully exported to: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/sensitivity/latex/paper_variables.tex
+
+=== END LOG: 01_nested_cv_stacking.py [EXIT CODE: 0] ===
+
+2026-10-14 07:22:59,856 | INFO | ================================================================================
+2026-10-14 07:22:59,856 | INFO | 02_statistical_tests.py — Nadeau-Bengio Variance Correction Test
+2026-10-14 07:22:59,856 | INFO | ================================================================================
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] What this step does
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Step 01 produced one error value (MAE, in pIC50 units) for every test fold, for each way of
+  describing the molecules         (Morgan fingerprints vs. RDKit 2D + 3D descriptors +
+  fingerprints). This step asks a single question: is the difference         between those two
+  descriptions real, or could it be just luck of how the compounds were split into folds?
+  The test used is a paired t-test with the Nadeau-Bengio correction. A plain t-test would be
+  over-confident here because         the folds share most of their training compounds (they are
+  not independent); the correction widens the uncertainty to         compensate.
+  How to read the result: p < 0.05 means the two descriptions truly differ in accuracy; p >= 0.05
+  means we cannot claim         one is better than the other, and the simpler/cheaper one (Morgan)
+  is then the reasonable choice.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+2026-10-14 07:22:59,857 | INFO | Loading nested CV results from: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/sensitivity/results/nested_cv_checkpoint.csv
+2026-10-14 07:22:59,860 | INFO | Total records loaded: 100. Available modes: ['morgan', 'rdkit2d', 'rdkit2d_fp', 'rdkit2d3d_fp']
+2026-10-14 07:22:59,860 | INFO | Extracting performance metrics for 'morgan' and 'rdkit2d3d_fp' modes...
+2026-10-14 07:22:59,862 | INFO | Data points extracted: 25 outer folds per mode.
+2026-10-14 07:22:59,862 | INFO | Morgan MAE Distribution     -> Mean: 0.4577 | Std: 0.0291 | Min: 0.3945 | Max: 0.5179
+2026-10-14 07:22:59,863 | INFO | 2D/3D/FP MAE Distribution -> Mean: 0.4493 | Std: 0.0310 | Min: 0.3862 | Max: 0.4951
+2026-10-14 07:22:59,863 | INFO | Initializing Nadeau-Bengio variance correction calculations...
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] How to read the numbers below
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Mean difference in MAE (Morgan minus 2D/3D/FP) = +0.0084 pIC50 units. A negative value means
+  Morgan makes smaller         errors on average. For scale: 0.3 pIC50 units is roughly a 2-fold
+  change in potency (IC50).
+  The t-statistic is the mean difference divided by its corrected uncertainty; |t| around 2 or
+  more usually gives p < 0.05.         Only 25 folds are compared, so the test has limited power
+  to detect small differences.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+2026-10-14 07:22:59,863 | INFO | --------------------------------------------------------------------------------
+2026-10-14 07:22:59,863 | INFO | Nadeau-Bengio Corrected Paired t-test Results:
+2026-10-14 07:22:59,864 | INFO |   t-statistic = 0.888
+2026-10-14 07:22:59,864 | INFO |   p-value     = 0.3835
+2026-10-14 07:22:59,864 | INFO | --------------------------------------------------------------------------------
+2026-10-14 07:22:59,864 | INFO | TEST CONCLUSION: No statistically significant difference between Morgan and 2D/3D/FP representations (p >= 0.05).
+2026-10-14 07:22:59,864 | INFO | Writing statistical variables to LaTeX file: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/sensitivity/latex/nadeau_bengio_variables.tex
+2026-10-14 07:22:59,864 | INFO | LaTeX variable export completed successfully.
+
+=== END LOG: 02_statistical_tests.py [EXIT CODE: 0] ===
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] What this step does
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Two extreme potencies were removed from the main dataset (outside the Tukey fences of the pIC50
+  distribution). Here the         nested-CV benchmark run WITH them (sensitivity/) is compared
+  with the main run, representation by representation, and a         Morgan/Random Forest model
+  trained without them is asked to predict them. If the scores barely move and the model
+  predicts the extremes badly, they are unrepresentative of the series (outliers) but harmless to
+  the conclusions; if the         scores change materially, the exclusion is a modelling choice
+  that must be reported.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        Mode  n_folds_main  n_folds_sens  R2_main  R2_main_sd  R2_sens  R2_sens_sd  R2_delta  R2_p_NB  MAE_main  MAE_main_sd  MAE_sens  MAE_sens_sd  MAE_delta  MAE_p_NB
+      morgan            25            25   0.7592      0.0449   0.7463      0.0427   -0.0129   0.7002    0.4477       0.0335    0.4577       0.0296     0.0100    0.6789
+     rdkit2d            25            25   0.7225      0.0492   0.7044      0.0531   -0.0181   0.6445    0.4711       0.0348    0.4868       0.0365     0.0156    0.5671
+  rdkit2d_fp            25            25   0.7700      0.0467   0.7443      0.0431   -0.0257   0.4569    0.4305       0.0354    0.4511       0.0329     0.0206    0.4330
+rdkit2d3d_fp            25            25   0.7680      0.0437   0.7472      0.0443   -0.0209   0.5362    0.4315       0.0334    0.4493       0.0317     0.0178    0.4766
+[RANK] by mean R2 without extremes: ['rdkit2d_fp', 'rdkit2d3d_fp', 'morgan', 'rdkit2d']
+[RANK] by mean R2 with extremes:    ['rdkit2d3d_fp', 'morgan', 'rdkit2d_fp', 'rdkit2d']
+[DIAG] Morgan+RF 5-fold OOF RMSE on the main set: 0.620 pIC50
+       cid  pIC50 Value fence_violated  predicted  abs_error  error_over_oof_rmse  error_percentile_in_main
+  269323.0       11.678           high      6.585      5.092                8.219                     100.0
+44424991.0        1.559            low      4.977      3.418                5.516                     100.0
+[LATEX] /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/latex/outlier_variables.tex
+
+=== END LOG: 10_outlier_sensitivity.py [EXIT CODE: 0] ===
+

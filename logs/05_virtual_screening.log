@@ -1,63 +1,119 @@
-=== START LOG: 05_virtual_screening.py [2026-09-23 13:16:48] ===
+=== START LOG: 05_virtual_screening.py [2026-10-13 16:51:32] ===
 
 ====================================================================================================
 VIRTUAL SCREENING PIPELINE — TgDHFR Inhibitor Search
-Timestamp: 2026-09-23 13:16:50
+Timestamp: 2026-10-13 16:51:33
 ====================================================================================================
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] What this step does
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Uses the trained model from step 04 to predict how strongly each FDA-approved drug would inhibit
+  the parasite enzyme         TgDHFR (Toxoplasma gondii dihydrofolate reductase), without doing
+  any lab work (virtual screening).
+  1) Load the model. 2) Learn what the training molecules look like and flag drugs that are too
+  different from them         (Applicability Domain, via an Isolation Forest): the model is only
+  trustworthy for molecules similar to those it was         trained on, so unusual drugs are
+  dropped instead of receiving a made-up prediction. 3) Drop drugs that are very large         (MW
+  above the limit) or contain atoms outside the allowed set (H, C, N, O, F, P, S, Cl, Br, I). 4)
+  Predict pIC50.         5) Report and export the ranking.
+  pIC50 = -log10(IC50 in molar). Higher means more potent: 6 is IC50 = 1 uM, 7 is 100 nM, 8 is 10
+  nM.         Candidates are later confirmed by docking (step 07) and filtered for drug-
+  likeness/safety (step 08).
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 [1/5] ML ARCHITECTURE LOADING
   [-] Model path: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/best_model.joblib
-  [+] Ensembled model loaded successfully (0.16s)
+  [+] Ensembled model loaded successfully (0.17s)
   [-] Mask path: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/selected_features_mask.npy
-  [+] Mask applied: 1212 / 2048 features (59.18% retention)
+  [+] Mask applied: 1358 / 2048 features (66.31% retention)
 
 [2/5] APPLICABILITY DOMAIN CONFIGURATION (ISOLATION FOREST)
-  [-] Training source: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/data/V2-df_ic50_chmbl_CID_myFill.csv
-  [+] Training matrix generated: (756, 1212)
-  [+] Isolation Forest fitted (Contamination: 5.0%) in 0.81s
+  [-] Training source: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/data/V2-combined_bd_chmbl_unique_dedup.csv
+  [+] Training matrix generated: (859, 1358)
+  [+] Isolation Forest fitted (Contamination: 5.0%) in 0.72s
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] Applicability Domain
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  The Isolation Forest learns the 'normal' region of chemical space covered by the 859 training
+  molecules.         By construction about 5% of the training molecules themselves sit at the edge
+  and are treated         as outliers. Any FDA drug that falls outside this region is excluded
+  below, because the model would be extrapolating.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 [3/5] FDA LIBRARY PROCESSING
   [-] Screening source: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/data/PubChem_FDA-approved_NoInorganics.csv
   [+] Raw compounds imported: 3378
   [+] Physical/Structural Filtering (MW < 1000.0, Allowed Atoms): 2516 candidates retained (74.5%)
-  [+] In-Domain Filtering (Isolation Forest): 1701 compounds retained (67.6%)
-  [+] Total filtering time: 2.59s
+  [+] In-Domain Filtering (Isolation Forest): 1803 compounds retained (71.7%)
+  [+] Total filtering time: 2.61s
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] Reading the filter counts
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  3378 drugs in the library -> 2516 after size/atom filters -> 1803 inside the model's
+  domain. Drugs lost at each stage were never scored. A very low retention in the last stage would
+  mean the FDA library         is chemically far from the training set (then predictions are less
+  reliable and more training data would help).
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 [4/5] ML INFERENCE - BIOACTIVITY PREDICTION (pIC50)
-  [+] Inferences completed in 1.137s
-  [-] Prediction Statistics -> Mean: 5.6646 | Max: 7.5470 | Min: 3.8683
+  [+] Inferences completed in 1.643s
+  [-] Prediction Statistics -> Mean: 4.8913 | Max: 7.4867 | Min: 3.8687
 
 [5/5] PERFORMANCE REPORTS AND EXPORT
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] Report A: sanity check against known drugs
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Pyrimethamine and trimethoprim are classic DHFR inhibitors with known experimental pIC50. If the
+  model predicts them         close to the lab value it is behaving sensibly. Status: absolute
+  error < 0.5 = EXCELLENT, < 1.0 = ACCEPTABLE, else ALERT.         Caution: if these drugs (or
+  close analogues) are in the training set, a good match is partly memorisation and not a
+  true test of generalisation.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 --------------------------------------------------------------------------------
 REPORT A: Internal Validation vs Known TgDHFR Controls
 --------------------------------------------------------------------------------
 Drug               |   pIC50 Exp. |  pIC50 Pred. |  Abs Error | Status
 --------------------------------------------------------------------------------
-Pyrimethamine      |         6.56 |       6.3175 |     0.2425 | EXCELLENT
-Trimethoprim       |         5.57 |       6.0106 |     0.4406 | EXCELLENT
+Pyrimethamine      |         6.56 |       6.5265 |     0.0335 | EXCELLENT
+Trimethoprim       |         5.57 |       5.8128 |     0.2428 | EXCELLENT
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] Report B: ranking and efficiency metrics
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Besides predicted potency (pIC50), the table gives metrics that judge whether the potency is
+  'earned' efficiently:         LE (ligand efficiency) = potency per heavy atom, >= 0.3 is
+  generally considered good; BEI = potency per kDa of mass;         LLE = pIC50 minus logP, >= 5
+  suggests potency is not just coming from greasiness (lipophilicity); SEI = potency per
+  polar surface area. A high pIC50 with poor LE/LLE usually means a big or greasy molecule that is
+  a weaker lead.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ----------------------------------------------------------------------------------------------------
 REPORT B: Top 10 FDA Candidates (Sorted by Predicted Affinity)
 ----------------------------------------------------------------------------------------------------
 Rank  Compound Name                    pIC50     LE     BEI    LLE    SEI
 ----------------------------------------------------------------------------------------------------
-1     Methotrexate                    7.5470   0.31   16.61   7.28   3.58
-2     CID 336805                      7.3500   0.25   13.04   7.90   2.91
-3     Trimetrexate Glucuronate        7.3500   0.25   13.04   7.90   2.91
-4     Pralatrexate                    7.1884   0.28   15.05   6.21   3.47
-5     Folic Acid                      7.1448   0.31   16.19   7.19   3.35
-6     Bendamustine Hydrochloride      6.9405   0.40   17.58   3.25  11.89
-7     Methylene Blue                  6.9123   0.45   21.61   7.41  36.11
-8     Trifarotene                     6.8626   0.28   14.93   0.88   9.80
-9     Fentanyl Citrate                6.8592   0.25   12.98   3.97   4.41
-10    Chlorambucil                    6.8371   0.49   22.47   3.46  16.87
+1     Methotrexate                    7.4867   0.31   16.47   7.22   3.56
+2     CID 336805                      7.4048   0.25   13.14   7.95   2.93
+3     Trimetrexate Glucuronate        7.4048   0.25   13.14   7.95   2.93
+4     Pralatrexate                    6.7678   0.26   14.17   5.79   3.26
+5     Triamterene                     6.7480   0.49   26.64   5.91   5.21
+6     Pyrimethamine                   6.5265   0.53   26.24   4.00   8.39
+7     Folic Acid                      6.2701   0.27   14.20   6.31   2.94
+8     Erdafitinib                     6.1000   0.25   13.66   1.92   7.89
+9     Bendamustine Hydrochloride      6.0861   0.35   15.42   2.40  10.43
+10    Methylene Blue                  6.0606   0.40   18.95   6.56  31.66
 
 ====================================================================================================
-[SUCCESS] 19 candidates safely exported to:
+[SUCCESS] 17 candidates safely exported to:
         -> /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/FDA_Candidates_For_Docking.csv
         Logs saved in: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/logs/05_virtual_screening.log
-        Total execution time: 6.61s
+        Total execution time: 7.20s
 ====================================================================================================
 
 === END LOG: 05_virtual_screening.py [EXIT CODE: 0] ===

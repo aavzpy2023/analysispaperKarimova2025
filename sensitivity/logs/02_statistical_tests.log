@@ -1,0 +1,49 @@
+=== START LOG: 02_statistical_tests.py [2026-10-14 07:22:58] ===
+
+2026-10-14 07:22:59,856 | INFO | ================================================================================
+2026-10-14 07:22:59,856 | INFO | 02_statistical_tests.py — Nadeau-Bengio Variance Correction Test
+2026-10-14 07:22:59,856 | INFO | ================================================================================
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] What this step does
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Step 01 produced one error value (MAE, in pIC50 units) for every test fold, for each way of
+  describing the molecules         (Morgan fingerprints vs. RDKit 2D + 3D descriptors +
+  fingerprints). This step asks a single question: is the difference         between those two
+  descriptions real, or could it be just luck of how the compounds were split into folds?
+  The test used is a paired t-test with the Nadeau-Bengio correction. A plain t-test would be
+  over-confident here because         the folds share most of their training compounds (they are
+  not independent); the correction widens the uncertainty to         compensate.
+  How to read the result: p < 0.05 means the two descriptions truly differ in accuracy; p >= 0.05
+  means we cannot claim         one is better than the other, and the simpler/cheaper one (Morgan)
+  is then the reasonable choice.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+2026-10-14 07:22:59,857 | INFO | Loading nested CV results from: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/sensitivity/results/nested_cv_checkpoint.csv
+2026-10-14 07:22:59,860 | INFO | Total records loaded: 100. Available modes: ['morgan', 'rdkit2d', 'rdkit2d_fp', 'rdkit2d3d_fp']
+2026-10-14 07:22:59,860 | INFO | Extracting performance metrics for 'morgan' and 'rdkit2d3d_fp' modes...
+2026-10-14 07:22:59,862 | INFO | Data points extracted: 25 outer folds per mode.
+2026-10-14 07:22:59,862 | INFO | Morgan MAE Distribution     -> Mean: 0.4577 | Std: 0.0291 | Min: 0.3945 | Max: 0.5179
+2026-10-14 07:22:59,863 | INFO | 2D/3D/FP MAE Distribution -> Mean: 0.4493 | Std: 0.0310 | Min: 0.3862 | Max: 0.4951
+2026-10-14 07:22:59,863 | INFO | Initializing Nadeau-Bengio variance correction calculations...
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] How to read the numbers below
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Mean difference in MAE (Morgan minus 2D/3D/FP) = +0.0084 pIC50 units. A negative value means
+  Morgan makes smaller         errors on average. For scale: 0.3 pIC50 units is roughly a 2-fold
+  change in potency (IC50).
+  The t-statistic is the mean difference divided by its corrected uncertainty; |t| around 2 or
+  more usually gives p < 0.05.         Only 25 folds are compared, so the test has limited power
+  to detect small differences.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+2026-10-14 07:22:59,863 | INFO | --------------------------------------------------------------------------------
+2026-10-14 07:22:59,863 | INFO | Nadeau-Bengio Corrected Paired t-test Results:
+2026-10-14 07:22:59,864 | INFO |   t-statistic = 0.888
+2026-10-14 07:22:59,864 | INFO |   p-value     = 0.3835
+2026-10-14 07:22:59,864 | INFO | --------------------------------------------------------------------------------
+2026-10-14 07:22:59,864 | INFO | TEST CONCLUSION: No statistically significant difference between Morgan and 2D/3D/FP representations (p >= 0.05).
+2026-10-14 07:22:59,864 | INFO | Writing statistical variables to LaTeX file: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/sensitivity/latex/nadeau_bengio_variables.tex
+2026-10-14 07:22:59,864 | INFO | LaTeX variable export completed successfully.
+
+=== END LOG: 02_statistical_tests.py [EXIT CODE: 0] ===
+

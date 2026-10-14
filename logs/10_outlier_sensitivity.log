@@ -1,0 +1,29 @@
+=== START LOG: 10_outlier_sensitivity.py [2026-10-14 16:47:46] ===
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] What this step does
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Two extreme potencies were removed from the main dataset (outside the Tukey fences of the pIC50
+  distribution). Here the         nested-CV benchmark run WITH them (sensitivity/) is compared
+  with the main run, representation by representation, and a         Morgan/Random Forest model
+  trained without them is asked to predict them. If the scores barely move and the model
+  predicts the extremes badly, they are unrepresentative of the series (outliers) but harmless to
+  the conclusions; if the         scores change materially, the exclusion is a modelling choice
+  that must be reported.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        Mode  n_folds_main  n_folds_sens  R2_main  R2_main_sd  R2_sens  R2_sens_sd  R2_delta  R2_p_NB  MAE_main  MAE_main_sd  MAE_sens  MAE_sens_sd  MAE_delta  MAE_p_NB
+      morgan            25            25   0.7592      0.0449   0.7463      0.0427   -0.0129   0.7002    0.4477       0.0335    0.4577       0.0296     0.0100    0.6789
+     rdkit2d            25            25   0.7225      0.0492   0.7044      0.0531   -0.0181   0.6445    0.4711       0.0348    0.4868       0.0365     0.0156    0.5671
+  rdkit2d_fp            25            25   0.7700      0.0467   0.7443      0.0431   -0.0257   0.4569    0.4305       0.0354    0.4511       0.0329     0.0206    0.4330
+rdkit2d3d_fp            25            25   0.7680      0.0437   0.7472      0.0443   -0.0209   0.5362    0.4315       0.0334    0.4493       0.0317     0.0178    0.4766
+[RANK] by mean R2 without extremes: ['rdkit2d_fp', 'rdkit2d3d_fp', 'morgan', 'rdkit2d']
+[RANK] by mean R2 with extremes:    ['rdkit2d3d_fp', 'morgan', 'rdkit2d_fp', 'rdkit2d']
+[DIAG] Morgan+RF 5-fold OOF RMSE on the main set: 0.620 pIC50
+       cid  pIC50 Value fence_violated  predicted  abs_error  error_over_oof_rmse  error_percentile_in_main
+  269323.0       11.678           high      6.585      5.092                8.219                     100.0
+44424991.0        1.559            low      4.977      3.418                5.516                     100.0
+[LATEX] /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/latex/outlier_variables.tex
+
+=== END LOG: 10_outlier_sensitivity.py [EXIT CODE: 0] ===
+

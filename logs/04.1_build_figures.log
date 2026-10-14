@@ -1,5 +1,15 @@
-=== START LOG: 04.1_build_figures.py [2026-09-23 13:16:46] ===
+=== START LOG: 04.1_build_figures.py [2026-10-13 16:51:29] ===
 
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] What this figure shows
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  R2 on the held-out test molecules for the three experiments of step 04 (A baseline, B + feature
+  selection, C +         augmentation), each with its 95% bootstrap confidence interval, next to
+  the values reported in the original paper         (dashed lines). Bars whose intervals overlap
+  are not statistically distinguishable: with a small test set, apparent         gains from
+  feature selection or augmentation are often within noise.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Figure saved to: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/figures/04_augment_r2_comparison.png / .pdf
 
 === END LOG: 04.1_build_figures.py [EXIT CODE: 0] ===

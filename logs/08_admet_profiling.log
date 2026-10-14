@@ -1,12 +1,32 @@
-=== START LOG: 08_admet_profiling.py [2026-09-23 13:21:33] ===
+=== START LOG: 08_admet_profiling.py [2026-10-13 16:56:02] ===
 
 ==========================================================================================
 08_admet_profiling.py — ADMET Profiling & Toxicity Risk Assessment
 Log file: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/logs/08_admet_profiling.log
 ==========================================================================================
-[1] Total initial candidates from docking: 19
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] What this step does
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  A molecule that binds the target is useless as a drug if it is toxic or cannot reach the
+  bloodstream. This step         screens the docked candidates for three drug-likeness properties,
+  using fast models trained on public data (TDC):
+  1) Lipinski rule of five: a rule of thumb for oral drugs (limits on hydrogen-bond donors <= 5,
+  acceptors <= 10, logP <= 5.0, plus molecular weight). Molecules that break it         tend to be
+  poorly absorbed.         2) hERG: probability that the drug blocks the hERG potassium channel in
+  the heart, a main cause of dangerous heart         rhythm side effects (QT prolongation).
+  Probability < 0.5 is treated as low risk. Candidates above it are removed.         3) Caco-2:
+  predicted permeability through a model of the intestinal wall (log cm/s, less negative = better
+  absorbed).         Above -5.15 = moderate/high oral absorption; below it the drug is labelled
+  'Parenteral Candidate' (better         given by injection) but is NOT removed.
+  Limitations: both models are Random Forests on molecular fingerprints trained on a few hundred
+  to a few thousand         compounds, so values are screening-level estimates, not experimental
+  toxicity. Not modelled: liver metabolism,         blood-brain barrier (important for Toxoplasma,
+  which infects the brain), and other off-target toxicity.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[1] Total initial candidates from docking: 17
 [1] Evaluating Lipinski rule of five on 48 cores...
-[1] Candidates passing Lipinski: 13
+[1] Candidates passing Lipinski: 12
 Found local copy...
 Loading...
 Done!
@@ -20,7 +40,16 @@ Done!
 
 [EXPORT] Full analytical dataset (for plotting) saved to /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/ADMET_CANDIDATES_For_Docking_FULL_PRE_FILTER.csv
 
-[4] Flagged by hERG toxicity: 7 compounds
+[4] Flagged by hERG toxicity: 6 compounds
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] Reading the summary
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Of 12 candidates that passed Lipinski, 6 were dropped for hERG risk and 6         remain.
+  'ADMET-Compliant (Oral)' = low hERG risk and good predicted absorption. 'Parenteral Candidate' =
+  low hERG risk         but poor predicted gut permeability. Both lists (before and after the hERG
+  cut) are saved so the full picture can be         plotted in 08.1.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 =========================================================================================================
 ADMET PROFILING RESULTS SUMMARY
@@ -29,8 +58,8 @@ Pralatrexate                 | hERG Prob: 0.312 | Caco-2:  -5.41 | Profile: Pare
 Methotrexate                 | hERG Prob: 0.400 | Caco-2:  -5.87 | Profile: Parenteral Candidate (Low Caco-2)
 Pyrimethamine                | hERG Prob: 0.125 | Caco-2:  -4.42 | Profile: ADMET-Compliant (Oral)
 Methylene Blue               | hERG Prob: 0.460 | Caco-2:  -4.61 | Profile: ADMET-Compliant (Oral)
-Trimethoprim Hydrochloride   | hERG Prob: 0.140 | Caco-2:  -4.77 | Profile: ADMET-Compliant (Oral)
 Trimethoprim                 | hERG Prob: 0.140 | Caco-2:  -4.77 | Profile: ADMET-Compliant (Oral)
+Trimethoprim Hydrochloride   | hERG Prob: 0.140 | Caco-2:  -4.77 | Profile: ADMET-Compliant (Oral)
 
 [EXPORT] Safe candidates (6) saved to /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/ADMET_CANDIDATES_For_Docking.csv
 [TIME] Total execution: 0m 2s

@@ -1,6 +1,18 @@
-=== START LOG: 07.1_build_figures.py [2026-09-23 13:21:29] ===
+=== START LOG: 07.1_build_figures.py [2026-10-13 16:56:00] ===
 
 [-] Reading data from: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/Final_Validation_Hybrid.csv
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] What this figure shows
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Each dot is a drug: horizontal = AutoDock Vina docking score (further right = better predicted
+  binding), vertical =         ML-predicted pIC50 (higher = more potent). Dots in the top-right
+  corner are supported by both methods. Colours         follow the 'Agreement' categories of step
+  07 (validated, false positive, false negative, neutral). The dotted         lines are drawn at
+  ML pIC50 = 6.0 and docking = -7.5 kcal/mol. Note for reviewers: step 07         classifies
+  'active' with stricter cut-offs (pIC50 > 6.5 and docking < -8.0), so a dot can sit in the top-
+  right         region of the figure and still be labelled Neutral.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Looks like you are using a tranform that doesn't support FancyArrowPatch, using ax.annotate instead. The arrows might strike through texts. Increasing shrinkA in arrowprops might help.
 [+] Enhanced figure saved successfully at: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/figures/07_docking_scatter.png
 
