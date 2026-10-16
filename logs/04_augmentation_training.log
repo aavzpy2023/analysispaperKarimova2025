@@ -1,9 +1,9 @@
-=== START LOG: 04_augmentation_training.py [2026-10-13 16:25:51] ===
+=== START LOG: 04_augmentation_training.py [2026-10-15 17:45:42] ===
 
-2026-10-13 16:25:53,494 | INFO | ================================================================================
-2026-10-13 16:25:53,494 | INFO | 04_augmentation_training.py — Feature Selection & Gaussian Augmentation Benchmark
-2026-10-13 16:25:53,494 | INFO | Evaluates classical ML pipeline parity against reported DNN benchmarks
-2026-10-13 16:25:53,494 | INFO | ================================================================================
+2026-10-15 17:45:44,598 | INFO | ================================================================================
+2026-10-15 17:45:44,599 | INFO | 04_augmentation_training.py — Feature Selection & Gaussian Augmentation Benchmark
+2026-10-15 17:45:44,599 | INFO | Evaluates classical ML pipeline parity against reported DNN benchmarks
+2026-10-15 17:45:44,599 | INFO | ================================================================================
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 [EXPLAIN] What this step does
@@ -21,32 +21,32 @@
   bootstrap resampling of the test set: it shows how         much the score would move if a
   different sample of test molecules had been drawn. With so few test molecules the CI is
   wide, so small R2 differences between experiments are often not meaningful.
-  Outputs used downstream: results/best_model.joblib (the un-augmented model used for the virtual
-  screening in step 05)         and results/selected_features_mask.npy (which fingerprint bits are
-  kept).
+  Outputs used downstream: results/04_best_model.joblib (the un-augmented model used for the
+  virtual screening in step 05)         and results/04_selected_features_mask.npy (which
+  fingerprint bits are kept).
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-2026-10-13 16:25:53,502 | INFO | Data Loaded: 859 compounds successfully loaded.
-2026-10-13 16:25:53,835 | INFO | Data Split: Dev=730 | Test held-out=129 (isolated from tuning/augmentation)
-2026-10-13 16:25:53,835 | INFO | --------------------------------------------------------------------------------
-2026-10-13 16:25:53,835 | INFO | EXPERIMENT A: ML Stacking Baseline (all fingerprint bits, original data only)
-2026-10-13 16:25:53,835 | INFO | --------------------------------------------------------------------------------
-2026-10-13 16:26:48,811 | INFO | Results Exp A -> R2=0.7332 | MAE=0.4373 | 95% CI [0.6259, 0.8176] | Time: 55.0s
-2026-10-13 16:26:48,811 | INFO | --------------------------------------------------------------------------------
-2026-10-13 16:26:48,811 | INFO | EXPERIMENT B: + Permutation Importance Feature Selection
-2026-10-13 16:26:48,811 | INFO | --------------------------------------------------------------------------------
-2026-10-13 16:26:48,812 | INFO | Fitting model for Permutation Importance calculation...
-2026-10-13 16:26:58,607 | INFO | Computing Permutation Importance (n_repeats=5, n_jobs=46)...
-2026-10-13 16:34:01,642 | INFO | Features selected (importance > 0): 1358/2048
-2026-10-13 16:35:29,415 | INFO | Results Exp B -> R2=0.7361 | MAE=0.4374 | 95% CI [0.6297, 0.8189] | Time: 520.6s
-2026-10-13 16:35:29,416 | INFO | Feature mask saved to: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/selected_features_mask.npy
-2026-10-13 16:35:29,417 | INFO | --------------------------------------------------------------------------------
-2026-10-13 16:35:29,417 | INFO | EXPERIMENT C: + Gaussian Data Augmentation
-2026-10-13 16:35:29,417 | INFO | --------------------------------------------------------------------------------
-2026-10-13 16:35:29,557 | INFO | Dataset expansion: 730 -> 2190 (noise levels: [0.01, 0.001])
-2026-10-13 16:48:37,541 | INFO | Results Exp C -> R2=0.7123 | MAE=0.4734 | 95% CI [0.6071, 0.7966] | Time: 788.1s
-2026-10-13 16:48:37,541 | INFO | ================================================================================
-2026-10-13 16:48:37,541 | INFO | EXECUTIVE SUMMARY — RIGOROUS STATISTICAL AUDIT
-2026-10-13 16:48:37,541 | INFO | ================================================================================
+2026-10-15 17:45:44,605 | INFO | Data Loaded: 859 compounds successfully loaded.
+2026-10-15 17:45:44,857 | INFO | Data Split: Dev=730 | Test held-out=129 (isolated from tuning/augmentation)
+2026-10-15 17:45:44,857 | INFO | --------------------------------------------------------------------------------
+2026-10-15 17:45:44,857 | INFO | EXPERIMENT A: ML Stacking Baseline (all fingerprint bits, original data only)
+2026-10-15 17:45:44,857 | INFO | --------------------------------------------------------------------------------
+2026-10-15 17:46:52,039 | INFO | Results Exp A -> R2=0.7341 | MAE=0.4378 | 95% CI [0.6278, 0.8176] | Time: 67.2s
+2026-10-15 17:46:52,039 | INFO | --------------------------------------------------------------------------------
+2026-10-15 17:46:52,039 | INFO | EXPERIMENT B: + Permutation Importance Feature Selection
+2026-10-15 17:46:52,039 | INFO | --------------------------------------------------------------------------------
+2026-10-15 17:46:52,042 | INFO | Fitting model for Permutation Importance calculation...
+2026-10-15 17:47:47,669 | INFO | Computing Permutation Importance (n_repeats=5, n_jobs=46)...
+2026-10-15 17:54:17,172 | INFO | Features selected (importance > 1e-09): 1255/2048 (759 features have a numerically zero importance)
+2026-10-15 17:55:08,993 | INFO | Results Exp B -> R2=0.7347 | MAE=0.4386 | 95% CI [0.6279, 0.8180] | Time: 497.0s
+2026-10-15 17:55:08,994 | INFO | Feature mask saved to: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/04_selected_features_mask.npy
+2026-10-15 17:55:08,995 | INFO | --------------------------------------------------------------------------------
+2026-10-15 17:55:08,995 | INFO | EXPERIMENT C: + Gaussian Data Augmentation
+2026-10-15 17:55:08,995 | INFO | --------------------------------------------------------------------------------
+2026-10-15 17:55:09,078 | INFO | Dataset expansion: 730 -> 2190 (noise levels: [0.01, 0.001])
+2026-10-15 18:34:43,885 | INFO | Results Exp C -> R2=0.7132 | MAE=0.4724 | 95% CI [0.6081, 0.7970] | Time: 2374.9s
+2026-10-15 18:34:43,885 | INFO | ================================================================================
+2026-10-15 18:34:43,885 | INFO | EXECUTIVE SUMMARY — RIGOROUS STATISTICAL AUDIT
+2026-10-15 18:34:43,885 | INFO | ================================================================================
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 [EXPLAIN] How to read the summary
@@ -59,33 +59,33 @@
   vs B / C vs A) truly         improved the model. If the CI of a delta includes 0, the
   improvement cannot be distinguished from noise.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-2026-10-13 16:48:37,542 | INFO | Exp A (baseline): R2=0.7332 | MAE=0.4373 | 95% CI [0.6259, 0.8176]
-2026-10-13 16:48:37,542 | INFO |   vs 2D/3D/FP, no feature selection (R2=0.75): below by 0.0168 | p_boot=0.7150 -> NOT significantly different (within 95% CI)
-2026-10-13 16:48:37,542 | INFO |   vs After Permutation Importance selection (R2=0.82): below by 0.0868 | p_boot=0.0460 -> SIGNIFICANTLY different
-2026-10-13 16:48:37,543 | INFO |   vs Data augmentation + DNN ensemble (R2=0.85): below by 0.1168 | p_boot=0.0050 -> SIGNIFICANTLY different
-2026-10-13 16:48:37,543 | INFO | Exp B (+feat.sel.): R2=0.7361 | MAE=0.4374 | 95% CI [0.6297, 0.8189]
-2026-10-13 16:48:37,543 | INFO |   vs 2D/3D/FP, no feature selection (R2=0.75): below by 0.0139 | p_boot=0.7620 -> NOT significantly different (within 95% CI)
-2026-10-13 16:48:37,543 | INFO |   vs After Permutation Importance selection (R2=0.82): below by 0.0839 | p_boot=0.0470 -> SIGNIFICANTLY different
-2026-10-13 16:48:37,543 | INFO |   vs Data augmentation + DNN ensemble (R2=0.85): below by 0.1139 | p_boot=0.0050 -> SIGNIFICANTLY different
-2026-10-13 16:48:37,543 | INFO | Exp C (+augment.): R2=0.7123 | MAE=0.4734 | 95% CI [0.6071, 0.7966]
-2026-10-13 16:48:37,543 | INFO |   vs 2D/3D/FP, no feature selection (R2=0.75): below by 0.0377 | p_boot=0.4040 -> NOT significantly different (within 95% CI)
-2026-10-13 16:48:37,544 | INFO |   vs After Permutation Importance selection (R2=0.82): below by 0.1077 | p_boot=0.0120 -> SIGNIFICANTLY different
-2026-10-13 16:48:37,544 | INFO |   vs Data augmentation + DNN ensemble (R2=0.85): below by 0.1377 | p_boot=0.0010 -> SIGNIFICANTLY different
-2026-10-13 16:48:37,544 | INFO | --------------------------------------------------------------------------------
-2026-10-13 16:48:37,544 | INFO | PAIRED BOOTSTRAP DIFFERENCES (delta R2):
-2026-10-13 16:48:37,544 | INFO | Delta R2 (Exp C - Exp A): point=-0.0209 | boot mean=-0.0209 (95% CI [-0.0540, +0.0161], p_boot=0.2460)
-2026-10-13 16:48:37,545 | INFO | Delta R2 (Exp B - Exp A): point=+0.0029 | boot mean=+0.0028 (95% CI [-0.0008, +0.0073], p_boot=0.1380)
-2026-10-13 16:48:37,545 | INFO | Delta R2 (Exp C - Exp B): point=-0.0238 | boot mean=-0.0237 (95% CI [-0.0564, +0.0114], p_boot=0.1850)
-2026-10-13 16:48:37,545 | INFO | --------------------------------------------------------------------------------
-2026-10-13 16:48:37,545 | INFO | PERSISTENCE AUDIT — Matching Section 2.5 Protocol
-2026-10-13 16:48:37,545 | INFO | --------------------------------------------------------------------------------
-2026-10-13 16:48:37,545 | INFO | Fitting clean baseline model (NO augmentation) on dev set for Virtual Screening...
-2026-10-13 16:48:54,552 | INFO | Saved unaugmented clean baseline model to: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/best_model.joblib
-2026-10-13 16:51:29,325 | INFO | Saved augmented model separately to: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/best_model_augmented.joblib
-2026-10-13 16:51:29,331 | INFO | Results summary saved to /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/04_augmentation_summary.csv
-2026-10-13 16:51:29,347 | INFO | Delta R2, bootstrap distributions and test predictions saved to /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results
-2026-10-13 16:51:29,348 | INFO | Variables successfully exported to /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/latex/augment_variables.tex
-2026-10-13 16:51:29,348 | INFO | 04_augmentation_training.py execution complete with Q1 statistical rigor.
+2026-10-15 18:34:43,886 | INFO | Exp A (baseline): R2=0.7341 | MAE=0.4378 | 95% CI [0.6278, 0.8176]
+2026-10-15 18:34:43,886 | INFO |   vs 2D/3D/FP, no feature selection (R2=0.75): below by 0.0159 | p_boot=0.7230 -> NOT significantly different (within 95% CI)
+2026-10-15 18:34:43,886 | INFO |   vs After Permutation Importance selection (R2=0.82): below by 0.0859 | p_boot=0.0470 -> SIGNIFICANTLY different
+2026-10-15 18:34:43,886 | INFO |   vs Data augmentation + DNN ensemble (R2=0.85): below by 0.1159 | p_boot=0.0050 -> SIGNIFICANTLY different
+2026-10-15 18:34:43,886 | INFO | Exp B (+feat.sel.): R2=0.7347 | MAE=0.4386 | 95% CI [0.6279, 0.8180]
+2026-10-15 18:34:43,887 | INFO |   vs 2D/3D/FP, no feature selection (R2=0.75): below by 0.0153 | p_boot=0.7360 -> NOT significantly different (within 95% CI)
+2026-10-15 18:34:43,887 | INFO |   vs After Permutation Importance selection (R2=0.82): below by 0.0853 | p_boot=0.0450 -> SIGNIFICANTLY different
+2026-10-15 18:34:43,887 | INFO |   vs Data augmentation + DNN ensemble (R2=0.85): below by 0.1153 | p_boot=0.0050 -> SIGNIFICANTLY different
+2026-10-15 18:34:43,887 | INFO | Exp C (+augment.): R2=0.7132 | MAE=0.4724 | 95% CI [0.6081, 0.7970]
+2026-10-15 18:34:43,887 | INFO |   vs 2D/3D/FP, no feature selection (R2=0.75): below by 0.0368 | p_boot=0.4180 -> NOT significantly different (within 95% CI)
+2026-10-15 18:34:43,887 | INFO |   vs After Permutation Importance selection (R2=0.82): below by 0.1068 | p_boot=0.0120 -> SIGNIFICANTLY different
+2026-10-15 18:34:43,887 | INFO |   vs Data augmentation + DNN ensemble (R2=0.85): below by 0.1368 | p_boot=0.0010 -> SIGNIFICANTLY different
+2026-10-15 18:34:43,888 | INFO | --------------------------------------------------------------------------------
+2026-10-15 18:34:43,888 | INFO | PAIRED BOOTSTRAP DIFFERENCES (delta R2):
+2026-10-15 18:34:43,888 | INFO | Delta R2 (Exp C - Exp A): point=-0.0209 | boot mean=-0.0209 (95% CI [-0.0534, +0.0161], p_boot=0.2400)
+2026-10-15 18:34:43,889 | INFO | Delta R2 (Exp B - Exp A): point=+0.0006 | boot mean=+0.0006 (95% CI [-0.0021, +0.0034], p_boot=0.7170)
+2026-10-15 18:34:43,889 | INFO | Delta R2 (Exp C - Exp B): point=-0.0215 | boot mean=-0.0215 (95% CI [-0.0541, +0.0148], p_boot=0.2280)
+2026-10-15 18:34:43,889 | INFO | --------------------------------------------------------------------------------
+2026-10-15 18:34:43,889 | INFO | PERSISTENCE AUDIT — Matching Section 2.5 Protocol
+2026-10-15 18:34:43,889 | INFO | --------------------------------------------------------------------------------
+2026-10-15 18:34:43,889 | INFO | Fitting clean baseline model (NO augmentation) on dev set for Virtual Screening...
+2026-10-15 18:35:29,358 | INFO | Saved unaugmented clean baseline model to: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/04_best_model.joblib
+2026-10-15 19:12:25,027 | INFO | Saved augmented model separately to: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/04_best_model_augmented.joblib
+2026-10-15 19:12:25,032 | INFO | Results summary saved to /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/04_augmentation_summary.csv
+2026-10-15 19:12:25,044 | INFO | Delta R2, bootstrap distributions and test predictions saved to /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results
+2026-10-15 19:12:25,046 | INFO | Variables successfully exported to /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/latex/augment_variables.tex
+2026-10-15 19:12:25,046 | INFO | 04_augmentation_training.py execution complete with Q1 statistical rigor.
 
 === END LOG: 04_augmentation_training.py [EXIT CODE: 0] ===
 

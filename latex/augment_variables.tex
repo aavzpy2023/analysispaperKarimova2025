@@ -3,25 +3,28 @@
 % Includes rigorous bootstrap CIs and non-parametric p-values
 % =====================================================
 
+\newcommand{\ExpNDev}{730}
+\newcommand{\ExpNTest}{129}
+
 % --- Experiment A: Baseline Stacking (No Feat Sel, No Aug) ---
-\newcommand{\ExpARTwoMean}{0.7332}
-\newcommand{\ExpAMae}{0.4373}
-\newcommand{\ExpARTwoCILow}{0.6259}
+\newcommand{\ExpARTwoMean}{0.7341}
+\newcommand{\ExpAMae}{0.4378}
+\newcommand{\ExpARTwoCILow}{0.6278}
 \newcommand{\ExpARTwoCIHigh}{0.8176}
 
 % --- Experiment B: Permutation Importance Selection ---
-\newcommand{\ExpBRTwoMean}{0.7361}
-\newcommand{\ExpBMae}{0.4374}
-\newcommand{\ExpBRTwoCILow}{0.6297}
-\newcommand{\ExpBRTwoCIHigh}{0.8189}
+\newcommand{\ExpBRTwoMean}{0.7347}
+\newcommand{\ExpBMae}{0.4386}
+\newcommand{\ExpBRTwoCILow}{0.6279}
+\newcommand{\ExpBRTwoCIHigh}{0.8180}
 \newcommand{\ExpBNFeaturesTotal}{2048}
-\newcommand{\ExpBNFeaturesSelected}{1358}
+\newcommand{\ExpBNFeaturesSelected}{1255}
 
 % --- Experiment C: Feature Selection + Gaussian Augmentation ---
-\newcommand{\ExpCRTwoMean}{0.7123}
-\newcommand{\ExpCMae}{0.4734}
-\newcommand{\ExpCRTwoCILow}{0.6071}
-\newcommand{\ExpCRTwoCIHigh}{0.7966}
+\newcommand{\ExpCRTwoMean}{0.7132}
+\newcommand{\ExpCMae}{0.4724}
+\newcommand{\ExpCRTwoCILow}{0.6081}
+\newcommand{\ExpCRTwoCIHigh}{0.7970}
 \newcommand{\ExpCAugFactor}{3}
 \newcommand{\ExpCAugSizeTrain}{2190}
 \newcommand{\ExpCNoiseLevels}{0.01, 0.001}
@@ -33,25 +36,25 @@
 
 % --- Rigorous Statistical Evaluations vs Benchmarks ---
 \newcommand{\ExpAVsPaperBaselineInCI}{true}
-\newcommand{\ExpAVsPaperBaselinePBoot}{0.7150}
+\newcommand{\ExpAVsPaperBaselinePBoot}{0.7230}
 \newcommand{\ExpAVsPaperBaselineSig}{false}
 \newcommand{\ExpAVsPaperSelectedInCI}{false}
-\newcommand{\ExpAVsPaperSelectedPBoot}{0.0460}
+\newcommand{\ExpAVsPaperSelectedPBoot}{0.0470}
 \newcommand{\ExpAVsPaperSelectedSig}{true}
 \newcommand{\ExpAVsPaperFinalInCI}{false}
 \newcommand{\ExpAVsPaperFinalPBoot}{0.0050}
 \newcommand{\ExpAVsPaperFinalSig}{true}
 \newcommand{\ExpBVsPaperBaselineInCI}{true}
-\newcommand{\ExpBVsPaperBaselinePBoot}{0.7620}
+\newcommand{\ExpBVsPaperBaselinePBoot}{0.7360}
 \newcommand{\ExpBVsPaperBaselineSig}{false}
 \newcommand{\ExpBVsPaperSelectedInCI}{false}
-\newcommand{\ExpBVsPaperSelectedPBoot}{0.0470}
+\newcommand{\ExpBVsPaperSelectedPBoot}{0.0450}
 \newcommand{\ExpBVsPaperSelectedSig}{true}
 \newcommand{\ExpBVsPaperFinalInCI}{false}
 \newcommand{\ExpBVsPaperFinalPBoot}{0.0050}
 \newcommand{\ExpBVsPaperFinalSig}{true}
 \newcommand{\ExpCVsPaperBaselineInCI}{true}
-\newcommand{\ExpCVsPaperBaselinePBoot}{0.4040}
+\newcommand{\ExpCVsPaperBaselinePBoot}{0.4180}
 \newcommand{\ExpCVsPaperBaselineSig}{false}
 \newcommand{\ExpCVsPaperSelectedInCI}{false}
 \newcommand{\ExpCVsPaperSelectedPBoot}{0.0120}
@@ -62,14 +65,14 @@
 
 % --- Paired bootstrap R2 differences (same resampled test indices) ---
 \newcommand{\ExpCvsADeltaRTwo}{-0.0209}
-\newcommand{\ExpCvsADeltaCILow}{-0.0540}
+\newcommand{\ExpCvsADeltaCILow}{-0.0534}
 \newcommand{\ExpCvsADeltaCIHigh}{+0.0161}
-\newcommand{\ExpCvsADeltaPBoot}{0.2460}
-\newcommand{\ExpBvsADeltaRTwo}{+0.0029}
-\newcommand{\ExpBvsADeltaCILow}{-0.0008}
-\newcommand{\ExpBvsADeltaCIHigh}{+0.0073}
-\newcommand{\ExpBvsADeltaPBoot}{0.1380}
-\newcommand{\ExpCvsBDeltaRTwo}{-0.0238}
-\newcommand{\ExpCvsBDeltaCILow}{-0.0564}
-\newcommand{\ExpCvsBDeltaCIHigh}{+0.0114}
-\newcommand{\ExpCvsBDeltaPBoot}{0.1850}
+\newcommand{\ExpCvsADeltaPBoot}{0.2400}
+\newcommand{\ExpBvsADeltaRTwo}{+0.0006}
+\newcommand{\ExpBvsADeltaCILow}{-0.0021}
+\newcommand{\ExpBvsADeltaCIHigh}{+0.0034}
+\newcommand{\ExpBvsADeltaPBoot}{0.7170}
+\newcommand{\ExpCvsBDeltaRTwo}{-0.0215}
+\newcommand{\ExpCvsBDeltaCILow}{-0.0541}
+\newcommand{\ExpCvsBDeltaCIHigh}{+0.0148}
+\newcommand{\ExpCvsBDeltaPBoot}{0.2280}

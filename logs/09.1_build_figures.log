@@ -1,15 +1,16 @@
-=== START LOG: 09.1_build_figures.py [2026-10-13 18:18:50] ===
+=== START LOG: 09.1_build_figures.py [2026-10-16 12:14:20] ===
 
-[-] Reading GNN benchmark results from: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/gnn_results.csv
+[-] Reading GNN benchmark results from: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/09_gnn_results.csv
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 [EXPLAIN] What this figure shows
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  (A) R2 of the classical models (steps 01/04) and of the GNN (ChemProp) under the same cross-
-  validation, with         confidence intervals; dashed lines are the values from the original
-  paper. (B) Out-of-fold predicted vs. experimental         pIC50 for the best GNN: points on the
-  diagonal are perfect; scatter around it is the prediction error.         Interpretation: if the
-  GNN bar is not clearly higher than the classical ones, extra model complexity is not justified.
+  (A) Mean R2 of the classical models (step 01) and of the GNN (ChemProp) over the same 25 cross-
+  validation folds;         error bars are the standard deviation across folds; horizontal lines
+  are the values from the original paper. (B) Out-of-fold predicted vs. experimental         pIC50
+  for the best GNN: points on the diagonal are perfect; scatter around it is the prediction error.
+  Interpretation: if the GNN bar is not clearly higher than the classical ones, extra model
+  complexity is not justified.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 [+] Enhanced GNN benchmark figure saved at: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/figures/09_gnn_benchmark_comparison.png
 

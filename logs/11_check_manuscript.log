@@ -1,0 +1,19 @@
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] What this step does
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Final consistency check of the paper against the pipeline outputs. It lists every figure and
+  every included file the         manuscript refers to and confirms they exist, and it confirms
+  that each result variable used in the text was generated.         A failure here means the text
+  refers to something the pipeline did not produce (or no longer produces).
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[OK] figure figures/01_nested_cv_algorithm_selection.png
+[OK] figure figures/01_nested_cv_stability_boxplot.png
+[OK] figure figures/04_augment_r2_comparison.png
+[OK] figure figures/05_pIC50_vs_LE_scatter.png
+[OK] figure figures/07_docking_scatter.png
+[OK] figure figures/08_admet_quadrants.png
+[OK] figure figures/09_gnn_benchmark_comparison.png
+
+[CHECK] 24 files followed, 7 figures, 444 project variables used, 0 undefined
+[OK] Every figure, included file, and variable used by the manuscript is produced by the pipeline.

@@ -1,6 +1,7 @@
-=== START LOG: 08.1_build_figures.py [2026-10-13 16:56:07] ===
+=== START LOG: 08.1_build_figures.py [2026-10-16 19:39:38] ===
 
-[-] Reading full ADMET dataset from: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/ADMET_CANDIDATES_For_Docking_FULL_PRE_FILTER.csv
+[-] Reading full ADMET dataset from: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/08_ADMET_CANDIDATES_For_Docking_FULL_PRE_FILTER.csv
+[+] ADMET table saved at: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/latex/admet_table.tex
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 [EXPLAIN] What this figure shows

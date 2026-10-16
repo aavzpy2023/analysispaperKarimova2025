@@ -1,4 +1,4 @@
-=== START LOG: 01_nested_cv_stacking.py [2026-10-13 13:44:08] ===
+=== START LOG: 01_nested_cv_stacking.py [2026-10-16 15:28:43] ===
 
 [INFO] Active profile: workstation | N_JOBS=46 | Outer folds=5x5=25
 [DATA] /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/data/V2-combined_bd_chmbl_unique_dedup.csv: 859 rows read, 859 usable (SMILES and pIC50 present). pIC50 range 3.30 - 9.34, mean 6.37, SD 1.26.
@@ -23,9 +23,9 @@
   best algorithm combination; only then is that choice         scored on the outer test part,
   which it has never seen. Selecting and scoring on the same data would inflate R2.
   This is by far the slowest step of the pipeline (each outer fold fits hundreds of models).
-  Progress is saved after every         fold (results/nested_cv_checkpoint.csv), so an interrupted
-  run resumes where it stopped. IMPORTANT: if the training         data changes, delete that
-  checkpoint first or old-data folds would be silently reused.
+  Progress is saved after every         fold (results/01_nested_cv_checkpoint.csv), so an
+  interrupted run resumes where it stopped. IMPORTANT: if the training         data changes,
+  delete that checkpoint first or old-data folds would be silently reused.
   Per-fold line: 'Best' = the algorithm combination that won the inner selection; R2_outer =
   fraction of the variance in         potency explained on the unseen part (1 = perfect, 0 = no
   better than predicting the mean); MAE = average error in         pIC50 units (0.5 = about a
@@ -99,7 +99,7 @@ rdkit2d3d_fp            PaperFinal      0.85     0.768044    0.042855 -3.479538 
 Paired comparison (Nadeau-Bengio) between rdkit2d_fp and rdkit2d3d_fp:
   t = 0.322, p = 0.7505
 
-[SUPPLEMENTARY CSV] Selection frequency exported to: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/architecture_selection_frequency.csv
+[SUPPLEMENTARY CSV] Selection frequency exported to: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/01_architecture_selection_frequency.csv
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 [EXPLAIN] Architecture selection frequency

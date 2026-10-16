@@ -1,4 +1,4 @@
-=== START LOG: 07_molecular_docking.py [2026-10-13 16:51:56] ===
+=== START LOG: 07_molecular_docking.py [2026-10-16 06:47:21] ===
 
 ==========================================================================================
 07_molecular_docking.py — Fully Agnostic Docking Pipeline
@@ -47,7 +47,7 @@ mode |   affinity | dist from best mode
    1       -8.707          0          0
    2       -8.436      3.941      7.845
    3       -8.436      3.781      7.798
-Methotrexate              | -0.264 |           -8.71 |    32.89s
+Methotrexate              | -0.264 |           -8.71 |    33.25s
 WARNING: At low exhaustiveness, it may be impossible to utilize all CPUs.
 Performing docking (random seed: 42) ... 
 0%   10   20   30   40   50   60   70   80   90   100%
@@ -60,7 +60,7 @@ mode |   affinity | dist from best mode
    1       -8.485          0          0
    2       -8.397     0.1586      2.453
    3        -8.11      2.579      4.757
-CID 336805                | -0.314 |           -8.48 |    12.52s
+Trimetrexate Glucuronate  | -0.314 |           -8.48 |    12.62s
 WARNING: At low exhaustiveness, it may be impossible to utilize all CPUs.
 Performing docking (random seed: 42) ... 
 0%   10   20   30   40   50   60   70   80   90   100%
@@ -73,7 +73,7 @@ mode |   affinity | dist from best mode
    1       -8.485          0          0
    2       -8.397     0.1586      2.453
    3        -8.11      2.579      4.757
-Trimetrexate Glucuronate  | -0.314 |           -8.48 |    12.64s
+CID 336805                | -0.314 |           -8.48 |    12.51s
 WARNING: At low exhaustiveness, it may be impossible to utilize all CPUs.
 Performing docking (random seed: 42) ... 
 0%   10   20   30   40   50   60   70   80   90   100%
@@ -86,7 +86,7 @@ mode |   affinity | dist from best mode
    1       -9.499          0          0
    2       -9.386      4.252      8.339
    3       -9.047      3.727      7.976
-Pralatrexate              | -0.271 |           -9.50 |    42.30s
+Pralatrexate              | -0.271 |           -9.50 |    41.45s
 WARNING: At low exhaustiveness, it may be impossible to utilize all CPUs.
 Performing docking (random seed: 42) ... 
 0%   10   20   30   40   50   60   70   80   90   100%
@@ -99,7 +99,7 @@ mode |   affinity | dist from best mode
    1       -8.044          0          0
    2       -7.866      1.517      3.024
    3       -7.602      2.094      2.399
-Triamterene               | -0.423 |           -8.04 |     4.43s
+Triamterene               | -0.423 |           -8.04 |     4.66s
 WARNING: At low exhaustiveness, it may be impossible to utilize all CPUs.
 Performing docking (random seed: 42) ... 
 0%   10   20   30   40   50   60   70   80   90   100%
@@ -112,7 +112,7 @@ mode |   affinity | dist from best mode
    1       -7.355          0          0
    2       -7.051      1.867      2.508
    3       -6.951      3.978      6.257
-Pyrimethamine             | -0.433 |           -7.36 |     4.07s
+Pyrimethamine             | -0.433 |           -7.36 |     3.88s
 WARNING: At low exhaustiveness, it may be impossible to utilize all CPUs.
 Performing docking (random seed: 42) ... 
 0%   10   20   30   40   50   60   70   80   90   100%
@@ -125,20 +125,7 @@ mode |   affinity | dist from best mode
    1       -8.566          0          0
    2       -8.556      2.841      8.796
    3       -8.511      2.697      8.747
-Folic Acid                | -0.268 |           -8.57 |    28.12s
-WARNING: At low exhaustiveness, it may be impossible to utilize all CPUs.
-Performing docking (random seed: 42) ... 
-0%   10   20   30   40   50   60   70   80   90   100%
-|----|----|----|----|----|----|----|----|----|----|
-***************************************************
-
-mode |   affinity | dist from best mode
-     | (kcal/mol) | rmsd l.b.| rmsd u.b.
------+------------+----------+----------
-   1       -8.833          0          0
-   2         -8.8     0.7832      2.297
-   3       -8.445      1.735      4.289
-Erdafitinib               | -0.268 |           -8.83 |    30.90s
+Folic Acid                | -0.268 |           -8.57 |    29.67s
 WARNING: At low exhaustiveness, it may be impossible to utilize all CPUs.
 Performing docking (random seed: 42) ... 
 0%   10   20   30   40   50   60   70   80   90   100%
@@ -151,7 +138,7 @@ mode |   affinity | dist from best mode
    1       -6.561          0          0
    2       -6.549      2.328      4.227
    3       -6.508       0.73      2.282
-Bendamustine Hydrochlori  | -0.285 |           -6.56 |    11.46s
+Bendamustine Hydrochlori  | -0.285 |           -6.56 |    11.52s
 WARNING: At low exhaustiveness, it may be impossible to utilize all CPUs.
 Performing docking (random seed: 42) ... 
 0%   10   20   30   40   50   60   70   80   90   100%
@@ -161,10 +148,10 @@ Performing docking (random seed: 42) ...
 mode |   affinity | dist from best mode
      | (kcal/mol) | rmsd l.b.| rmsd u.b.
 -----+------------+----------+----------
-   1       -7.327          0          0
-   2       -7.211      1.264      7.389
-   3       -7.077      1.461      7.758
-Methylene Blue            | -0.366 |           -7.33 |     2.91s
+   1       -8.833          0          0
+   2         -8.8     0.7832      2.297
+   3       -8.445      1.735      4.289
+Erdafitinib               | -0.268 |           -8.83 |    27.12s
 WARNING: At low exhaustiveness, it may be impossible to utilize all CPUs.
 Performing docking (random seed: 42) ... 
 0%   10   20   30   40   50   60   70   80   90   100%
@@ -174,23 +161,10 @@ Performing docking (random seed: 42) ...
 mode |   affinity | dist from best mode
      | (kcal/mol) | rmsd l.b.| rmsd u.b.
 -----+------------+----------+----------
-   1       -7.274          0          0
-   2       -7.234      0.232      2.808
-   3        -6.84      3.781      5.513
-Sulfamethoxazole; Trimet  | -0.346 |           -7.27 |     7.82s
-WARNING: At low exhaustiveness, it may be impossible to utilize all CPUs.
-Performing docking (random seed: 42) ... 
-0%   10   20   30   40   50   60   70   80   90   100%
-|----|----|----|----|----|----|----|----|----|----|
-***************************************************
-
-mode |   affinity | dist from best mode
-     | (kcal/mol) | rmsd l.b.| rmsd u.b.
------+------------+----------+----------
-   1       -7.274          0          0
-   2       -7.234      0.232      2.808
-   3        -6.84      3.781      5.513
-Trimethoprim              | -0.346 |           -7.27 |     7.93s
+   1       -8.888          0          0
+   2       -8.803      2.245       3.54
+   3       -8.743      2.181      3.201
+Brigatinib                | -0.222 |           -8.89 |    55.46s
 WARNING: At low exhaustiveness, it may be impossible to utilize all CPUs.
 Performing docking (random seed: 42) ... 
 0%   10   20   30   40   50   60   70   80   90   100%
@@ -203,7 +177,7 @@ mode |   affinity | dist from best mode
    1       -7.274          0          0
    2       -7.234      0.232      2.808
    3        -6.84      3.781      5.513
-Trimethoprim sulfate      | -0.346 |           -7.27 |     7.72s
+Sulfamethoxazole; Trimet  | -0.346 |           -7.27 |     7.75s
 WARNING: At low exhaustiveness, it may be impossible to utilize all CPUs.
 Performing docking (random seed: 42) ... 
 0%   10   20   30   40   50   60   70   80   90   100%
@@ -216,7 +190,33 @@ mode |   affinity | dist from best mode
    1       -7.274          0          0
    2       -7.234      0.232      2.808
    3        -6.84      3.781      5.513
-Trimethoprim Hydrochlori  | -0.346 |           -7.27 |     7.77s
+Trimethoprim              | -0.346 |           -7.27 |     7.73s
+WARNING: At low exhaustiveness, it may be impossible to utilize all CPUs.
+Performing docking (random seed: 42) ... 
+0%   10   20   30   40   50   60   70   80   90   100%
+|----|----|----|----|----|----|----|----|----|----|
+***************************************************
+
+mode |   affinity | dist from best mode
+     | (kcal/mol) | rmsd l.b.| rmsd u.b.
+-----+------------+----------+----------
+   1       -7.274          0          0
+   2       -7.234      0.232      2.808
+   3        -6.84      3.781      5.513
+Trimethoprim sulfate      | -0.346 |           -7.27 |     7.59s
+WARNING: At low exhaustiveness, it may be impossible to utilize all CPUs.
+Performing docking (random seed: 42) ... 
+0%   10   20   30   40   50   60   70   80   90   100%
+|----|----|----|----|----|----|----|----|----|----|
+***************************************************
+
+mode |   affinity | dist from best mode
+     | (kcal/mol) | rmsd l.b.| rmsd u.b.
+-----+------------+----------+----------
+   1       -7.274          0          0
+   2       -7.234      0.232      2.808
+   3        -6.84      3.781      5.513
+Trimethoprim Hydrochlori  | -0.346 |           -7.27 |     7.44s
 WARNING: At low exhaustiveness, it may be impossible to utilize all CPUs.
 Performing docking (random seed: 42) ... 
 0%   10   20   30   40   50   60   70   80   90   100%
@@ -229,7 +229,7 @@ mode |   affinity | dist from best mode
    1       -7.947          0          0
    2       -7.603      2.143      5.243
    3       -7.393      2.554      5.728
-Finerenone                | -0.284 |           -7.95 |     9.75s
+Finerenone                | -0.284 |           -7.95 |     9.78s
 WARNING: At low exhaustiveness, it may be impossible to utilize all CPUs.
 Performing docking (random seed: 42) ... 
 0%   10   20   30   40   50   60   70   80   90   100%
@@ -242,7 +242,7 @@ mode |   affinity | dist from best mode
    1       -7.584          0          0
    2       -7.558      2.817      5.004
    3       -7.276      2.708      4.219
-Etodolac                  | -0.361 |           -7.58 |     5.33s
+Etodolac                  | -0.361 |           -7.58 |     5.61s
 WARNING: At low exhaustiveness, it may be impossible to utilize all CPUs.
 Performing docking (random seed: 42) ... 
 0%   10   20   30   40   50   60   70   80   90   100%
@@ -255,7 +255,7 @@ mode |   affinity | dist from best mode
    1       -8.765          0          0
    2       -8.365      1.182      1.811
    3       -8.037      1.156      7.093
-Bisacodyl                 | -0.325 |           -8.77 |    11.29s
+Bisacodyl                 | -0.325 |           -8.77 |    11.11s
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 [EXPLAIN] Reading the final table
@@ -272,25 +272,25 @@ FINAL RESULTS ENRICHED — ML Prediction vs. Physics (AutoDock Vina)
 ====================================================================================================
 Compound                  |  ML pIC50 |     Vina |      LE | Agreement
 --------------------------------------------------------------------------------
-Pralatrexate              |    6.7678 |    -9.50 |  -0.271 | VALIDATED (+)
-Erdafitinib               |    6.1000 |    -8.83 |  -0.268 | Neutral
-Bisacodyl                 |    4.8732 |    -8.76 |  -0.325 | ML FALSE NEGATIVE
-Methotrexate              |    7.4867 |    -8.71 |  -0.264 | VALIDATED (+)
-Folic Acid                |    6.2701 |    -8.57 |  -0.268 | Neutral
-CID 336805                |    7.4048 |    -8.48 |  -0.314 | VALIDATED (+)
-Trimetrexate Glucuronate  |    7.4048 |    -8.48 |  -0.314 | VALIDATED (+)
-Triamterene               |    6.7480 |    -8.04 |  -0.423 | VALIDATED (+)
-Finerenone                |    5.6537 |    -7.95 |  -0.284 | Neutral
-Etodolac                  |    5.3853 |    -7.58 |  -0.361 | Neutral
-Pyrimethamine             |    6.5265 |    -7.36 |  -0.433 | ML FALSE POSITIVE
-Methylene Blue            |    6.0606 |    -7.33 |  -0.366 | Neutral
-Sulfamethoxazole; Trimet  |    5.8128 |    -7.27 |  -0.346 | VALIDATED (-)
-Trimethoprim              |    5.7265 |    -7.27 |  -0.346 | VALIDATED (-)
-Trimethoprim sulfate      |    5.7057 |    -7.27 |  -0.346 | VALIDATED (-)
-Trimethoprim Hydrochlori  |    5.7027 |    -7.27 |  -0.346 | VALIDATED (-)
-Bendamustine Hydrochlori  |    6.0861 |    -6.56 |  -0.285 | Neutral
+Pralatrexate              |    6.7783 |    -9.50 |  -0.271 | VALIDATED (+)
+Brigatinib                |    6.0092 |    -8.89 |  -0.222 | Neutral
+Erdafitinib               |    6.0254 |    -8.83 |  -0.268 | Neutral
+Bisacodyl                 |    4.8617 |    -8.76 |  -0.325 | ML FALSE NEGATIVE
+Methotrexate              |    7.4879 |    -8.71 |  -0.264 | VALIDATED (+)
+Folic Acid                |    6.2649 |    -8.57 |  -0.268 | Neutral
+Trimetrexate Glucuronate  |    7.3813 |    -8.48 |  -0.314 | VALIDATED (+)
+CID 336805                |    7.3813 |    -8.48 |  -0.314 | VALIDATED (+)
+Triamterene               |    6.7531 |    -8.04 |  -0.423 | VALIDATED (+)
+Finerenone                |    5.6683 |    -7.95 |  -0.284 | Neutral
+Etodolac                  |    5.3715 |    -7.58 |  -0.361 | Neutral
+Pyrimethamine             |    6.5352 |    -7.36 |  -0.433 | ML FALSE POSITIVE
+Sulfamethoxazole; Trimet  |    5.8168 |    -7.27 |  -0.346 | VALIDATED (-)
+Trimethoprim              |    5.7118 |    -7.27 |  -0.346 | VALIDATED (-)
+Trimethoprim sulfate      |    5.6971 |    -7.27 |  -0.346 | VALIDATED (-)
+Trimethoprim Hydrochlori  |    5.6875 |    -7.27 |  -0.346 | VALIDATED (-)
+Bendamustine Hydrochlori  |    6.0557 |    -6.56 |  -0.285 | Neutral
 
-[EXPORT] Enriched dataset saved to /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/Final_Validation_Hybrid.csv
+[EXPORT] Enriched dataset saved to /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/results/07_Final_Validation_Hybrid.csv
 
 [LATEX] Attempting to write file to: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/latex/docking_variables.tex
 [LATEX] SUCCESS! Variables exported to /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/latex/docking_variables.tex

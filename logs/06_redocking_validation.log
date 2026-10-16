@@ -1,8 +1,8 @@
-=== START LOG: 06_redocking_validation.py [2026-10-13 16:51:47] ===
+=== START LOG: 06_redocking_validation.py [2026-10-15 22:08:13] ===
 
 ================================================================================
 REDOCKING VALIDATION PIPELINE — Crystal Ligand Re-Docking
-Timestamp: 2026-10-13 16:51:47
+Timestamp: 2026-10-15 22:08:14
 Receptor setup: Chain B (DHFR active site) of PDB 6AOG
 ================================================================================
 Target Criterion: Centroid distance < 2.0 Å = Protocol Validated
@@ -52,7 +52,7 @@ mode |   affinity | dist from best mode
      | (kcal/mol) | rmsd l.b.| rmsd u.b.
 -----+------------+----------+----------
    1       -7.906          0          0
-  [+] Docking completed in 7.67s
+  [+] Docking completed in 7.63s
   [+] Best Pose Binding Affinity: -7.906 kcal/mol
 
 [4/4] VALIDATION RESULT
@@ -76,7 +76,7 @@ mode |   affinity | dist from best mode
 
   [+] LaTeX variable definitions saved to: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/latex/redocking_variables.tex
 ================================================================================
-[DONE] Redocking Validation Pipeline completed in 8.45s.
+[DONE] Redocking Validation Pipeline completed in 8.41s.
        Logs saved in: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/logs/06_redocking_validation.log
 ================================================================================
 

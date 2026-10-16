@@ -28,7 +28,7 @@
 					\textbf{\footnotesize Phase 1: ML Modeling} \par\vspace{2pt}\hrule\vspace{7pt}
 					\textbf{Training Set:} \\$N = \NCompounds$ TgDHFR \par\vspace{4pt}
 					\textbf{Validation:} \\$5 \times 5$ Repeated NCV \par\vspace{4pt}
-					\textbf{Descriptors:} \\ECFP4, 2D, 2D/3D \par\vspace{4pt}
+					\textbf{Descriptors:} \\ECFP4, 2D, 2D+FP, 2D+3D+FP \par\vspace{4pt}
 					\textbf{Ensemble:} \\Stacking + RidgeCV \par\vspace{4pt}
 					\textbf{Ablation:} \\PI + Gaussian Noise
 				\end{minipage}
@@ -40,10 +40,10 @@
 					\centering
 					\textbf{\footnotesize Phase 2: Virtual Screen} \par\vspace{2pt}\hrule\vspace{7pt}
 					\textbf{Target Space:} \\FDA Approved \par\vspace{4pt}
-					\textbf{Library Size:} \\$N \approx 1,700$ \par\vspace{4pt}
+					\textbf{Library Size:} \\$N = \ScreenNLibrary$ \par\vspace{4pt}
 					\textbf{PhysChem:} MW \\$\le 1000$\,Da \par\vspace{4pt}
 					\textbf{Applicability:} \\Isolation Forest \par\vspace{4pt}
-					\textbf{Prioritized Set:} \\$N = 19$ candidates
+					\textbf{Prioritized Set:} \\$N = \ScreenNCandidates$ candidates
 				\end{minipage}
 			};
 			
@@ -55,7 +55,7 @@
 					\textbf{Receptor:} \\TgDHFR (6AOG, Ch.~\RedockChain{}) \par\vspace{4pt}
 					\textbf{Engine:} \\AutoDock Vina \par\vspace{4pt}
 					\textbf{Exhaustiveness:}\\ \DockExhaustiveness{} \par\vspace{4pt}
-					\textbf{Redock Fidelity:} \\RMSD = \RedockRMSD{}\,\AA \par\vspace{4pt}
+					\textbf{Redock Fidelity:} \\centroid dist. = \RedockRMSD{}\,\AA \par\vspace{4pt}
 					\textbf{Consensus:} \\ML--Physics overlap
 				\end{minipage}
 			};
@@ -65,7 +65,7 @@
 				\begin{minipage}[t][\boxheight][t]{3.15cm}
 					\centering
 					\textbf{\footnotesize Phase 4: ADMET Profiling} \par\vspace{2pt}\hrule\vspace{7pt}
-					\textbf{Input:} \\Docking consensus set \par\vspace{4pt}
+					\textbf{Input:} \\All docked candidates \par\vspace{4pt}
 					\textbf{Druggability:} \\Lipinski Rule of 5 \par\vspace{4pt}
 					\textbf{Route Profiling:} \\Caco-2 (Oral vs. IV) \par\vspace{4pt}
 					\textbf{Safety Filter:} \\hERG ($P_\mathrm{block} < 0.5$) \par\vspace{4pt}
@@ -78,12 +78,12 @@
 				\begin{minipage}[t][\boxheight][t]{3.15cm}
 					\centering
 					\textbf{\footnotesize Validated Candidates} \par\vspace{2pt}\hrule\vspace{5pt}
-					\textbf{Pralatrexate} \par\vspace{1pt}
+					\textbf{\DockBestCandidate} \par\vspace{1pt}
 					\textit{Top Consensus Lead} \par
 					$p\mathrm{IC}_{50} = \DockBestMLpIC$ \\$\DockBestDockScore$\,kcal/mol \par\vspace{4pt}
-					\textbf{Pyrimethamine} \par\vspace{1pt}
+					\textbf{Triamterene} \par\vspace{1pt}
 					\textit{High-Efficiency Lead} \par
-					$p\mathrm{IC}_{50} = 6.42$ \\$-7.34$\,kcal/mol \par\vspace{4pt}
+					$p\mathrm{IC}_{50} = \TriamtereneMLpIC$ \\$\TriamtereneDockScore$\,kcal/mol \par\vspace{4pt}
 					\hrule\vspace{3pt}
 					\textit{\DockNValidated{} Hits Structurally Verified}
 				\end{minipage}

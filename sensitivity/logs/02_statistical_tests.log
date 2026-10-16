@@ -1,8 +1,8 @@
-=== START LOG: 02_statistical_tests.py [2026-10-14 07:22:58] ===
+=== START LOG: 02_statistical_tests.py [2026-10-15 14:03:16] ===
 
-2026-10-14 07:22:59,856 | INFO | ================================================================================
-2026-10-14 07:22:59,856 | INFO | 02_statistical_tests.py — Nadeau-Bengio Variance Correction Test
-2026-10-14 07:22:59,856 | INFO | ================================================================================
+2026-10-15 14:03:17,841 | INFO | ================================================================================
+2026-10-15 14:03:17,841 | INFO | 02_statistical_tests.py — Nadeau-Bengio Variance Correction Test
+2026-10-15 14:03:17,841 | INFO | ================================================================================
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 [EXPLAIN] What this step does
@@ -18,13 +18,13 @@
   means we cannot claim         one is better than the other, and the simpler/cheaper one (Morgan)
   is then the reasonable choice.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-2026-10-14 07:22:59,857 | INFO | Loading nested CV results from: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/sensitivity/results/nested_cv_checkpoint.csv
-2026-10-14 07:22:59,860 | INFO | Total records loaded: 100. Available modes: ['morgan', 'rdkit2d', 'rdkit2d_fp', 'rdkit2d3d_fp']
-2026-10-14 07:22:59,860 | INFO | Extracting performance metrics for 'morgan' and 'rdkit2d3d_fp' modes...
-2026-10-14 07:22:59,862 | INFO | Data points extracted: 25 outer folds per mode.
-2026-10-14 07:22:59,862 | INFO | Morgan MAE Distribution     -> Mean: 0.4577 | Std: 0.0291 | Min: 0.3945 | Max: 0.5179
-2026-10-14 07:22:59,863 | INFO | 2D/3D/FP MAE Distribution -> Mean: 0.4493 | Std: 0.0310 | Min: 0.3862 | Max: 0.4951
-2026-10-14 07:22:59,863 | INFO | Initializing Nadeau-Bengio variance correction calculations...
+2026-10-15 14:03:17,842 | INFO | Loading nested CV results from: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/sensitivity/results/01_nested_cv_checkpoint.csv
+2026-10-15 14:03:17,846 | INFO | Total records loaded: 100. Available modes: ['morgan', 'rdkit2d', 'rdkit2d_fp', 'rdkit2d3d_fp']
+2026-10-15 14:03:17,846 | INFO | Extracting performance metrics for 'morgan' and 'rdkit2d3d_fp' modes...
+2026-10-15 14:03:17,849 | INFO | Data points extracted: 25 outer folds per mode.
+2026-10-15 14:03:17,850 | INFO | Morgan MAE Distribution     -> Mean: 0.4577 | Std: 0.0291 | Min: 0.3945 | Max: 0.5179
+2026-10-15 14:03:17,850 | INFO | 2D/3D/FP MAE Distribution -> Mean: 0.4493 | Std: 0.0310 | Min: 0.3862 | Max: 0.4951
+2026-10-15 14:03:17,850 | INFO | Initializing Nadeau-Bengio variance correction calculations...
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 [EXPLAIN] How to read the numbers below
@@ -36,14 +36,29 @@
   more usually gives p < 0.05.         Only 25 folds are compared, so the test has limited power
   to detect small differences.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-2026-10-14 07:22:59,863 | INFO | --------------------------------------------------------------------------------
-2026-10-14 07:22:59,863 | INFO | Nadeau-Bengio Corrected Paired t-test Results:
-2026-10-14 07:22:59,864 | INFO |   t-statistic = 0.888
-2026-10-14 07:22:59,864 | INFO |   p-value     = 0.3835
-2026-10-14 07:22:59,864 | INFO | --------------------------------------------------------------------------------
-2026-10-14 07:22:59,864 | INFO | TEST CONCLUSION: No statistically significant difference between Morgan and 2D/3D/FP representations (p >= 0.05).
-2026-10-14 07:22:59,864 | INFO | Writing statistical variables to LaTeX file: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/sensitivity/latex/nadeau_bengio_variables.tex
-2026-10-14 07:22:59,864 | INFO | LaTeX variable export completed successfully.
+2026-10-15 14:03:17,851 | INFO | --------------------------------------------------------------------------------
+2026-10-15 14:03:17,851 | INFO | Nadeau-Bengio Corrected Paired t-test Results:
+2026-10-15 14:03:17,851 | INFO |   t-statistic = 0.888
+2026-10-15 14:03:17,851 | INFO |   p-value     = 0.3835
+2026-10-15 14:03:17,851 | INFO | --------------------------------------------------------------------------------
+2026-10-15 14:03:17,851 | INFO | TEST CONCLUSION: No statistically significant difference between Morgan and 2D/3D/FP representations (p >= 0.05).
+2026-10-15 14:03:17,882 | INFO | All-pairs Nadeau-Bengio tests (Holm-adjusted within each metric) saved to: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/sensitivity/results/02_pairwise_nb_tests.csv
+2026-10-15 14:03:17,888 | INFO | 
+Metric          A            B  mean_diff_A_minus_B       t      p  p_holm
+  RTwo     morgan      rdkit2d               0.0419  2.7614 0.0109  0.0467
+  RTwo     morgan   rdkit2d_fp               0.0020  0.2123 0.8337  1.0000
+  RTwo     morgan rdkit2d3d_fp              -0.0009 -0.0896 0.9294  1.0000
+  RTwo    rdkit2d   rdkit2d_fp              -0.0399 -2.9276 0.0074  0.0442
+  RTwo    rdkit2d rdkit2d3d_fp              -0.0428 -2.8259 0.0093  0.0467
+  RTwo rdkit2d_fp rdkit2d3d_fp              -0.0029 -0.4093 0.6859  1.0000
+   MAE     morgan      rdkit2d              -0.0291 -1.9935 0.0577  0.2308
+   MAE     morgan   rdkit2d_fp               0.0067  0.6373 0.5299  1.0000
+   MAE     morgan rdkit2d3d_fp               0.0084  0.8899 0.3823  1.0000
+   MAE    rdkit2d   rdkit2d_fp               0.0357  2.9751 0.0066  0.0395
+   MAE    rdkit2d rdkit2d3d_fp               0.0375  2.7941 0.0101  0.0503
+   MAE rdkit2d_fp rdkit2d3d_fp               0.0018  0.2263 0.8229  1.0000
+2026-10-15 14:03:17,888 | INFO | Writing statistical variables to LaTeX file: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/sensitivity/latex/nadeau_bengio_variables.tex
+2026-10-15 14:03:17,890 | INFO | LaTeX variable export completed successfully.
 
 === END LOG: 02_statistical_tests.py [EXIT CODE: 0] ===
 
