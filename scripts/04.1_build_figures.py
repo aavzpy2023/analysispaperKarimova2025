@@ -72,7 +72,7 @@ def generate_figure():
     ax.set_xticks(x)
     ax.set_xticklabels(xt, fontsize=8.5)
     ax.set_xlim(-0.5, 2.5)
-    ax.set_ylim(0.60, 0.92)
+    ax.set_ylim(0.57, 0.92)
     ax.set_ylabel("R² on held-out test set (95% bootstrap CI)")
     ax.grid(axis='y', alpha=0.25, lw=0.6)
     ax.set_axisbelow(True)

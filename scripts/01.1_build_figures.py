@@ -28,7 +28,7 @@ try:
 except ImportError:
     RESULTS_DIR    = os.environ.get("RESULTS_DIR",   ".")
     FIGURES_DIR    = os.environ.get("FIGURES_DIR",   "./figures")
-    CHECKPOINT_FILE = os.path.join(RESULTS_DIR, "nested_cv_checkpoint.csv")
+    CHECKPOINT_FILE = os.path.join(RESULTS_DIR, "01_nested_cv_checkpoint.csv")
 
 os.makedirs(FIGURES_DIR, exist_ok=True)
 
@@ -56,7 +56,7 @@ FIGURE_NOTES = {
         Fig S1. The exact algorithm combination selected in every outer fold, for every description.""",
 }
 
-TTESTS_PATH = os.path.join(RESULTS_DIR, "nested_cv_final_results_ttests.csv")
+TTESTS_PATH = os.path.join(RESULTS_DIR, "01_nested_cv_final_results_ttests.csv")
 
 # ------------------------------------------------------------------
 # Global style
@@ -114,10 +114,14 @@ LS_MAP = {
 }
 STAGE_ORDER = ["PaperBaseline", "PaperSelected", "PaperFinal"]
 
-# D-MPNN baseline (reported in this study)
-DMPNN_R2  = 0.6866
-DMPNN_STD = 0.0573
-DMPNN_MAE = 0.5328
+# D-MPNN baseline from step 09 (this script must run after it). The CSV stores the mean and a 95% CI of the mean over the
+# 25 folds, so the fold-to-fold SD is recovered as SE * sqrt(25) with SE = CI width / (2 * 1.96).
+if not os.path.exists(GNN_RESULTS_CSV):
+    raise FileNotFoundError(f"{GNN_RESULTS_CSV} not found: run step 09 before building these figures.")
+_gnn = pd.read_csv(GNN_RESULTS_CSV).iloc[0]
+DMPNN_R2  = float(_gnn["R2"])
+DMPNN_MAE = float(_gnn["MAE"])
+DMPNN_STD = float((_gnn["CI_High"] - _gnn["CI_Low"]) / (2 * 1.96) * np.sqrt(25))
 
 # Base learner families (for grouping in Fig 3)
 ALGO_FAMILY = {

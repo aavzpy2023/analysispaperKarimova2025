@@ -92,17 +92,31 @@ def export_latex(df_results):
             newcommand(f, "DockCenterX",     f"{CENTER_X:.3f}")
             newcommand(f, "DockCenterY",     f"{CENTER_Y:.3f}")
             newcommand(f, "DockCenterZ",     f"{CENTER_Z:.3f}")
+            newcommand(f, "DockMLActiveThresh",   f"{ML_ACTIVE_THRESH}")
+            newcommand(f, "DockActiveThresh",     f"{DOCK_ACTIVE_THRESH}")
+            newcommand(f, "DockMLInactiveThresh", f"{ML_INACTIVE_THRESH}")
+            newcommand(f, "DockInactiveThresh",   f"{DOCK_INACTIVE_THRESH}")
+            newcommand(f, "DockNPoses",           str(N_POSES))
 
             if len(df_results) >= 3:
                 rho, p = stats.spearmanr(df_results['ML_pIC50'], df_results['Docking_Score'])
                 newcommand(f, "DockSpearmanRho", f"{rho:.3f}")
                 newcommand(f, "DockSpearmanP", f"{p:.4f}")
 
-            best = df_results.sort_values('Docking_Score').iloc[0]
+            for label, key in (("DockNNegative", "VALIDATED (-)"), ("DockNFalseNegative", "ML FALSE NEGATIVE"),
+                               ("DockNNeutral", "Neutral")):
+                newcommand(f, label, str(int((df_results['Agreement'] == key).sum())))
+            validated = df_results[df_results['Agreement'] == 'VALIDATED (+)']
+            newcommand(f, "DockNValidatedUnique",
+                       str(len(validated.drop_duplicates(['ML_pIC50', 'Docking_Score']))))
+
+            pool = validated if not validated.empty else df_results
+            best = pool.sort_values('Docking_Score').iloc[0]
             name_safe = "".join(c for c in str(best['Name']) if c.isalpha())[:20]
             newcommand(f, "DockBestCandidate",    name_safe)
             newcommand(f, "DockBestMLpIC",        f"{best['ML_pIC50']:.4f}")
             newcommand(f, "DockBestDockScore",    f"{best['Docking_Score']:.2f}")
+            newcommand(f, "DockRawBestDockScore", f"{df_results['Docking_Score'].min():.2f}")
 
             def extract_compound_metrics(file_handle, df, name_substring, prefix):
                 match = df[df['Name'].str.contains(name_substring, case=False, na=False)]
@@ -215,11 +229,11 @@ def run():
 
             if ml_pic50 > ML_ACTIVE_THRESH and best_energy < DOCK_ACTIVE_THRESH:
                 agreement = "VALIDATED (+)"
-            elif ml_pic50 < 6.0 and best_energy > -7.5:
+            elif ml_pic50 < ML_INACTIVE_THRESH and best_energy > DOCK_INACTIVE_THRESH:
                 agreement = "VALIDATED (-)"
             elif ml_pic50 > ML_ACTIVE_THRESH and best_energy >= DOCK_ACTIVE_THRESH:
                 agreement = "ML FALSE POSITIVE"
-            elif ml_pic50 < 6.0 and best_energy < DOCK_ACTIVE_THRESH:
+            elif ml_pic50 < ML_INACTIVE_THRESH and best_energy < DOCK_ACTIVE_THRESH:
                 agreement = "ML FALSE NEGATIVE"
             else:
                 agreement = "Neutral"

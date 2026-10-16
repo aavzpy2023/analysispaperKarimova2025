@@ -35,17 +35,17 @@ RECEPTOR_PDB  = os.path.join(RECEPTOR_DIR, "receptor.pdb")
 RECEPTOR_PDBQT= os.path.join(RECEPTOR_DIR, "receptor.pdbqt")
 
 # Result files
-CHECKPOINT_FILE      = os.path.join(RESULTS_DIR, "nested_cv_checkpoint.csv")
-SELECTION_LOG_FILE   = os.path.join(RESULTS_DIR, "nested_cv_selection_log.csv")
-FINAL_RESULTS_FILE   = os.path.join(RESULTS_DIR, "nested_cv_final_results.csv")
-MODEL_FILE           = os.path.join(RESULTS_DIR, "best_model.joblib")
-MASK_FILE            = os.path.join(RESULTS_DIR, "selected_features_mask.npy")
+CHECKPOINT_FILE      = os.path.join(RESULTS_DIR, "01_nested_cv_checkpoint.csv")
+SELECTION_LOG_FILE   = os.path.join(RESULTS_DIR, "01_nested_cv_selection_log.csv")
+FINAL_RESULTS_FILE   = os.path.join(RESULTS_DIR, "01_nested_cv_final_results.csv")
+MODEL_FILE           = os.path.join(RESULTS_DIR, "04_best_model.joblib")
+MASK_FILE            = os.path.join(RESULTS_DIR, "04_selected_features_mask.npy")
 
 # ADMET & Docking Candidates
-FDA_RAW_CANDIDATES_CSV   = os.path.join(RESULTS_DIR, "FDA_Candidates_For_Docking.csv")
-FDA_ADMET_CANDIDATES_CSV = os.path.join(RESULTS_DIR, "ADMET_CANDIDATES_For_Docking.csv")
-FDA_CANDIDATES_CSV       = os.path.join(RESULTS_DIR, "FDA_Candidates_For_Docking.csv")
-DOCKING_RESULTS_CSV       = os.path.join(RESULTS_DIR, "Final_Validation_Hybrid.csv")
+FDA_RAW_CANDIDATES_CSV   = os.path.join(RESULTS_DIR, "05_FDA_Candidates_For_Docking.csv")
+FDA_ADMET_CANDIDATES_CSV = os.path.join(RESULTS_DIR, "08_ADMET_CANDIDATES_For_Docking.csv")
+FDA_CANDIDATES_CSV       = os.path.join(RESULTS_DIR, "05_FDA_Candidates_For_Docking.csv")
+DOCKING_RESULTS_CSV       = os.path.join(RESULTS_DIR, "07_Final_Validation_Hybrid.csv")
 
 # LaTeX files
 LATEX_PAPER     = os.path.join(LATEX_DIR, "paper_variables.tex")
@@ -53,6 +53,12 @@ LATEX_AUGMENT   = os.path.join(LATEX_DIR, "augment_variables.tex")
 LATEX_FDA       = os.path.join(LATEX_DIR, "fda_variables.tex")
 LATEX_DOCKING   = os.path.join(LATEX_DIR, "docking_variables.tex")
 LATEX_REDOCKING = os.path.join(LATEX_DIR, "redocking_variables.tex")
+LATEX_SCREENING  = os.path.join(LATEX_DIR, "screening_variables.tex")
+LATEX_DATA       = os.path.join(LATEX_DIR, "data_variables.tex")
+LATEX_ADMET      = os.path.join(LATEX_DIR, "admet_variables.tex")
+LATEX_TIMING     = os.path.join(LATEX_DIR, "timing_variables.tex")
+LATEX_FDA_TABLE  = os.path.join(LATEX_DIR, "fda_candidates_table.tex")
+LATEX_ADMET_TABLE = os.path.join(LATEX_DIR, "admet_table.tex")
 
 # Figure files
 FIGURE_NESTED_CV = os.path.join(FIGURES_DIR, "r2_by_representation_boxplot.png")
@@ -182,6 +188,8 @@ N_POSES        = 3      # Top poses per ligand
 # Decision Thresholds (ML + Physics classification)
 ML_ACTIVE_THRESH   = 6.5   # pIC50 > 6.5 = predicted active
 DOCK_ACTIVE_THRESH = -8.0  # kcal/mol < -8.0 = binding confirmed
+ML_INACTIVE_THRESH   = 6.0   # pIC50 < 6.0 = predicted inactive
+DOCK_INACTIVE_THRESH = -7.5  # kcal/mol > -7.5 = binding not supported
 
 # Compound Selection Settings
 TOP_CANDIDATES_COUNT = 15
@@ -197,7 +205,10 @@ LATEX_REF_COMPOUNDS = [
     ('Pyrimethamine', 'Pyrimethamine'),
     ('Folic Acid', 'FolicAcid'),
     ('Methotrexate', 'Methotrexate'),
-    ('Triamterene', 'Triamterene')
+    ('Triamterene', 'Triamterene'),
+    ('Pralatrexate', 'Pralatrexate'),
+    ('Trimetrexate', 'Trimetrexate'),
+    ('Trimethoprim', 'Trimethoprim')
 ]
 
 # =========================================================
@@ -220,8 +231,10 @@ LIPINSKI_MAX_LOGP       = 5.0
 # GNN BASELINE CONFIGURATION
 # =========================================================
 # Result files
-GNN_RESULTS_CSV        = os.path.join(RESULTS_DIR, "gnn_results.csv")
-GNN_OOF_PREDICTIONS_CSV = os.path.join(RESULTS_DIR, "gnn_oof_predictions.csv")
+GNN_RESULTS_CSV        = os.path.join(RESULTS_DIR, "09_gnn_results.csv")
+GNN_OOF_PREDICTIONS_CSV = os.path.join(RESULTS_DIR, "09_gnn_oof_predictions.csv")
+GNN_FOLD_SCORES_CSV    = os.path.join(RESULTS_DIR, "09_gnn_fold_scores.csv")
+GNN_VS_CLASSICAL_CSV   = os.path.join(RESULTS_DIR, "09_gnn_vs_classical_tests.csv")
 LATEX_GNN       = os.path.join(LATEX_DIR, "gnn_variables.tex")
 FIGURE_GNN      = os.path.join(FIGURES_DIR, "gnn_comparison.png")
 
@@ -280,20 +293,22 @@ def get_classical_r2(results_file):
             rdkit_mean = default_r2['RDKit 2D+FP (best)']
             rdkit_std = default_std['RDKit 2D+FP (best)']
 
+        rdkit_label = {'rdkit2d': 'RDKit 2D', 'rdkit2d_fp': 'RDKit 2D+FP',
+                       'rdkit2d3d_fp': 'RDKit 2D+3D+FP'}.get(best_rdkit_mode, 'RDKit') if rdkit_modes else 'RDKit'
         r2 = {
             'Morgan FP (Best Ensemble)': round(morgan_mean, 4),
-            'RDKit (Best Ensemble)': round(rdkit_mean, 4),
+            f'{rdkit_label} (Best Ensemble)': round(rdkit_mean, 4),
         }
         std = {
             'Morgan FP (Best Ensemble)': round(morgan_std, 4),
-            'RDKit (Best Ensemble)': round(rdkit_std, 4),
+            f'{rdkit_label} (Best Ensemble)': round(rdkit_std, 4),
         }
         return r2, std
     except Exception:
         return default_r2, default_std
 
 
-# Generate the dictionaries dynamically reading the nested_cv_final_results.csv
+# Generate the dictionaries dynamically reading the 01_nested_cv_final_results.csv
 CLASSICAL_R2, CLASSICAL_R2_STD = get_classical_r2(FINAL_RESULTS_FILE)
 
 # Ensure all output directories exist

@@ -68,12 +68,13 @@ sudo apt-get update && sudo apt-get install openbabel libxrender1 libxext6   # o
 ## 3. Running the pipeline
 
 ```bash
-python run_pipeline.py --list            # show all 19 steps in execution order
+python run_pipeline.py --list            # show all 20 steps in execution order
 python run_pipeline.py --check           # verify every dependency actually imports (no computation)
-python run_pipeline.py                   # run the full pipeline: main analysis (00 -> 09.1) + outlier sensitivity (S01, S02, 10)
+python run_pipeline.py                   # run everything: main analysis (00 -> 09), outlier sensitivity (S01, S02, 10), then the figure stage
 python run_pipeline.py --from 05         # resume from step 05 onward (e.g. after an interruption)
 python run_pipeline.py --only 07 07.1    # run only the listed steps
-python run_pipeline.py --no-sensitivity  # main analysis only, skip the with-extreme-values re-run
+python run_pipeline.py --no-sensitivity  # skip the with-extreme-values re-run
+python run_pipeline.py --only figures    # rebuild every figure and table from existing results (seconds, no recomputation)
 ```
 
 Each run writes a master log to `logs/master_pipeline_<timestamp>.log` in addition to each script's own `logs/<script>.log`. On a non-zero exit code the pipeline halts immediately; re-run with `--from <step>` after fixing the issue rather than restarting from scratch.
@@ -94,11 +95,11 @@ export MLGNN_N_JOBS=8              # override the number of threads (default: mi
 | Step | Description | Approx. time |
 | :--- | :--- | :--- |
 | 00 | Builds the training sets from the raw table (Tukey-fence outlier removal, duplicate collapse) | seconds |
-| 01 | Nested CV stacking (4 representations x 5x5 folds) | ~17 h (dominant cost; from-scratch only — resumes from a checkpoint on partial re-runs) |
-| 01.1 | Figures for step 01 | seconds |
+| 01 | Nested CV stacking (4 representations x 5x5 folds) | ~13 h (dominant cost; from-scratch only — resumes from a checkpoint on partial re-runs) |
+| 01.1 | Figures for step 01 (figure stage: needs the step 09 results for the D-MPNN reference lines) | seconds |
 | 02 | Nadeau-Bengio corrected t-tests | <1 s |
-| 03 | Y-randomization (100 permutations) | ~10 min |
-| 04 | Feature selection (Exp B) + Gaussian augmentation (Exp C) | **2-5 h** (see reproducibility note below — Exp B is intentionally single-threaded) |
+| 03 | Y-randomization (100 permutations) | ~2.7 h |
+| 04 | Feature selection (Exp B) + Gaussian augmentation (Exp C) | ~26 min (see reproducibility note below — Exp B is intentionally single-threaded) |
 | 04.1 | Figures for step 04 | seconds |
 | 05 | Virtual screening (FDA library) | ~6 s |
 | 05.1 | Figures for step 05 | seconds |
@@ -107,13 +108,14 @@ export MLGNN_N_JOBS=8              # override the number of threads (default: mi
 | 07.1 | Figures for step 07 | seconds |
 | 08 | ADMET profiling (hERG / Caco-2, TDC) | ~2 s |
 | 08.1 | Figures for step 08 | seconds |
-| 09 | ChemProp D-MPNN, 5x5 repeated CV | ~71 min |
+| 09 | ChemProp D-MPNN, 5x5 repeated CV | ~85 min |
 | 09.1 | Figures for step 09 | seconds |
-| S01 | Step 01 re-run on the set that keeps the 2 extreme pIC50 values (outputs in `sensitivity/`) | same as step 01 (~half a day on the validated hardware) |
+| S01 | Step 01 re-run on the set that keeps the 2 extreme pIC50 values (outputs in `sensitivity/`) | ~13 h on the validated hardware |
 | S02 | Step 02 on the sensitivity run | <1 s |
 | 10 | Main vs. sensitivity comparison; prediction error on the 2 extremes | ~1 min |
+| 11 | Manuscript check: every figure, included file and result variable used by the paper exists | seconds |
 
-**Total, full pipeline from a clean state: roughly 20-23 hours** on the validated hardware. Step 04 alone can look "stuck" for hours with no console output during Experiment B — this is expected (see below), not a hang.
+**Total, full pipeline from a clean state: roughly 30 hours** on the validated hardware. Step 04 can look "stuck" for several minutes with no console output during Experiment B (single-threaded by design, see below); this is expected, not a hang.
 
 ---
 
@@ -121,13 +123,12 @@ export MLGNN_N_JOBS=8              # override the number of threads (default: mi
 
 Every step uses a fixed random seed (`RANDOM_STATE = 42` in `paths_config.py`, propagated to scikit-learn, XGBoost, LightGBM, PyTorch/Lightning `seed_everything`, and AutoDock Vina's `seed` parameter). Despite this, a small amount of run-to-run numerical variation is expected and has been characterized empirically:
 
-- **Experiment A (baseline stacking, step 04):** bit-identical R²/MAE across repeated runs.
-- **Experiment B (permutation-importance feature selection, step 04):** the *R²* is stable (~0.807-0.809) across runs, but the *exact set/count of selected features* was found to vary between multi-threaded runs (1764, 1894 and 1254 features out of 2048 were each observed across independent clean runs with `n_jobs=46`) due to floating-point non-associativity in multi-threaded RandomForest/XGBoost `predict()`, which is enough to flip near-zero permutation importances across the `> 0` selection threshold. This is fixed by construction: `04_augmentation_training.py` now forces `n_jobs=1` for the model and the `permutation_importance` call used in Experiment B specifically (see the docstring of `build_model()` in that file), which reproduced identically (1212/2048 features) across two independent runs. This is the reason Step 04's runtime increased from minutes to hours (Section 4).
-- **Downstream biological conclusions are robust to this:** despite the feature-mask difference above, the top-10 virtual screening candidates, the docking-based agreement labels (VALIDATED / ML FALSE POSITIVE / ML FALSE NEGATIVE), and the ADMET-safe candidate set were identical between the multi-threaded and single-threaded configurations when compared directly.
+- **Step 04 (baseline, feature selection, augmentation):** every model of this step is fitted single-threaded and the parallelism is applied across independent tasks (features in the permutation importance, runs of the 5-run ensemble), so the results do not depend on the number of workers. The cause of the earlier run-to-run differences was identified: a multi-threaded `RandomForest.predict()` sums the trees in a thread-dependent order, which changes the last bits of the predictions, and the old selection rule `importance > 0` then flipped the ~750 features whose importance is zero up to floating-point noise (about 1e-15; the smallest genuine importances are about 1e-7). Two executions of the old code retained 1389 and 1826 bits of the same split. The selection now keeps features with importance above `IMPORTANCE_TOL = 1e-9` and the fits use `n_jobs=1`; permutation importances computed with 46 and with 8 workers were bitwise identical and retained the same 1255 bits.
+- **Ensemble of runs (step 04):** the 5 runs of the ensemble now use different seeds for the tree ensembles (`RANDOM_STATE + run`). Previously the reseeding was never applied (the stacking object has no `random_state`), so the 5 runs were identical copies.
 - **Redocking validation (step 06) and docking (step 07):** deterministic given the fixed Vina seed (42); centroid distance for the redocking control reproduced at 0.317 Å (threshold: 2.0 Å) across repeated runs.
 - **ChemProp / GNN (step 09):** PyTorch/Lightning training on CPU with multiple threads is not bit-reproducible even with a fixed seed, for the same floating-point non-associativity reason as above. Repeated 5x5 CV runs are expected to agree within the reported 95% confidence interval (observed: R² = 0.6802-0.6906 across two clean runs, both within the [0.657, 0.704] CI reported by the more recent run) rather than to the last decimal.
 
-If you reproduce this pipeline on different hardware (different core count, CPU architecture, or BLAS backend), expect similar small variation in Experiment B's feature count (if you revert the `n_jobs=1` fix) and in the GNN's R², but not in the qualitative conclusions reported in the manuscript.
+If you reproduce this pipeline on different hardware, expect small variation in the GNN's R², but not in the qualitative conclusions reported in the manuscript.
 
 ---
 

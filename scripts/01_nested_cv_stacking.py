@@ -11,6 +11,7 @@ os.environ["NUMEXPR_NUM_THREADS"] = "1"
 import time
 import warnings
 import itertools
+import math
 import numpy as np
 import pandas as pd
 import matplotlib
@@ -365,7 +366,9 @@ def nested_cv_for_mode(mode, df_clean, cfg):
     print(f"# NESTED CV ({cfg['OUTER_N_SPLITS']}x{cfg['OUTER_N_REPEATS']}={total_folds} Folds) — REPRESENTATION: {mode}", flush=True)
     print("#" * 100, flush=True)
 
+    t_feat = time.time()
     X, feat_names, is_binary = build_feature_matrix(df_clean, mode, cfg['N_JOBS'])
+    record_feature_qc(mode, X, feat_names, time.time() - t_feat)
     y = df_clean['pIC50 Value'].values
     n_features_total = X.shape[1]
 
@@ -440,6 +443,24 @@ def newcommand(f, name, value):
     f.write(f"\\newcommand{{\\{name}}}{{{value}}}\n")
 
 
+FEATURE_QC_FILE = os.path.join(RESULTS_DIR, "01_feature_qc.csv")
+LEARNERS = ['RF', 'ET', 'LGBM', 'XGB', 'SVM', 'kNN']
+
+
+def record_feature_qc(mode, X, feat_names, featurization_s):
+    """Counts missing/failed values of a feature matrix before imputation (3D failures = rows with NaN in the 3D block)."""
+    Xf = np.asarray(X, dtype=float)
+    cols_3d = [i for i, n in enumerate(feat_names) if n in _RDKIT_3D_NAMES]
+    row = {'Mode': mode, 'N_rows': Xf.shape[0], 'N_features': Xf.shape[1],
+           'N_cells_missing': int(np.isnan(Xf).sum()), 'N_rows_missing': int(np.isnan(Xf).any(axis=1).sum()),
+           'N_rows_3D_failed': int(np.isnan(Xf[:, cols_3d]).any(axis=1).sum()) if cols_3d else 0,
+           'Featurization_s': round(featurization_s, 2)}
+    qc = pd.read_csv(FEATURE_QC_FILE) if os.path.exists(FEATURE_QC_FILE) else pd.DataFrame()
+    if not qc.empty:
+        qc = qc[qc['Mode'] != mode]
+    pd.concat([qc, pd.DataFrame([row])], ignore_index=True).to_csv(FEATURE_QC_FILE, index=False)
+
+
 def generate_latex_file(df_all, summary, df_ttest, top2_modes, paired_stats):
     with open(LATEX_PAPER, 'w', encoding='utf-8') as f:
         f.write("% =====================================================\n")
@@ -475,6 +496,32 @@ def generate_latex_file(df_all, summary, df_ttest, top2_modes, paired_stats):
             newcommand(f, f"{label}MaeMean", f"{df_mode['MAE_outer'].mean():.4f}")
             newcommand(f, f"{label}NFeaturesTotal", int(df_mode['N_features_total'].mean()))
             newcommand(f, f"{label}NFeaturesSelectedMean", f"{df_mode['N_features_selected'].mean():.1f}")
+
+            members = df_mode['Selected_Model'].str.split('+')
+            for learner in LEARNERS:
+                newcommand(f, f"Sel{label}{learner}Pct", f"{members.map(lambda m: learner in m).mean() * 100:.0f}")
+            sizes = members.map(len)
+            for n_models, word in ((1, 'One'), (2, 'Two'), (3, 'Three')):
+                newcommand(f, f"Sel{label}Size{word}Pct", f"{(sizes == n_models).mean() * 100:.0f}")
+            newcommand(f, f"Sel{label}NArchitectures", len(counts))
+            newcommand(f, f"Sel{label}TopCount", int(counts.iloc[0]))
+            if len(counts) > 1:
+                newcommand(f, f"Sel{label}Second", counts.index[1])
+                newcommand(f, f"Sel{label}SecondCount", int(counts.iloc[1]))
+            newcommand(f, f"Sel{label}OthersMaxCount", int(counts.iloc[2]) if len(counts) > 2 else 0)
+            newcommand(f, f"Sel{label}NOthers", max(len(counts) - 2, 0))
+        f.write("\n")
+
+        newcommand(f, "NClippedPredictions", int(df_all['N_predictions_clipped'].sum()))
+        newcommand(f, "NArchitectureCombos", sum(math.comb(len(LEARNERS), k) for k in range(1, CFG['MAX_COMBO_SIZE'] + 1)))
+        newcommand(f, "NInnerFitsPerOuterFold",
+                   sum(math.comb(len(LEARNERS), k) for k in range(1, CFG['MAX_COMBO_SIZE'] + 1)) * CFG['INNER_N_SPLITS'])
+        if os.path.exists(FEATURE_QC_FILE):
+            for _, qc in pd.read_csv(FEATURE_QC_FILE).iterrows():
+                qlabel = MODE_LATEX_LABEL.get(qc['Mode'], qc['Mode'].title())
+                newcommand(f, f"{qlabel}NCellsMissing", int(qc['N_cells_missing']))
+                newcommand(f, f"{qlabel}NThreeDFailed", int(qc['N_rows_3D_failed']))
+                newcommand(f, f"{qlabel}FeaturizationSec", f"{qc['Featurization_s']:.1f}")
         f.write("\n")
 
         for _, row in df_ttest.iterrows():
@@ -585,7 +632,7 @@ def summarize_and_test():
             freq_df['selection_percentage'] = (freq_df['times_selected'] / freq_df['total_folds']) * 100
             freq_df = freq_df.sort_values(by=['Mode', 'times_selected'], ascending=[True, False])
 
-            out_path = os.path.join(RESULTS_DIR, 'architecture_selection_frequency.csv')
+            out_path = os.path.join(RESULTS_DIR, '01_architecture_selection_frequency.csv')
             freq_df.to_csv(out_path, index=False)
             print(f"\n[SUPPLEMENTARY CSV] Selection frequency exported to: {out_path}", flush=True)
             explain("Architecture selection frequency", """
@@ -628,7 +675,7 @@ def run_benchmark():
         scored on the outer test part, which it has never seen. Selecting and scoring on the same data would inflate R2.
 
         This is by far the slowest step of the pipeline (each outer fold fits hundreds of models). Progress is saved after every
-        fold (results/nested_cv_checkpoint.csv), so an interrupted run resumes where it stopped. IMPORTANT: if the training
+        fold (results/01_nested_cv_checkpoint.csv), so an interrupted run resumes where it stopped. IMPORTANT: if the training
         data changes, delete that checkpoint first or old-data folds would be silently reused.
 
         Per-fold line: 'Best' = the algorithm combination that won the inner selection; R2_outer = fraction of the variance in

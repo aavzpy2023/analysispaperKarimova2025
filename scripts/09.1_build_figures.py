@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-from paths_config import GNN_RESULTS_CSV, GNN_OOF_PREDICTIONS_CSV, FIGURES_DIR, CLASSICAL_R2, CLASSICAL_R2_STD, PAPER_R2
+from paths_config import GNN_RESULTS_CSV, GNN_OOF_PREDICTIONS_CSV, GNN_FOLD_SCORES_CSV, FIGURES_DIR, CLASSICAL_R2, CLASSICAL_R2_STD, PAPER_R2
 from logger_utils import explain
 
 def plot_gnn_benchmark():
@@ -20,9 +20,10 @@ def plot_gnn_benchmark():
 
     df_gnn = pd.read_csv(GNN_RESULTS_CSV)
     df_oof = pd.read_csv(GNN_OOF_PREDICTIONS_CSV)
+    gnn_fold_std = float(pd.read_csv(GNN_FOLD_SCORES_CSV)['R2'].std(ddof=1))
     explain("What this figure shows", """
-        (A) R2 of the classical models (steps 01/04) and of the GNN (ChemProp) under the same cross-validation, with
-        confidence intervals; dashed lines are the values from the original paper. (B) Out-of-fold predicted vs. experimental
+        (A) Mean R2 of the classical models (step 01) and of the GNN (ChemProp) over the same 25 cross-validation folds;
+        error bars are the standard deviation across folds; horizontal lines are the values from the original paper. (B) Out-of-fold predicted vs. experimental
         pIC50 for the best GNN: points on the diagonal are perfect; scatter around it is the prediction error.
         Interpretation: if the GNN bar is not clearly higher than the classical ones, extra model complexity is not justified.
     """)
@@ -35,13 +36,13 @@ def plot_gnn_benchmark():
     # ---------------------------------------------------------
     labels = list(CLASSICAL_R2.keys())
     means = list(CLASSICAL_R2.values())
-    # Real per-mode std from the nested CV results (nested_cv_final_results.csv), not a placeholder.
+    # Real per-mode std from the nested CV results (01_nested_cv_final_results.csv), not a placeholder.
     errs = [CLASSICAL_R2_STD.get(label, 0.0) for label in labels]
 
     for _, row in df_gnn.iterrows():
         labels.append(row['Model'])
         means.append(row['R2'])
-        errs.append((row['CI_High'] - row['CI_Low']) / 2)
+        errs.append(gnn_fold_std)
 
     colors = ['#4C72B0'] * len(CLASSICAL_R2) + ['#C44E52'] * len(df_gnn)
 
@@ -66,7 +67,7 @@ def plot_gnn_benchmark():
             color='#333333',
             linewidth=1.2,
             alpha=0.7,
-            label=f"Lit: {paper_label} ($R^2={val:.2f}$)",
+            label=f"Original study, {PAPER_R2[paper_label][0]} ($R^2={val:.2f}$)",
             zorder=2
         )
 
@@ -121,10 +122,10 @@ def plot_gnn_benchmark():
 
     axes[1].set_xlabel("Experimental $\\text{pIC}_{50}$", fontsize=10, fontweight='medium')
     axes[1].set_ylabel("Predicted $\\text{pIC}_{50}$", fontsize=10, fontweight='medium')
-    axes[1].set_title(f"(B) {best_gnn['Model']} Goodness-of-Fit", fontsize=11, fontweight='bold', loc='left')
+    axes[1].set_title("(B) D-MPNN out-of-fold predictions", fontsize=11, fontweight='bold', loc='left')
 
     bbox_props = dict(boxstyle="round,pad=0.5", fc="white", ec="lightgray", lw=1, alpha=0.95)
-    stats_text = f"$R^2 = {best_gnn['R2']:.3f}$\n$\\text{{MAE}} = {best_gnn['MAE']:.3f}$"
+    stats_text = f"mean fold $R^2 = {best_gnn['R2']:.3f}$\nmean fold $\\text{{MAE}} = {best_gnn['MAE']:.3f}$"
     axes[1].text(0.05, 0.95, stats_text, transform=axes[1].transAxes, fontsize=9.5, verticalalignment='top', bbox=bbox_props, zorder=5)
 
     plt.tight_layout()

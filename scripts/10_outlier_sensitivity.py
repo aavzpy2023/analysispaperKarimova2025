@@ -22,7 +22,7 @@ from logger_utils import setup_logger, explain
 
 RDLogger.DisableLog("rdApp.*")
 TARGET = "pIC50 Value"
-SENS_CHECKPOINT = os.path.join(SENS_DIR, "results", "nested_cv_checkpoint.csv")
+SENS_CHECKPOINT = os.path.join(SENS_DIR, "results", "01_nested_cv_checkpoint.csv")
 OUT_CSV = os.path.join(RESULTS_DIR, "10_outlier_sensitivity.csv")
 OUT_DIAG_CSV = os.path.join(RESULTS_DIR, "10_outlier_diagnostic.csv")
 OUT_TEX = os.path.join(LATEX_DIR, "outlier_variables.tex")
@@ -84,7 +84,7 @@ def main():
     if not os.path.exists(SENS_CHECKPOINT):
         sys.exit(f"Sensitivity checkpoint not found: {SENS_CHECKPOINT}. Run steps S01/S02 first.")
 
-    cmp_df = compare_runs(pd.read_csv(os.path.join(RESULTS_DIR, "nested_cv_checkpoint.csv")), pd.read_csv(SENS_CHECKPOINT))
+    cmp_df = compare_runs(pd.read_csv(os.path.join(RESULTS_DIR, "01_nested_cv_checkpoint.csv")), pd.read_csv(SENS_CHECKPOINT))
     cmp_df.to_csv(OUT_CSV, index=False)
     print(cmp_df.round(4).to_string(index=False), flush=True)
     rank_main = cmp_df.sort_values("R2_main", ascending=False)["Mode"].tolist()

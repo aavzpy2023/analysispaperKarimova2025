@@ -1,5 +1,6 @@
 import logging
 import os
+import math
 import re
 import sys
 import time
@@ -69,6 +70,7 @@ def run_chemprop_cv(smiles, y, n_splits=5, n_repeats=5, random_state=42):
     fold_r2s, fold_maes = [], []
     smiles_arr = np.array(smiles)
 
+    fold_times, fold_sizes = [], []
     for fold, (train_idx, val_idx) in enumerate(rkf.split(smiles_arr)):
         t_fold = time.time()
         pl.seed_everything(random_state + fold, workers=True)   # reproducible init/shuffling per fold
@@ -103,8 +105,10 @@ def run_chemprop_cv(smiles, y, n_splits=5, n_repeats=5, random_state=42):
 
         f_r2, f_mae = r2_score(y[val_idx], y_pred), mean_absolute_error(y[val_idx], y_pred)
         fold_r2s.append(f_r2)
+        fold_sizes.append((len(train_idx), len(val_idx)))
         fold_maes.append(f_mae)
         elapsed = time.time() - t_fold
+        fold_times.append(elapsed)
         print(f"  --> [{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] "
               f"Fold {fold+1}/{total_folds} OK | R2={f_r2:.4f} | MAE={f_mae:.4f} "
               f"| {elapsed:.1f}s", flush=True)
@@ -114,15 +118,18 @@ def run_chemprop_cv(smiles, y, n_splits=5, n_repeats=5, random_state=42):
 
     print("\n  [ChemProp] 5x5 CV Completed.", flush=True)
 
-    mean_r2, std_r2 = float(np.mean(fold_r2s)), float(np.std(fold_r2s))
+    mean_r2, std_r2 = float(np.mean(fold_r2s)), float(np.std(fold_r2s, ddof=1))
     mean_mae = float(np.mean(fold_maes))
-    ci_lo, ci_hi = mean_r2 - 1.96 * (std_r2 / np.sqrt(total_folds)), mean_r2 + 1.96 * (std_r2 / np.sqrt(total_folds))
+    # Nadeau-Bengio corrected interval: repeated-CV folds share training data, so the naive standard error is too small.
+    n_train_mean, n_test_mean = (float(np.mean(v)) for v in zip(*fold_sizes))
+    half_width = stats.t.ppf(0.975, df=total_folds - 1) * std_r2 * np.sqrt(1.0 / total_folds + n_test_mean / n_train_mean)
+    ci_lo, ci_hi = mean_r2 - half_width, mean_r2 + half_width
 
     print(f"  [ChemProp Result] R2={mean_r2:.4f} ± {std_r2:.4f} | MAE={mean_mae:.4f} | 95% CI [{ci_lo:.4f}, {ci_hi:.4f}]", flush=True)
 
     final_oof = np.mean(oof_predictions, axis=1)
 
-    return dict(model='ChemProp (D-MPNN Fold)', r2=mean_r2, std=std_r2, mae=mean_mae, ci_lo=ci_lo, ci_hi=ci_hi, boots=fold_r2s, y_test=y, y_pred=final_oof)
+    return dict(model='ChemProp (D-MPNN Fold)', r2=mean_r2, std=std_r2, mae=mean_mae, ci_lo=ci_lo, ci_hi=ci_hi, boots=fold_r2s, fold_times=fold_times, fold_maes=fold_maes, fold_sizes=fold_sizes, n_folds=total_folds, y_test=y, y_pred=final_oof)
 
 # =========================================================
 # DATA & EXPORT UTILITIES
@@ -134,7 +141,71 @@ def load_data():
     df = pd.read_csv(TRAIN_FILE).dropna(subset=['Smiles', 'pIC50 Value']).reset_index(drop=True)
     return df['Smiles'].tolist(), df['pIC50 Value'].values
 
-def export_latex(results):
+CLASSICAL_MODE_LABEL = {'morgan': 'Morgan', 'rdkit2d': 'RdkitTwoD', 'rdkit2d_fp': 'RdkitTwoDFp',
+                        'rdkit2d3d_fp': 'RdkitTwoDThreeDFp'}
+
+
+def compare_with_classical(res):
+    """Nadeau-Bengio corrected paired t-test of the D-MPNN against each classical representation, fold by fold.
+    Pairing is valid because step 01 and this step share the same RepeatedKFold partitions (checked through the fold
+    sizes). Holm adjustment is applied across the representations within each metric. Returns the LaTeX macros."""
+    classical = pd.read_csv(CHECKPOINT_FILE)
+    gnn = pd.DataFrame({'Fold': range(res['n_folds']), 'R2': res['boots'], 'MAE': res['fold_maes'],
+                        'N_train': [a for a, _ in res['fold_sizes']], 'N_test': [b for _, b in res['fold_sizes']]})
+    gnn.to_csv(GNN_FOLD_SCORES_CSV, index=False)
+    rows = []
+    for metric, g_col, c_col in (("RTwo", "R2", "R2_outer"), ("Mae", "MAE", "MAE_outer")):
+        block = []
+        for mode, label in CLASSICAL_MODE_LABEL.items():
+            c = classical[classical['Mode'] == mode].sort_values('Fold').reset_index(drop=True)
+            if len(c) != len(gnn) or not (c['N_test'].values == gnn['N_test'].values).all():
+                print(f"  [WARNING] Fold partitions of '{mode}' do not match the D-MPNN folds; test skipped.", flush=True)
+                continue
+            diff = gnn[g_col].values - c[c_col].values
+            n = len(diff)
+            se = np.sqrt(diff.var(ddof=1) * (1.0 / n + gnn['N_test'].mean() / gnn['N_train'].mean()))
+            t = diff.mean() / se if se > 0 else 0.0
+            block.append({"Metric": metric, "Classical": mode, "Label": label, "mean_diff_gnn_minus_classical": diff.mean(),
+                          "t": t, "p_raw": 2 * stats.t.sf(abs(t), df=n - 1) if se > 0 else 1.0})
+        order = sorted(range(len(block)), key=lambda i: block[i]["p_raw"])
+        running = 0.0
+        for rank, i in enumerate(order):
+            running = max(running, min(1.0, (len(block) - rank) * block[i]["p_raw"]))
+            block[i]["p_holm"] = running
+        rows += block
+    pd.DataFrame(rows).to_csv(GNN_VS_CLASSICAL_CSV, index=False)
+    macros = {}
+    for r in rows:
+        macros[f"GnnVs{r['Label']}Diff{r['Metric']}"] = f"{r['mean_diff_gnn_minus_classical']:+.4f}"
+        macros[f"GnnVs{r['Label']}P{r['Metric']}"] = f"{r['p_holm']:.3f}"
+    for metric in ("RTwo", "Mae"):
+        macros[f"GnnVsMinP{metric}"] = f"{min(r['p_holm'] for r in rows if r['Metric'] == metric):.3f}"
+    return macros
+
+
+def export_timing(res):
+    """Wall-clock cost of one D-MPNN training versus one classical outer fold (inner search included), plus the cost an
+    equivalent inner search would add to the D-MPNN. Classical times come from the step 01 checkpoint."""
+    times = np.array(res['fold_times'])
+    n_fits = sum(math.comb(6, k) for k in range(1, CFG['MAX_COMBO_SIZE'] + 1)) * CFG['INNER_N_SPLITS']
+    values = {"GnnFoldSecMean": f"{times.mean():.0f}", "GnnFoldSecMin": f"{times.min():.0f}",
+              "GnnFoldSecMax": f"{times.max():.0f}", "GnnTotalMin": f"{times.sum() / 60:.0f}",
+              "GnnSearchFits": n_fits, "GnnSearchHoursPerFold": f"{n_fits * times.mean() / 3600:.0f}",
+              "GnnSearchDaysTotal": f"{n_fits * times.sum() / 86400:.0f}"}
+    if os.path.exists(CHECKPOINT_FILE):
+        per_mode = pd.read_csv(CHECKPOINT_FILE).groupby('Mode')['Time_s'].mean()
+        values.update({"ClassicalFoldSecMin": f"{per_mode.min():.0f}", "ClassicalFoldSecMax": f"{per_mode.max():.0f}",
+                       "ClassicalMorganFoldSec": f"{per_mode.get('morgan', float('nan')):.0f}",
+                       "ClassicalMorganTotalHours": f"{per_mode.get('morgan', float('nan')) * res['n_folds'] / 3600:.1f}"})
+    os.makedirs(os.path.dirname(LATEX_TIMING), exist_ok=True)
+    with open(LATEX_TIMING, 'w', encoding='utf-8') as f:
+        f.write("% Auto-generated by 09_gnn_baseline.py\n")
+        for name, value in values.items():
+            f.write(f"\\newcommand{{\\{name}}}{{{value}}}\n")
+    print(f"[EXPORT] Timing variables saved to {LATEX_TIMING}", flush=True)
+
+
+def export_latex(results, extra=None):
     """
     Exports GNN metrics to LaTeX command variables.
     """
@@ -155,50 +226,10 @@ def export_latex(results):
             if 'ci_lo' in res and 'ci_hi' in res:
                 f.write(f"\\newcommand{{\\{label}CILow}}{{{res['ci_lo']:.4f}}}\n")
                 f.write(f"\\newcommand{{\\{label}CIHigh}}{{{res['ci_hi']:.4f}}}\n")
+        for name, value in (extra or {}).items():
+            f.write(f"\\newcommand{{\\{name}}}{{{value}}}\n")
 
     print(f"[EXPORT] LaTeX variables saved to {LATEX_GNN}", flush=True)
-
-def export_figure(results):
-    """
-    Generates comparison bar plot and prediction scatter plot.
-    """
-    fig, axes = plt.subplots(1, 2, figsize=(14, 5))
-    labels, means, errs = list(CLASSICAL_R2.keys()), list(CLASSICAL_R2.values()), [None]*len(CLASSICAL_R2)
-
-    for res in results:
-        if res is not None:
-            labels.append(res['model'])
-            means.append(res['r2'])
-            errs.append((res['ci_hi'] - res['ci_lo']) / 2)
-
-    colors = ['#4C72B0'] * len(CLASSICAL_R2) + ['#C44E52'] * sum(1 for r in results if r is not None)
-    axes[0].bar(np.arange(len(labels)), means, color=colors, alpha=0.85)
-    # Error bars only where a real CI exists (GNN entries). The former placeholder +-0.05 drawn on the
-    # classical bars was not derived from data and has been removed.
-    for i in range(len(CLASSICAL_R2), len(labels)):
-        axes[0].errorbar(i, means[i], yerr=errs[i], fmt='none', ecolor='black', capsize=5)
-    for label, (_, val) in PAPER_R2.items():
-        axes[0].axhline(val, linestyle='--', linewidth=1.2, alpha=0.7)
-
-    axes[0].set_xticks(np.arange(len(labels)))
-    axes[0].set_xticklabels(labels, rotation=20, ha='right')
-    axes[0].set_ylabel("R²")
-    axes[0].set_ylim(0.5, 1.0)
-
-    best_gnn = max([r for r in results if r is not None], key=lambda r: r['r2'], default=None)
-    if best_gnn:
-        axes[1].scatter(best_gnn['y_test'], best_gnn['y_pred'], alpha=0.6, s=30, color='#C44E52')
-        mn, mx = min(best_gnn['y_test']), max(best_gnn['y_test'])
-        axes[1].plot([mn, mx], [mn, mx], 'k--', linewidth=1)
-        axes[1].set_xlabel("Experimental pIC₅₀")
-        axes[1].set_ylabel("Predicted pIC₅₀")
-        axes[1].set_title(f"{best_gnn['model']} (R²={best_gnn['r2']:.3f})")
-
-    plt.tight_layout()
-    os.makedirs(os.path.dirname(FIGURE_GNN), exist_ok=True)
-    plt.savefig(FIGURE_GNN, dpi=300)
-    plt.close(fig)
-    print(f"[EXPORT] Comparison plot saved to {FIGURE_GNN}", flush=True)
 
 # =========================================================
 # MAIN EXECUTION
@@ -249,8 +280,18 @@ def main():
         predictions; systematic curvature at the extremes means the model compresses very high/low potencies toward the mean.
     """)
     print("\n[3] Exporting artifacts...")
-    export_latex(results)
-    export_figure(results)
+    try:
+        test_macros = compare_with_classical(res_chemprop)
+    except Exception as e:
+        import traceback
+        print(f"[WARNING] Paired comparison with the classical models failed: {e}\n{traceback.format_exc()}", flush=True)
+        test_macros = {}
+    export_latex(results, extra=test_macros)
+    try:
+        export_timing(res_chemprop)
+    except Exception as e:
+        import traceback
+        print(f"[WARNING] Timing variables were not exported: {e}\n{traceback.format_exc()}", flush=True)
 
     if valid:
         df_res = pd.DataFrame([{'Model': r['model'], 'R2': r['r2'], 'MAE': r['mae'], 'CI_Low': r['ci_lo'], 'CI_High': r['ci_hi']} for r in valid])

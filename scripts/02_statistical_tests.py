@@ -1,5 +1,6 @@
 import os
 import sys
+import itertools
 import logging
 import pandas as pd
 import numpy as np
@@ -7,10 +8,36 @@ from scipy import stats
 
 # Link root directory to import paths_config and logger_utils
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from paths_config import CHECKPOINT_FILE, LATEX_DIR, LOGS_DIR
+from paths_config import CHECKPOINT_FILE, LATEX_DIR, LOGS_DIR, RESULTS_DIR
 from logger_utils import setup_logger, explain
 
 NADEAU_BENGIO_LATEX_FILE = os.path.join(LATEX_DIR, "nadeau_bengio_variables.tex")
+
+MODE_TAG = {"morgan": "Morgan", "rdkit2d": "TwoD", "rdkit2d_fp": "TwoDFp", "rdkit2d3d_fp": "TwoDThreeDFp"}
+
+
+def all_pairs_nadeau_bengio(df):
+    """Nadeau-Bengio corrected paired t-test between every pair of representations, for R2 and MAE.
+    Folds are paired through the shared outer partitions; Holm adjustment is applied within each metric."""
+    rows = []
+    modes = [m for m in MODE_TAG if m in set(df["Mode"])]
+    for metric, col in (("RTwo", "R2_outer"), ("MAE", "MAE_outer")):
+        block = []
+        for a, b in itertools.combinations(modes, 2):
+            da, db = df[df["Mode"] == a].sort_values("Fold"), df[df["Mode"] == b].sort_values("Fold")
+            diff = da[col].values - db[col].values
+            n = len(diff)
+            se = np.sqrt(diff.var(ddof=1) * (1.0 / n + da["N_test"].mean() / da["N_train"].mean()))
+            t = diff.mean() / se if se > 0 else 0.0
+            block.append({"Metric": metric, "A": a, "B": b, "mean_diff_A_minus_B": diff.mean(), "t": t,
+                          "p": 2 * stats.t.sf(abs(t), df=n - 1) if se > 0 else 1.0})
+        order = sorted(range(len(block)), key=lambda i: block[i]["p"])
+        running = 0.0
+        for rank, i in enumerate(order):
+            running = max(running, (len(block) - rank) * block[i]["p"])
+            block[i]["p_holm"] = min(1.0, running)
+        rows += block
+    return pd.DataFrame(rows)
 
 
 def main():
@@ -123,6 +150,12 @@ def main():
         logger.info(
             "TEST CONCLUSION: Statistically significant difference observed between representations (p < 0.05).")
 
+    pairwise = all_pairs_nadeau_bengio(df)
+    pairwise_path = os.path.join(RESULTS_DIR, "02_pairwise_nb_tests.csv")
+    pairwise.to_csv(pairwise_path, index=False)
+    logger.info(f"All-pairs Nadeau-Bengio tests (Holm-adjusted within each metric) saved to: {pairwise_path}")
+    logger.info("\n" + pairwise.round(4).to_string(index=False))
+
     # =========================================================
     # Export to LaTeX
     # =========================================================
@@ -136,6 +169,11 @@ def main():
             f.write("% =====================================================\n\n")
             f.write(f"\\newcommand{{\\CorrectedTStat}}{{{t_corrected:.3f}}}\n")
             f.write(f"\\newcommand{{\\CorrectedTP}}{{{p_corrected:.4f}}}\n")
+            for _, r in pairwise.iterrows():
+                tag = f"{r['Metric']}{MODE_TAG[r['A']]}Vs{MODE_TAG[r['B']]}"
+                f.write(f"\\newcommand{{\\NBp{tag}}}{{{r['p']:.4f}}}\n")
+                f.write(f"\\newcommand{{\\NBpHolm{tag}}}{{{r['p_holm']:.4f}}}\n")
+                f.write(f"\\newcommand{{\\NBdiff{tag}}}{{{abs(r['mean_diff_A_minus_B']):.3f}}}\n")
         logger.info("LaTeX variable export completed successfully.")
     except Exception as e:
         logger.error(f"Failed to write LaTeX variables: {e}")

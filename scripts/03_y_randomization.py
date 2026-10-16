@@ -166,7 +166,7 @@ def main():
 
     elapsed_time = time.time() - start_time
     df_random = pd.DataFrame({'Permuted_R2': random_scores})
-    csv_path = os.path.join(RESULTS_DIR, "y_randomization_scores.csv")
+    csv_path = os.path.join(RESULTS_DIR, "03_y_randomization_scores.csv")
     df_random.to_csv(csv_path, index=False)
     logger.info(f"Y-randomization distribution saved to {csv_path}")
 
@@ -209,6 +209,9 @@ def main():
             f.write(f"\\newcommand{{\\YRandomMeanRTwo}}{{{mean_random:.4f}}}\n")
             f.write(f"\\newcommand{{\\YRandomStdRTwo}}{{{std_random:.4f}}}\n")
             f.write(f"\\newcommand{{\\YRandomZScore}}{{{z_score:.1f}}}\n")
+            f.write(f"\\newcommand{{\\YRandomArchitecture}}{{{best_architecture}}}\n")
+            f.write(f"\\newcommand{{\\YRandomNPermutations}}{{{N_PERMUTATIONS}}}\n")
+            f.write(f"\\newcommand{{\\YRandomCVFolds}}{{{CV_FOLDS}}}\n")
         logger.info("LaTeX variable export completed successfully.")
     except Exception as e:
         logger.error(f"Failed to export LaTeX variables: {e}")

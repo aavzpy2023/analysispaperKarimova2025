@@ -7,6 +7,7 @@ Usage (from any directory):
     python run_pipeline.py --check            # verify Python dependencies, run nothing
     python run_pipeline.py --from 05          # resume from step 05 onwards
     python run_pipeline.py --only 04 04.1     # run selected steps only
+    python run_pipeline.py --only figures     # rebuild every figure and table from existing results (seconds)
     python run_pipeline.py --no-sensitivity   # skip the with-extreme-values re-run (steps S01, S02, 10)
     python run_pipeline.py --strict           # error (instead of silent skip) if ChemProp cannot load
 Environment variables (optional): MLGNN_PROFILE (laptop|workstation), MLGNN_N_JOBS.
@@ -28,20 +29,27 @@ os.makedirs(LOGS_DIR, exist_ok=True)
 PIPELINE = [
     "scripts/00_prepare_dataset.py",
     "scripts/01_nested_cv_stacking.py",
-    "scripts/01.1_build_figures.py",
     "scripts/02_statistical_tests.py",
     "scripts/03_y_randomization.py",
     "scripts/04_augmentation_training.py",
-    "scripts/04.1_build_figures.py",
     "scripts/05_virtual_screening.py",
-    "scripts/05.1_build_figures.py",
     "scripts/06_redocking_validation.py",
     "scripts/07_molecular_docking.py",
-    "scripts/07.1_build_figures.py",
     "scripts/08_admet_profiling.py",
-    "scripts/08.1_build_figures.py",
     "scripts/09_gnn_baseline.py",
+]
+
+# Figure and table stage: runs automatically after every computation step has finished (so no figure can read a
+# result that does not exist yet) and can be launched alone with `--only figures`, without recomputing anything.
+# The last entry checks that the manuscript only references figures, inputs and variables that exist.
+FIGURES = [
+    "scripts/01.1_build_figures.py",
+    "scripts/04.1_build_figures.py",
+    "scripts/05.1_build_figures.py",
+    "scripts/07.1_build_figures.py",
+    "scripts/08.1_build_figures.py",
     "scripts/09.1_build_figures.py",
+    "scripts/11_check_manuscript.py",
 ]
 
 # Outlier sensitivity analysis: steps 01 and 02 re-run on the set that keeps the extreme pIC50 values, writing to
@@ -162,8 +170,9 @@ def check_dependencies():
 
 def all_steps(include_sensitivity=True):
     """Ordered (step id, script, extra environment) triples: the main pipeline, then the sensitivity analysis."""
+    figures = [(step_id(s), s, {}) for s in FIGURES]
     steps = [(step_id(s), s, {}) for s in PIPELINE]
-    return steps + SENSITIVITY if include_sensitivity else steps
+    return steps + (SENSITIVITY if include_sensitivity else []) + figures
 
 
 def execute_and_log(script_path, master_log_path, extra_env=None):
@@ -207,6 +216,8 @@ def select_steps(args):
     steps = all_steps(include_sensitivity=not args.no_sensitivity)
     ids = [sid for sid, _, _ in steps]
     if args.only:
+        wanted = [i for w in args.only for i in ([step_id(s) for s in FIGURES] if w == "figures" else [w])]
+        args.only = wanted
         unknown = set(args.only) - set(ids)
         if unknown:
             sys.exit(f"Unknown step(s): {sorted(unknown)}. Use --list.")
@@ -259,7 +270,7 @@ def main():
     ap.add_argument("--list", action="store_true", help="list pipeline steps and exit")
     ap.add_argument("--check", action="store_true", help="check Python dependencies and exit")
     ap.add_argument("--from", dest="start", metavar="STEP", help="resume from this step (e.g. 05 or 04.1)")
-    ap.add_argument("--only", nargs="+", metavar="STEP", help="run only these steps (e.g. 04 04.1)")
+    ap.add_argument("--only", nargs="+", metavar="STEP", help="run only these steps (e.g. 04 04.1); 'figures' selects the whole figure stage")
     ap.add_argument("--no-sensitivity", action="store_true",
                     help="skip the outlier sensitivity analysis (steps S01, S02, 10) in a full run")
     ap.add_argument("--strict", action="store_true",

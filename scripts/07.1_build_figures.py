@@ -2,7 +2,7 @@ import os
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-from paths_config import DOCKING_RESULTS_CSV, FIGURES_DIR
+from paths_config import DOCKING_RESULTS_CSV, FIGURES_DIR, ML_ACTIVE_THRESH, DOCK_ACTIVE_THRESH
 from logger_utils import explain
 from adjustText import adjust_text
 
@@ -14,15 +14,13 @@ def plot_docking_validation():
         raise SystemExit(1)
 
     df = pd.read_csv(DOCKING_RESULTS_CSV)
-    ml_threshold = 6.0
-    dock_threshold = -7.5
+    ml_threshold = ML_ACTIVE_THRESH
+    dock_threshold = DOCK_ACTIVE_THRESH
     explain("What this figure shows", f"""
         Each dot is a drug: horizontal = AutoDock Vina docking score (further right = better predicted binding), vertical =
         ML-predicted pIC50 (higher = more potent). Dots in the top-right corner are supported by both methods. Colours
         follow the 'Agreement' categories of step 07 (validated, false positive, false negative, neutral). The dotted
-        lines are drawn at ML pIC50 = {ml_threshold} and docking = {dock_threshold} kcal/mol. Note for reviewers: step 07
-        classifies 'active' with stricter cut-offs (pIC50 > 6.5 and docking < -8.0), so a dot can sit in the top-right
-        region of the figure and still be labelled Neutral.
+        lines are drawn at ML pIC50 = {ml_threshold} and docking = {dock_threshold} kcal/mol.
     """)
 
     fig, ax = plt.subplots(figsize=(10, 6.5))
@@ -44,7 +42,7 @@ def plot_docking_validation():
     ax.set_xlim(x_max, x_min)
 
     # Set Y-axis view window
-    ylims = (5.0, 7.8)
+    ylims = (4.6, 7.8)
     ax.set_ylim(ylims)
 
     # Shade the consensus active region (upper-right quadrant)
