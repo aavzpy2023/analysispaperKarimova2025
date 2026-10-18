@@ -37,7 +37,8 @@ from sklearn.base import BaseEstimator, RegressorMixin, clone
 import lightgbm as lgb
 from xgboost import XGBRegressor
 
-from sklearn.model_selection import RepeatedKFold, KFold, cross_validate
+from sklearn.model_selection import KFold, cross_validate
+from splits import outer_splits
 from sklearn.metrics import r2_score, mean_absolute_error, make_scorer
 from sklearn.pipeline import Pipeline
 from sklearn.impute import SimpleImputer
@@ -378,13 +379,13 @@ def nested_cv_for_mode(mode, df_clean, cfg):
         for combo in itertools.combinations(base_models.items(), k):
             all_combos.append(dict(combo))
 
-    outer_cv = RepeatedKFold(n_splits=cfg['OUTER_N_SPLITS'], n_repeats=cfg['OUTER_N_REPEATS'], random_state=RANDOM_STATE)
+    outer_cv = list(outer_splits(df_clean['Smiles'].tolist(), cfg['OUTER_N_SPLITS'], cfg['OUTER_N_REPEATS'], RANDOM_STATE, SPLIT_KIND))
     done_folds = load_done_folds(mode)
 
     if done_folds:
         print(f"[CHECKPOINT] {len(done_folds)}/{total_folds} folds already completed for '{mode}', resuming...", flush=True)
 
-    for fold_idx, (train_idx, test_idx) in enumerate(outer_cv.split(X)):
+    for fold_idx, (train_idx, test_idx) in enumerate(outer_cv):
         if fold_idx in done_folds:
             continue
 

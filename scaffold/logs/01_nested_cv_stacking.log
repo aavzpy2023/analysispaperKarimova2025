@@ -1,0 +1,108 @@
+=== START LOG: 01_nested_cv_stacking.py [2026-10-16 21:10:44] ===
+
+[INFO] Active profile: workstation | N_JOBS=46 | Outer folds=5x5=25
+[DATA] /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/data/V2-combined_bd_chmbl_unique_dedup.csv: 859 rows read, 859 usable (SMILES and pIC50 present). pIC50 range 3.30 - 9.34, mean 6.37, SD 1.26.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] What this step does
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Builds and honestly evaluates machine-learning models that predict how potently a molecule
+  inhibits TgDHFR (pIC50, higher         = more potent) from its structure. The dataset has 859
+  molecules with measured potency.
+  Molecules must be converted to numbers before a model can use them. Several descriptions are
+  compared:         Morgan fingerprints (ECFP4, 2048 bits).         A fingerprint is a long 0/1
+  list saying which small substructures are present; a descriptor is a number such as
+  molecular weight, polarity or number of rotatable bonds; '3D' descriptors also depend on the
+  molecule's shape.
+  For each description, the models tried are single algorithms (Random Forest, Extra Trees,
+  LightGBM, XGBoost, SVM,         kNN) and stacks of up to 3 of them combined by a final Ridge
+  regression. NESTED cross-validation         is used so the reported score is not optimistic: the
+  data is split into 5 parts and the whole         split is repeated 5 times (= 25 outer folds).
+  Inside every outer fold the training part is         split again (5 inner folds) to choose the
+  best algorithm combination; only then is that choice         scored on the outer test part,
+  which it has never seen. Selecting and scoring on the same data would inflate R2.
+  This is by far the slowest step of the pipeline (each outer fold fits hundreds of models).
+  Progress is saved after every         fold (results/01_nested_cv_checkpoint.csv), so an
+  interrupted run resumes where it stopped. IMPORTANT: if the training         data changes,
+  delete that checkpoint first or old-data folds would be silently reused.
+  Per-fold line: 'Best' = the algorithm combination that won the inner selection; R2_outer =
+  fraction of the variance in         potency explained on the unseen part (1 = perfect, 0 = no
+  better than predicting the mean); MAE = average error in         pIC50 units (0.5 = about a
+  3-fold error in IC50); the time is for that fold.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+####################################################################################################
+# NESTED CV (5x5=25 Folds) — REPRESENTATION: morgan
+####################################################################################################
+[morgan] Fold 1/25 -> Best: ET+LGBM+SVM     | R2_outer: 0.5202 | MAE: 0.7226 (488.1s)
+[morgan] Fold 2/25 -> Best: RF+LGBM+SVM     | R2_outer: 0.4702 | MAE: 0.6091 (434.6s)
+[morgan] Fold 3/25 -> Best: RF+XGB+SVM      | R2_outer: 0.6736 | MAE: 0.5095 (418.2s)
+[morgan] Fold 4/25 -> Best: SVM             | R2_outer: 0.6319 | MAE: 0.6484 (370.6s)
+[morgan] Fold 5/25 -> Best: RF+XGB+kNN      | R2_outer: 0.4693 | MAE: 0.6546 (412.7s)
+[morgan] Fold 6/25 -> Best: RF+SVM+kNN      | R2_outer: 0.6575 | MAE: 0.6310 (413.1s)
+[morgan] Fold 7/25 -> Best: XGB+SVM+kNN     | R2_outer: 0.6983 | MAE: 0.5247 (392.6s)
+[morgan] Fold 8/25 -> Best: RF+SVM          | R2_outer: 0.5142 | MAE: 0.6961 (401.4s)
+[morgan] Fold 9/25 -> Best: RF+ET+LGBM      | R2_outer: 0.4924 | MAE: 0.5845 (499.8s)
+[morgan] Fold 10/25 -> Best: RF+XGB          | R2_outer: 0.5993 | MAE: 0.5755 (434.3s)
+[morgan] Fold 11/25 -> Best: SVM             | R2_outer: 0.5222 | MAE: 0.6718 (386.9s)
+[morgan] Fold 12/25 -> Best: RF              | R2_outer: 0.6971 | MAE: 0.5459 (381.8s)
+[morgan] Fold 13/25 -> Best: XGB+SVM         | R2_outer: 0.5931 | MAE: 0.5172 (393.4s)
+[morgan] Fold 14/25 -> Best: RF+ET+LGBM      | R2_outer: 0.2857 | MAE: 0.7735 (450.1s)
+[morgan] Fold 15/25 -> Best: RF+SVM          | R2_outer: 0.6857 | MAE: 0.5964 (415.2s)
+[morgan] Fold 16/25 -> Best: RF+SVM          | R2_outer: 0.6870 | MAE: 0.5500 (450.5s)
+[morgan] Fold 17/25 -> Best: RF              | R2_outer: 0.4500 | MAE: 0.6077 (372.8s)
+[morgan] Fold 18/25 -> Best: RF+XGB          | R2_outer: 0.5646 | MAE: 0.5635 (390.3s)
+[morgan] Fold 19/25 -> Best: LGBM+SVM+kNN    | R2_outer: 0.6520 | MAE: 0.6193 (386.5s)
+[morgan] Fold 20/25 -> Best: LGBM+XGB+SVM    | R2_outer: 0.6146 | MAE: 0.6339 (377.9s)
+[morgan] Fold 21/25 -> Best: SVM             | R2_outer: 0.6863 | MAE: 0.5745 (375.5s)
+[morgan] Fold 22/25 -> Best: RF+ET+SVM       | R2_outer: 0.6596 | MAE: 0.5412 (512.0s)
+[morgan] Fold 23/25 -> Best: SVM             | R2_outer: 0.5355 | MAE: 0.6727 (374.9s)
+[morgan] Fold 24/25 -> Best: RF+LGBM+SVM     | R2_outer: 0.5824 | MAE: 0.5726 (430.4s)
+[morgan] Fold 25/25 -> Best: RF+SVM          | R2_outer: 0.5019 | MAE: 0.6446 (374.8s)
+
+====================================================================================================
+RESULTS SUMMARY (Nested CV 5x5)
+====================================================================================================
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] How to read the summary tables
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Table 1: mean R2 over all outer folds for each molecular description, with its standard
+  deviation (spread between         folds) and the number of folds. The top row is the best-
+  performing description. Differences smaller than about one         standard deviation are
+  usually not meaningful.
+  Table 2: tests whether our R2 differs from the R2 values reported in the original publication
+  (PAPER_R2). The         Nadeau-Bengio correction is applied because cross-validation folds
+  overlap and share training data, which makes a         naive t-test over-confident.
+  'Significant_p<0.05' = True means our result is really different from the reference
+  (higher or lower: compare Our_R2_mean with Paper_R2); False means we reproduce it within
+  statistical noise.
+  The paired comparison at the end tests whether the two best descriptions differ from each other
+  on the same folds.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Table 1. R² by molecular representation:
+  Mode     mean      std  count
+morgan 0.577788 0.101508     25
+
+Table 2. t-tests (Nadeau-Bengio Corrected) vs Original Publication:
+  Mode Paper_reference_label  Paper_R2  Our_R2_mean  Our_R2_std    t_stat  p_value  Significant_p<0.05
+morgan         PaperBaseline      0.75     0.577788    0.099457 -3.150402 0.004330                True
+morgan         PaperSelected      0.82     0.577788    0.099457 -4.430962 0.000177                True
+morgan            PaperFinal      0.85     0.577788    0.099457 -4.979773 0.000044                True
+
+[SUPPLEMENTARY CSV] Selection frequency exported to: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/scaffold/results/01_architecture_selection_frequency.csv
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] Architecture selection frequency
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  For each description, how often each algorithm combination won the inner selection across folds.
+  If one                 combination wins most folds, it is a stable choice; if many different
+  ones win, the data cannot clearly                 distinguish them (many are about equally
+  good). Step 03 uses the most frequent winner. SVM appearing very often                 suggests
+  smooth, similarity-based models fit this dataset well.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[LATEX] Variables successfully exported to: /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/scaffold/latex/paper_variables.tex
+
+=== END LOG: 01_nested_cv_stacking.py [EXIT CODE: 0] ===
+

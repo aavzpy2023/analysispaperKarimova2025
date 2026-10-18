@@ -56,6 +56,7 @@
 \setlength{\floatsep}{12pt plus 2pt minus 2pt}
 \setlength{\textfloatsep}{12pt plus 2pt minus 2pt}
 
+\input{latex/paper_variables.tex}
 \input{latex/augment_variables.tex}
 \input{latex/docking_variables.tex}
 \input{latex/screening_variables.tex}
@@ -63,9 +64,10 @@
 \input{latex/admet_variables.tex}
 \input{latex/timing_variables.tex}
 \input{latex/gnn_variables.tex}
-\input{latex/paper_variables.tex}
 \input{latex/redocking_variables.tex}
 \input{latex/nadeau_bengio_variables.tex}
+\input{latex/scaffold_variables.tex}
+\input{latex/gnn_tuned_variables.tex}
 \input{latex/yrandom_variables.tex}
 \input{latex/outlier_variables.tex}
 
@@ -76,6 +78,12 @@
 %\newproof{pf}{Proof}
 %\newproof{pot}{Proof of Theorem \ref{thm}}
 
+
+% The class writes the page total in an \AtEndDocument hook that runs before the pending pages are shipped out, so the
+% footer showed a stale total ("Page 21 of 19"). Flush first and write it again; the later aux entry wins.
+\makeatletter
+\AtEndDocument{\clearpage\immediate\write\@auxout{\string\csxdef{lastpage}{\the\numexpr\value{page}-1\relax}}}
+\makeatother
 
 \begin{document}
 	\let\WriteBookmarks\relax
@@ -140,6 +148,18 @@
 		state={Santiago},
 		country={Chile}}
 	
+	\author[1]{Juan Castillo-Garit} %% Author name
+	
+	% Email id of the four author
+	\ead{j.castillo@utem.cl}
+	
+	% URL of the second author
+	\ead[url]{https://orcid.org/0000-0003-0896-9484 }
+	
+	% Credit authorship
+	\credit{Validation, Writing – review \& editing }
+
+	
 	\author[1]{Samuel Montejo-Sánchez}%[]
 	
 	% Footnote of the second author
@@ -196,16 +216,7 @@
 	\credit{Validation, Supervision, Writing – review \& editing , Visualization}
 	
 	
-	\author[1]{Juan Castillo-Garit} %% Author name
 	
-	% Email id of the four author
-	\ead{j.castillo@utem.cl}
-	
-	% URL of the second author
-	\ead[url]{https://orcid.org/0000-0003-0896-9484 }
-	
-	% Credit authorship
-	\credit{Validation, Writing – review \& editing }
 	
 	
 	

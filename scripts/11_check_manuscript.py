@@ -16,7 +16,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from paths_config import ROOT, LOGS_DIR
 from logger_utils import setup_logger, explain
 
-STANDARD_CAMELCASE = {"LaTeX", "TeX", "BibTeX", "AA", "WriteBookmarks"}
+STANDARD_CAMELCASE = {"LaTeX", "TeX", "BibTeX", "AA", "WriteBookmarks", "AtEndDocument"}
 DEFINE = re.compile(r"\\(?:newcommand|renewcommand|providecommand|DeclareRobustCommand)\*?\s*\{?\\([A-Za-z]+)|\\def\\([A-Za-z]+)")
 USE = re.compile(r"(?<!\\)\\([A-Za-z]+)")  # a doubled backslash is a line break followed by text
 

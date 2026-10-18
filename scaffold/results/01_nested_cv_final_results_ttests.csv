@@ -1,0 +1,4 @@
+Mode,Paper_reference_label,Paper_reference_desc,Paper_R2,Our_R2_mean,Our_R2_std,t_stat,p_value,Significant_p<0.05
+morgan,PaperBaseline,"2D/3D/FP, no feature selection",0.75,0.577787678404567,0.09945688475084166,-3.150402092132463,0.004329565685981962,True
+morgan,PaperSelected,After Permutation Importance selection,0.82,0.577787678404567,0.09945688475084166,-4.430961719958308,0.00017654588741919145,True
+morgan,PaperFinal,Data augmentation + DNN ensemble,0.85,0.577787678404567,0.09945688475084166,-4.979772989026528,4.3755277000346384e-05,True

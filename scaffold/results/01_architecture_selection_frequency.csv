@@ -1,0 +1,16 @@
+Mode,Model,times_selected,total_folds,selection_percentage
+morgan,RF+SVM,4,25,16.0
+morgan,SVM,4,25,16.0
+morgan,RF,2,25,8.0
+morgan,RF+ET+LGBM,2,25,8.0
+morgan,RF+LGBM+SVM,2,25,8.0
+morgan,RF+XGB,2,25,8.0
+morgan,ET+LGBM+SVM,1,25,4.0
+morgan,LGBM+SVM+kNN,1,25,4.0
+morgan,LGBM+XGB+SVM,1,25,4.0
+morgan,RF+ET+SVM,1,25,4.0
+morgan,RF+SVM+kNN,1,25,4.0
+morgan,RF+XGB+SVM,1,25,4.0
+morgan,RF+XGB+kNN,1,25,4.0
+morgan,XGB+SVM,1,25,4.0
+morgan,XGB+SVM+kNN,1,25,4.0

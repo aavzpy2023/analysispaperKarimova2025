@@ -66,6 +66,9 @@ FIGURE_AUGMENT   = os.path.join(FIGURES_DIR, "augment_r2_comparison.png")
 
 RANDOM_STATE = 42
 
+# Outer-fold strategy: 'random' (repeated K-fold) or 'scaffold' (Bemis-Murcko scaffold-grouped K-fold); see splits.py
+SPLIT_KIND = os.environ.get('MLGNN_SPLIT', 'random')
+
 # =========================================================
 # PROFILES TO RUN (5x5 REPEATED NESTED CV) (1)
 # =========================================================
@@ -102,6 +105,8 @@ PROFILES[PROFILE]['N_JOBS'] = (
     max(1, int(_n_jobs_env)) if _n_jobs_env else min(PROFILES[PROFILE]['N_JOBS'], _CPU)
 )
 CFG = PROFILES[PROFILE]
+if os.environ.get('MLGNN_MODES'):
+    CFG['FEATURE_MODES'] = [m for m in os.environ['MLGNN_MODES'].split(',') if m]
 
 # FIGURES
 
@@ -234,8 +239,11 @@ LIPINSKI_MAX_LOGP       = 5.0
 GNN_RESULTS_CSV        = os.path.join(RESULTS_DIR, "09_gnn_results.csv")
 GNN_OOF_PREDICTIONS_CSV = os.path.join(RESULTS_DIR, "09_gnn_oof_predictions.csv")
 GNN_FOLD_SCORES_CSV    = os.path.join(RESULTS_DIR, "09_gnn_fold_scores.csv")
+GNN_TUNED_CHECKPOINT   = os.path.join(RESULTS_DIR, "12_gnn_tuned_checkpoint.csv")
+GNN_TUNED_VS_CLASSICAL_CSV = os.path.join(RESULTS_DIR, "12_gnn_tuned_vs_classical_tests.csv")
 GNN_VS_CLASSICAL_CSV   = os.path.join(RESULTS_DIR, "09_gnn_vs_classical_tests.csv")
 LATEX_GNN       = os.path.join(LATEX_DIR, "gnn_variables.tex")
+LATEX_GNN_TUNED = os.path.join(LATEX_DIR, "gnn_tuned_variables.tex")
 FIGURE_GNN      = os.path.join(FIGURES_DIR, "gnn_comparison.png")
 
 # Experimental Parameters

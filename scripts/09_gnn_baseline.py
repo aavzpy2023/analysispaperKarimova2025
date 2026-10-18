@@ -13,7 +13,8 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from scipy import stats
-from sklearn.model_selection import RepeatedKFold
+from splits import outer_splits
+from nb_stats import compare_to_classical
 from sklearn.metrics import r2_score, mean_absolute_error
 
 # Link root directory to import paths_config and logger_utils
@@ -64,14 +65,14 @@ def run_chemprop_cv(smiles, y, n_splits=5, n_repeats=5, random_state=42):
     total_folds = n_splits * n_repeats
     print(f"\n  [ChemProp] Starting {n_splits}x{n_repeats} CV (N={len(smiles)} compounds)...", flush=True)
 
-    rkf = RepeatedKFold(n_splits=n_splits, n_repeats=n_repeats, random_state=random_state)
+    folds = list(outer_splits(smiles, n_splits, n_repeats, random_state, SPLIT_KIND))
     oof_predictions = np.zeros((len(y), n_repeats))
 
     fold_r2s, fold_maes = [], []
     smiles_arr = np.array(smiles)
 
     fold_times, fold_sizes = [], []
-    for fold, (train_idx, val_idx) in enumerate(rkf.split(smiles_arr)):
+    for fold, (train_idx, val_idx) in enumerate(folds):
         t_fold = time.time()
         pl.seed_everything(random_state + fold, workers=True)   # reproducible init/shuffling per fold
         print(f"  --> [{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Training Fold {fold+1}/{total_folds}...", flush=True)
@@ -141,45 +142,13 @@ def load_data():
     df = pd.read_csv(TRAIN_FILE).dropna(subset=['Smiles', 'pIC50 Value']).reset_index(drop=True)
     return df['Smiles'].tolist(), df['pIC50 Value'].values
 
-CLASSICAL_MODE_LABEL = {'morgan': 'Morgan', 'rdkit2d': 'RdkitTwoD', 'rdkit2d_fp': 'RdkitTwoDFp',
-                        'rdkit2d3d_fp': 'RdkitTwoDThreeDFp'}
-
-
 def compare_with_classical(res):
-    """Nadeau-Bengio corrected paired t-test of the D-MPNN against each classical representation, fold by fold.
-    Pairing is valid because step 01 and this step share the same RepeatedKFold partitions (checked through the fold
-    sizes). Holm adjustment is applied across the representations within each metric. Returns the LaTeX macros."""
-    classical = pd.read_csv(CHECKPOINT_FILE)
+    """Paired comparison of the D-MPNN with each classical representation on the shared folds (see nb_stats)."""
     gnn = pd.DataFrame({'Fold': range(res['n_folds']), 'R2': res['boots'], 'MAE': res['fold_maes'],
                         'N_train': [a for a, _ in res['fold_sizes']], 'N_test': [b for _, b in res['fold_sizes']]})
     gnn.to_csv(GNN_FOLD_SCORES_CSV, index=False)
-    rows = []
-    for metric, g_col, c_col in (("RTwo", "R2", "R2_outer"), ("Mae", "MAE", "MAE_outer")):
-        block = []
-        for mode, label in CLASSICAL_MODE_LABEL.items():
-            c = classical[classical['Mode'] == mode].sort_values('Fold').reset_index(drop=True)
-            if len(c) != len(gnn) or not (c['N_test'].values == gnn['N_test'].values).all():
-                print(f"  [WARNING] Fold partitions of '{mode}' do not match the D-MPNN folds; test skipped.", flush=True)
-                continue
-            diff = gnn[g_col].values - c[c_col].values
-            n = len(diff)
-            se = np.sqrt(diff.var(ddof=1) * (1.0 / n + gnn['N_test'].mean() / gnn['N_train'].mean()))
-            t = diff.mean() / se if se > 0 else 0.0
-            block.append({"Metric": metric, "Classical": mode, "Label": label, "mean_diff_gnn_minus_classical": diff.mean(),
-                          "t": t, "p_raw": 2 * stats.t.sf(abs(t), df=n - 1) if se > 0 else 1.0})
-        order = sorted(range(len(block)), key=lambda i: block[i]["p_raw"])
-        running = 0.0
-        for rank, i in enumerate(order):
-            running = max(running, min(1.0, (len(block) - rank) * block[i]["p_raw"]))
-            block[i]["p_holm"] = running
-        rows += block
-    pd.DataFrame(rows).to_csv(GNN_VS_CLASSICAL_CSV, index=False)
-    macros = {}
-    for r in rows:
-        macros[f"GnnVs{r['Label']}Diff{r['Metric']}"] = f"{r['mean_diff_gnn_minus_classical']:+.4f}"
-        macros[f"GnnVs{r['Label']}P{r['Metric']}"] = f"{r['p_holm']:.3f}"
-    for metric in ("RTwo", "Mae"):
-        macros[f"GnnVsMinP{metric}"] = f"{min(r['p_holm'] for r in rows if r['Metric'] == metric):.3f}"
+    table, macros = compare_to_classical(gnn, pd.read_csv(CHECKPOINT_FILE), "GnnVs")
+    table.to_csv(GNN_VS_CLASSICAL_CSV, index=False)
     return macros
 
 

@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-from paths_config import GNN_RESULTS_CSV, GNN_OOF_PREDICTIONS_CSV, GNN_FOLD_SCORES_CSV, FIGURES_DIR, CLASSICAL_R2, CLASSICAL_R2_STD, PAPER_R2
+from paths_config import GNN_RESULTS_CSV, GNN_OOF_PREDICTIONS_CSV, GNN_FOLD_SCORES_CSV, GNN_TUNED_CHECKPOINT, FIGURES_DIR, CLASSICAL_R2, CLASSICAL_R2_STD, PAPER_R2
 from logger_utils import explain
 
 def plot_gnn_benchmark():
@@ -45,6 +45,12 @@ def plot_gnn_benchmark():
         errs.append(gnn_fold_std)
 
     colors = ['#4C72B0'] * len(CLASSICAL_R2) + ['#C44E52'] * len(df_gnn)
+    if os.path.exists(GNN_TUNED_CHECKPOINT):
+        tuned = pd.read_csv(GNN_TUNED_CHECKPOINT)['R2']
+        labels.append("D-MPNN (tuned)")
+        means.append(float(tuned.mean()))
+        errs.append(float(tuned.std(ddof=1)))
+        colors.append('#DD8452')
 
     bars = axes[0].bar(
         np.arange(len(labels)),

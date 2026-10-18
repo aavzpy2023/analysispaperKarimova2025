@@ -1,5 +1,5 @@
 Mode,N_rows,N_features,N_cells_missing,N_rows_missing,N_rows_3D_failed,Featurization_s
-morgan,859,2048,0,0,0,1.25
-rdkit2d,859,217,0,0,0,1.04
-rdkit2d_fp,859,2265,0,0,0,1.97
-rdkit2d3d_fp,859,2275,0,0,0,5.35
+morgan,859,2048,0,0,0,1.32
+rdkit2d,859,217,0,0,0,1.03
+rdkit2d_fp,859,2265,0,0,0,2.02
+rdkit2d3d_fp,859,2275,0,0,0,5.3

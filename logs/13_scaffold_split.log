@@ -1,0 +1,36 @@
+=== START LOG: 13_scaffold_split.py [2026-10-17 01:26:04] ===
+
+=========================================================================================================
+13_scaffold_split.py — Performance under scaffold-grouped outer folds
+=========================================================================================================
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] What this step does
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Random folds put close analogs of the same chemical series in both the training and the test
+  part, which can make a         model look better than it would be on a new series. Steps SC01
+  and SC09 repeated the benchmark with folds that keep every         Bemis-Murcko scaffold in a
+  single fold, for the Morgan stacking ensemble and for the default D-MPNN. This step puts the
+  two results next to the random-fold results, and tests the network against the classical
+  ensemble on the shared         scaffold folds. The scaffold results are expected to be lower;
+  the question is whether the comparison changes.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                 R2_mean  R2_std  MAE_mean
+Random Morgan     0.7592  0.0449    0.4477
+Scaffold Morgan   0.5778  0.1015    0.6096
+Random D-MPNN     0.7248  0.0439    0.4748
+Scaffold D-MPNN   0.5260  0.1212    0.6428
+  [WARNING] Folds of 'rdkit2d' do not match the evaluated model's folds; comparison skipped.
+  [WARNING] Folds of 'rdkit2d_fp' do not match the evaluated model's folds; comparison skipped.
+  [WARNING] Folds of 'rdkit2d3d_fp' do not match the evaluated model's folds; comparison skipped.
+  [WARNING] Folds of 'rdkit2d' do not match the evaluated model's folds; comparison skipped.
+  [WARNING] Folds of 'rdkit2d_fp' do not match the evaluated model's folds; comparison skipped.
+  [WARNING] Folds of 'rdkit2d3d_fp' do not match the evaluated model's folds; comparison skipped.
+Metric Classical  Label  mean_diff_model_minus_classical       t  p_raw  ci90_low  ci90_high  equiv_margin  p_equiv  p_holm
+  RTwo    morgan Morgan                          -0.0518 -1.3017 0.2054   -0.1200     0.0163          0.05   0.5182  0.2054
+   Mae    morgan Morgan                           0.0332  1.2159 0.2358   -0.0135     0.0799          0.05   0.2720  0.2358
+[EXPORT] LaTeX variables saved to /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/latex/scaffold_variables.tex
+[DONE] 13_scaffold_split.py complete.
+
+=== END LOG: 13_scaffold_split.py [EXIT CODE: 0] ===
+

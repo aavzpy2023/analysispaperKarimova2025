@@ -14,7 +14,7 @@ This README documents how to reproduce every computational result in the manuscr
 ## 1. Repository structure
 
 ```
-scripts/                 Pipeline steps (00 through 10), paths_config.py, logger_utils.py
+scripts/                 Pipeline steps (00 through 13), shared modules (paths_config.py, logger_utils.py, nb_stats.py, splits.py, gnn_utils.py)
 run_pipeline.py           Orchestrator: runs all steps in order, or a subset (see below)
 conda_environment.yml     Conda environment definition (Python 3.11, pip-managed dependencies)
 requirements.txt          Pinned pip dependencies (see comments inside for rationale)
@@ -68,12 +68,13 @@ sudo apt-get update && sudo apt-get install openbabel libxrender1 libxext6   # o
 ## 3. Running the pipeline
 
 ```bash
-python run_pipeline.py --list            # show all 20 steps in execution order
+python run_pipeline.py --list            # show all 24 steps in execution order
 python run_pipeline.py --check           # verify every dependency actually imports (no computation)
-python run_pipeline.py                   # run everything: main analysis (00 -> 09), outlier sensitivity (S01, S02, 10), then the figure stage
+python run_pipeline.py                   # run everything: main analysis (00 -> 09), outlier sensitivity (S01, S02, 10), scaffold-split robustness (SC01, SC09, 13), then the figure stage
 python run_pipeline.py --from 05         # resume from step 05 onward (e.g. after an interruption)
 python run_pipeline.py --only 07 07.1    # run only the listed steps
 python run_pipeline.py --no-sensitivity  # skip the with-extreme-values re-run
+python run_pipeline.py --no-scaffold     # skip the scaffold-split re-run (SC01, SC09, 13)
 python run_pipeline.py --only figures    # rebuild every figure and table from existing results (seconds, no recomputation)
 ```
 
@@ -97,25 +98,29 @@ export MLGNN_N_JOBS=8              # override the number of threads (default: mi
 | 00 | Builds the training sets from the raw table (Tukey-fence outlier removal, duplicate collapse) | seconds |
 | 01 | Nested CV stacking (4 representations x 5x5 folds) | ~13 h (dominant cost; from-scratch only — resumes from a checkpoint on partial re-runs) |
 | 01.1 | Figures for step 01 (figure stage: needs the step 09 results for the D-MPNN reference lines) | seconds |
-| 02 | Nadeau-Bengio corrected t-tests | <1 s |
+| 02 | Nadeau-Bengio corrected t-tests and equivalence tests (TOST) | <1 s |
 | 03 | Y-randomization (100 permutations) | ~2.7 h |
 | 04 | Feature selection (Exp B) + Gaussian augmentation (Exp C) | ~26 min (see reproducibility note below — Exp B is intentionally single-threaded) |
 | 04.1 | Figures for step 04 | seconds |
 | 05 | Virtual screening (FDA library) | ~6 s |
 | 05.1 | Figures for step 05 | seconds |
 | 06 | Redocking validation (crystal ligand) | ~8 s |
-| 07 | Molecular docking (19 candidates, AutoDock Vina) | ~4-5 min |
+| 07 | Molecular docking (17 candidates, AutoDock Vina) | ~4-5 min |
 | 07.1 | Figures for step 07 | seconds |
 | 08 | ADMET profiling (hERG / Caco-2, TDC) | ~2 s |
 | 08.1 | Figures for step 08 | seconds |
 | 09 | ChemProp D-MPNN, 5x5 repeated CV | ~85 min |
 | 09.1 | Figures for step 09 | seconds |
+| 12 | D-MPNN with a hyperparameter search inside every outer fold (8 configurations, 2 worker processes by default, `MLGNN_GNN_WORKERS`) | ~7.8 h (about 15 h of worker time) |
 | S01 | Step 01 re-run on the set that keeps the 2 extreme pIC50 values (outputs in `sensitivity/`) | ~13 h on the validated hardware |
 | S02 | Step 02 on the sensitivity run | <1 s |
 | 10 | Main vs. sensitivity comparison; prediction error on the 2 extremes | ~1 min |
+| SC01 | Step 01 for the Morgan representation on scaffold-grouped outer folds (outputs in `scaffold/`) | ~2.9 h |
+| SC09 | Step 09 (default D-MPNN) on the same scaffold-grouped folds | ~85 min |
+| 13 | Random vs. scaffold folds: summary and paired test of the network against the ensemble | seconds |
 | 11 | Manuscript check: every figure, included file and result variable used by the paper exists | seconds |
 
-**Total, full pipeline from a clean state: roughly 30 hours** on the validated hardware. Step 04 can look "stuck" for several minutes with no console output during Experiment B (single-threaded by design, see below); this is expected, not a hang.
+**Total, full pipeline from a clean state: roughly 43 hours** on the validated hardware. Step 04 can look "stuck" for several minutes with no console output during Experiment B (single-threaded by design, see below); this is expected, not a hang.
 
 ---
 
@@ -126,7 +131,7 @@ Every step uses a fixed random seed (`RANDOM_STATE = 42` in `paths_config.py`, p
 - **Step 04 (baseline, feature selection, augmentation):** every model of this step is fitted single-threaded and the parallelism is applied across independent tasks (features in the permutation importance, runs of the 5-run ensemble), so the results do not depend on the number of workers. The cause of the earlier run-to-run differences was identified: a multi-threaded `RandomForest.predict()` sums the trees in a thread-dependent order, which changes the last bits of the predictions, and the old selection rule `importance > 0` then flipped the ~750 features whose importance is zero up to floating-point noise (about 1e-15; the smallest genuine importances are about 1e-7). Two executions of the old code retained 1389 and 1826 bits of the same split. The selection now keeps features with importance above `IMPORTANCE_TOL = 1e-9` and the fits use `n_jobs=1`; permutation importances computed with 46 and with 8 workers were bitwise identical and retained the same 1255 bits.
 - **Ensemble of runs (step 04):** the 5 runs of the ensemble now use different seeds for the tree ensembles (`RANDOM_STATE + run`). Previously the reseeding was never applied (the stacking object has no `random_state`), so the 5 runs were identical copies.
 - **Redocking validation (step 06) and docking (step 07):** deterministic given the fixed Vina seed (42); centroid distance for the redocking control reproduced at 0.317 Å (threshold: 2.0 Å) across repeated runs.
-- **ChemProp / GNN (step 09):** PyTorch/Lightning training on CPU with multiple threads is not bit-reproducible even with a fixed seed, for the same floating-point non-associativity reason as above. Repeated 5x5 CV runs are expected to agree within the reported 95% confidence interval (observed: R² = 0.6802-0.6906 across two clean runs, both within the [0.657, 0.704] CI reported by the more recent run) rather than to the last decimal.
+- **ChemProp / GNN (step 09):** PyTorch/Lightning training on CPU with multiple threads is not bit-reproducible even with a fixed seed, for the same floating-point non-associativity reason as above. Repeated 5x5 CV runs agree to about the third decimal rather than to the last one (observed mean fold R² between 0.725 and 0.729 across three executions on the current data set).
 
 If you reproduce this pipeline on different hardware, expect small variation in the GNN's R², but not in the qualitative conclusions reported in the manuscript.
 

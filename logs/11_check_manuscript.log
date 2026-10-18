@@ -15,5 +15,5 @@
 [OK] figure figures/08_admet_quadrants.png
 [OK] figure figures/09_gnn_benchmark_comparison.png
 
-[CHECK] 24 files followed, 7 figures, 444 project variables used, 0 undefined
+[CHECK] 26 files followed, 7 figures, 565 project variables used, 0 undefined
 [OK] Every figure, included file, and variable used by the manuscript is produced by the pipeline.

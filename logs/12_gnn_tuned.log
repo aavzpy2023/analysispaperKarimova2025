@@ -1,0 +1,1419 @@
+=== START LOG: 12_gnn_tuned.py [2026-10-17 12:18:29] ===
+
+=========================================================================================================
+12_gnn_tuned.py — D-MPNN with hyperparameter search inside every outer fold (nested)
+=========================================================================================================
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[EXPLAIN] What this step does
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Step 09 evaluated the D-MPNN with default settings, which a reviewer can fairly call under-
+  tuned. Here the network gets         the same treatment as the classical models: inside each
+  outer training set, 8 configurations (hidden size,         message-passing depth and dropout)
+  are compared on a held-out 20% of that training set, the best one is retrained on the
+  whole training set, and only then it predicts the outer test fold. The outer folds are the same
+  as in steps 01 and 09, so         the results can be compared fold by fold. The default
+  configuration is part of the grid.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[INFO] 25 outer folds, 0 already in the checkpoint; 2 workers x 23 threads
+Seed set to 42
+Seed set to 43
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+Intel oneMKL WARNING: Support of Intel(R) Advanced Vector Extensions (Intel(R) AVX) enabled only processors has been deprecated. Intel oneAPI Math Kernel Library will use Intel(R) Streaming SIMD Extensions 4.2 (Intel(R) SSE4.2) instructions instead.
+Intel oneMKL WARNING: Support of Intel(R) Advanced Vector Extensions (Intel(R) AVX) enabled only processors has been deprecated. Intel oneAPI Math Kernel Library will use Intel(R) Streaming SIMD Extensions 4.2 (Intel(R) SSE4.2) instructions instead.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 42
+Seed set to 43
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 43
+Seed set to 42
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 43
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 42
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 43
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 42
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 43
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 42
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 43
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 42
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 43
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 42
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 43
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 42
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 44
+  --> Fold 2/25 OK | best=h300_d5_p0.2 | R2=0.7360 | MAE=0.4808 | 2218s (elapsed 37 min)
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 45
+  --> Fold 1/25 OK | best=h300_d5_p0.0 | R2=0.7206 | MAE=0.4734 | 2248s (elapsed 37 min)
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 44
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 45
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 44
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 45
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 44
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 45
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 44
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 45
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 44
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 45
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 44
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 45
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 44
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 45
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 44
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 45
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 46
+  --> Fold 3/25 OK | best=h300_d5_p0.0 | R2=0.7149 | MAE=0.4666 | 2136s (elapsed 73 min)
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 47
+  --> Fold 4/25 OK | best=h300_d5_p0.0 | R2=0.7583 | MAE=0.4484 | 2187s (elapsed 74 min)
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 46
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 47
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 46
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 47
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 46
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 47
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 46
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 47
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 46
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 47
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 46
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 47
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 46
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 47
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 46
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 47
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 48
+  --> Fold 6/25 OK | best=h300_d5_p0.0 | R2=0.6450 | MAE=0.4908 | 2175s (elapsed 110 min)
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 49
+  --> Fold 5/25 OK | best=h600_d5_p0.0 | R2=0.7558 | MAE=0.4403 | 2351s (elapsed 112 min)
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 48
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 49
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 48
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 49
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 48
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 49
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 48
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 49
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 48
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 49
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 48
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 49
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 48
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 49
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 48
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 49
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 50
+  --> Fold 7/25 OK | best=h300_d5_p0.0 | R2=0.7917 | MAE=0.4119 | 2156s (elapsed 146 min)
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 51
+  --> Fold 8/25 OK | best=h300_d5_p0.0 | R2=0.7448 | MAE=0.4540 | 2181s (elapsed 148 min)
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 50
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 51
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 50
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 51
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 50
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 51
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 50
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 51
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 50
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 51
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 50
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 51
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 50
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 51
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 50
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 51
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 52
+  --> Fold 9/25 OK | best=h600_d5_p0.0 | R2=0.7151 | MAE=0.4979 | 2358s (elapsed 185 min)
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 53
+  --> Fold 10/25 OK | best=h600_d5_p0.0 | R2=0.6868 | MAE=0.5036 | 2345s (elapsed 187 min)
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 52
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 53
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 52
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 53
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 52
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 53
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 52
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 53
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 52
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 53
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 52
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 53
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 52
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 53
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 52
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 53
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 54
+  --> Fold 12/25 OK | best=h300_d5_p0.0 | R2=0.7159 | MAE=0.4708 | 2158s (elapsed 223 min)
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 55
+  --> Fold 11/25 OK | best=h600_d5_p0.2 | R2=0.7296 | MAE=0.4581 | 2373s (elapsed 225 min)
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 54
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 55
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 54
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 55
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 54
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 55
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 54
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 55
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 54
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 55
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 54
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 55
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 54
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 55
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 54
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 55
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 56
+  --> Fold 13/25 OK | best=h300_d5_p0.0 | R2=0.7147 | MAE=0.4714 | 2153s (elapsed 259 min)
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 57
+  --> Fold 14/25 OK | best=h300_d5_p0.0 | R2=0.7213 | MAE=0.4839 | 2168s (elapsed 261 min)
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 56
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 57
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 56
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 57
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 56
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 57
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 56
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 57
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 56
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 57
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 56
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 57
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 56
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 57
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 56
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 57
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 58
+  --> Fold 15/25 OK | best=h300_d3_p0.2 | R2=0.7015 | MAE=0.5173 | 2142s (elapsed 295 min)
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 58
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 59
+  --> Fold 16/25 OK | best=h600_d3_p0.2 | R2=0.7246 | MAE=0.4786 | 2262s (elapsed 299 min)
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 58
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 59
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 58
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 59
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 58
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 59
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 59
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 58
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 59
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 58
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 59
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 58
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 59
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 58
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 60
+  --> Fold 17/25 OK | best=h300_d3_p0.2 | R2=0.8080 | MAE=0.4289 | 2109s (elapsed 330 min)
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 59
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 60
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 61
+  --> Fold 18/25 OK | best=h300_d5_p0.0 | R2=0.6788 | MAE=0.4713 | 2144s (elapsed 335 min)
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 60
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 61
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 60
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 61
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 60
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 61
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 60
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 61
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 60
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 61
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 61
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 60
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 61
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 60
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 62
+  --> Fold 19/25 OK | best=h300_d5_p0.0 | R2=0.7002 | MAE=0.4995 | 2140s (elapsed 366 min)
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 61
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 62
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+  --> Fold 20/25 OK | best=h300_d3_p0.0 | R2=0.7107 | MAE=0.4668 | 2135s (elapsed 370 min)
+Seed set to 63
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 62
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 63
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 62
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 63
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 62
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 63
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 62
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 63
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 62
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 63
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 63
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 62
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 63
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 62
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 63
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 64
+  --> Fold 21/25 OK | best=h600_d5_p0.2 | R2=0.7516 | MAE=0.4387 | 2388s (elapsed 405 min)
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 65
+  --> Fold 22/25 OK | best=h300_d5_p0.2 | R2=0.7091 | MAE=0.4757 | 2220s (elapsed 407 min)
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 64
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 65
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 64
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 65
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 64
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 65
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 64
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 65
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 64
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 65
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 64
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 65
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 64
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 65
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 64
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 65
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 66
+  --> Fold 23/25 OK | best=h300_d5_p0.0 | R2=0.7529 | MAE=0.4983 | 2139s (elapsed 441 min)
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 66
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+  --> Fold 24/25 OK | best=h300_d5_p0.0 | R2=0.7181 | MAE=0.4841 | 2197s (elapsed 444 min)
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 66
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 66
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 66
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 66
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 66
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 66
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Seed set to 66
+GPU available: False, used: False
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+Loading `train_dataloader` to estimate number of stepping batches.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+  --> Fold 25/25 OK | best=h600_d5_p0.0 | R2=0.7484 | MAE=0.4473 | 1728s (elapsed 470 min)
+
+[RESULT] Tuned D-MPNN: R2 = 0.7262 +/- 0.0342 | MAE = 0.4703
+Best_Config
+h300_d5_p0.0    13
+h600_d5_p0.0     4
+h300_d5_p0.2     2
+h600_d5_p0.2     2
+h300_d3_p0.2     2
+h600_d3_p0.2     1
+h300_d3_p0.0     1
+Metric    Classical             Label  mean_diff_model_minus_classical       t  p_raw  ci90_low  ci90_high  equiv_margin  p_equiv  p_holm
+  RTwo       morgan            Morgan                          -0.0330 -1.9573 0.0620   -0.0619    -0.0042          0.05   0.1627  0.1241
+  RTwo      rdkit2d         RdkitTwoD                           0.0037  0.1753 0.8623   -0.0321     0.0394          0.05   0.0182  0.8623
+  RTwo   rdkit2d_fp       RdkitTwoDFp                          -0.0438 -2.2783 0.0319   -0.0767    -0.0109          0.05   0.3748  0.0957
+  RTwo rdkit2d3d_fp RdkitTwoDThreeDFp                          -0.0419 -2.4265 0.0231   -0.0714    -0.0123          0.05   0.3208  0.0925
+   Mae       morgan            Morgan                           0.0226  1.5057 0.1452   -0.0031     0.0484          0.05   0.0407  0.2904
+   Mae      rdkit2d         RdkitTwoD                          -0.0008 -0.0516 0.9593   -0.0277     0.0261          0.05   0.0023  0.9593
+   Mae   rdkit2d_fp       RdkitTwoDFp                           0.0398  2.4408 0.0224    0.0119     0.0677          0.05   0.2695  0.0800
+   Mae rdkit2d3d_fp RdkitTwoDThreeDFp                           0.0388  2.4921 0.0200    0.0122     0.0655          0.05   0.2402  0.0800
+[EXPORT] LaTeX variables saved to /home/andrey/Projects/__GITHUB__aavzpy2023/analysispaperKarimova2025/latex/gnn_tuned_variables.tex
+[DONE] 12_gnn_tuned.py complete.
+
+=== END LOG: 12_gnn_tuned.py [EXIT CODE: 0] ===
+

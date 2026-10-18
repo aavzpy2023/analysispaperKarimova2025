@@ -10,6 +10,7 @@ from scipy import stats
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from paths_config import CHECKPOINT_FILE, LATEX_DIR, LOGS_DIR, RESULTS_DIR
 from logger_utils import setup_logger, explain
+from nb_stats import nb_paired, holm, EQUIVALENCE_MARGIN_R2, EQUIVALENCE_MARGIN_MAE
 
 NADEAU_BENGIO_LATEX_FILE = os.path.join(LATEX_DIR, "nadeau_bengio_variables.tex")
 
@@ -17,25 +18,20 @@ MODE_TAG = {"morgan": "Morgan", "rdkit2d": "TwoD", "rdkit2d_fp": "TwoDFp", "rdki
 
 
 def all_pairs_nadeau_bengio(df):
-    """Nadeau-Bengio corrected paired t-test between every pair of representations, for R2 and MAE.
-    Folds are paired through the shared outer partitions; Holm adjustment is applied within each metric."""
+    """Nadeau-Bengio corrected paired t-test and equivalence test (TOST) between every pair of representations, for R2
+    and MAE. Folds are paired through the shared outer partitions; Holm adjustment is applied within each metric."""
     rows = []
     modes = [m for m in MODE_TAG if m in set(df["Mode"])]
-    for metric, col in (("RTwo", "R2_outer"), ("MAE", "MAE_outer")):
+    for metric, col, margin in (("RTwo", "R2_outer", EQUIVALENCE_MARGIN_R2), ("MAE", "MAE_outer", EQUIVALENCE_MARGIN_MAE)):
         block = []
         for a, b in itertools.combinations(modes, 2):
             da, db = df[df["Mode"] == a].sort_values("Fold"), df[df["Mode"] == b].sort_values("Fold")
-            diff = da[col].values - db[col].values
-            n = len(diff)
-            se = np.sqrt(diff.var(ddof=1) * (1.0 / n + da["N_test"].mean() / da["N_train"].mean()))
-            t = diff.mean() / se if se > 0 else 0.0
-            block.append({"Metric": metric, "A": a, "B": b, "mean_diff_A_minus_B": diff.mean(), "t": t,
-                          "p": 2 * stats.t.sf(abs(t), df=n - 1) if se > 0 else 1.0})
-        order = sorted(range(len(block)), key=lambda i: block[i]["p"])
-        running = 0.0
-        for rank, i in enumerate(order):
-            running = max(running, (len(block) - rank) * block[i]["p"])
-            block[i]["p_holm"] = min(1.0, running)
+            res = nb_paired(da[col].values - db[col].values, da["N_train"].mean(), da["N_test"].mean(), margin)
+            block.append({"Metric": metric, "A": a, "B": b, "mean_diff_A_minus_B": res["mean_diff"], "t": res["t"],
+                          "p": res["p"], "ci90_low": res["ci90_low"], "ci90_high": res["ci90_high"],
+                          "equiv_margin": margin, "p_equiv": res["p_equiv"]})
+        for row, p_adj in zip(block, holm([r["p"] for r in block])):
+            row["p_holm"] = p_adj
         rows += block
     return pd.DataFrame(rows)
 
@@ -174,6 +170,10 @@ def main():
                 f.write(f"\\newcommand{{\\NBp{tag}}}{{{r['p']:.4f}}}\n")
                 f.write(f"\\newcommand{{\\NBpHolm{tag}}}{{{r['p_holm']:.4f}}}\n")
                 f.write(f"\\newcommand{{\\NBdiff{tag}}}{{{abs(r['mean_diff_A_minus_B']):.3f}}}\n")
+                f.write(f"\\newcommand{{\\NBequivP{tag}}}{{{r['p_equiv']:.4f}}}\n")
+                f.write(f"\\newcommand{{\\NBciLow{tag}}}{{{r['ci90_low']:+.3f}}}\n")
+                f.write(f"\\newcommand{{\\NBciHigh{tag}}}{{{r['ci90_high']:+.3f}}}\n")
+            f.write(f"\\newcommand{{\\EquivMarginRTwo}}{{{EQUIVALENCE_MARGIN_R2}}}\n")
         logger.info("LaTeX variable export completed successfully.")
     except Exception as e:
         logger.error(f"Failed to write LaTeX variables: {e}")

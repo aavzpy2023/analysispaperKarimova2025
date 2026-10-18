@@ -9,6 +9,7 @@ Usage (from any directory):
     python run_pipeline.py --only 04 04.1     # run selected steps only
     python run_pipeline.py --only figures     # rebuild every figure and table from existing results (seconds)
     python run_pipeline.py --no-sensitivity   # skip the with-extreme-values re-run (steps S01, S02, 10)
+    python run_pipeline.py --no-scaffold      # skip the scaffold-split re-run (steps SC01, SC09, 13)
     python run_pipeline.py --strict           # error (instead of silent skip) if ChemProp cannot load
 Environment variables (optional): MLGNN_PROFILE (laptop|workstation), MLGNN_N_JOBS.
 """
@@ -37,6 +38,7 @@ PIPELINE = [
     "scripts/07_molecular_docking.py",
     "scripts/08_admet_profiling.py",
     "scripts/09_gnn_baseline.py",
+    "scripts/12_gnn_tuned.py",
 ]
 
 # Figure and table stage: runs automatically after every computation step has finished (so no figure can read a
@@ -61,6 +63,16 @@ SENSITIVITY = [
     ("S01", "scripts/01_nested_cv_stacking.py", SENS_ENV),
     ("S02", "scripts/02_statistical_tests.py", SENS_ENV),
     ("10", "scripts/10_outlier_sensitivity.py", {}),
+]
+
+# Scaffold-split robustness: the classical Morgan ensemble (01) and the default D-MPNN (09) are re-run on scaffold-grouped
+# outer folds, writing to scaffold/; step 13 summarizes the comparison with the random folds.
+SCAFFOLD_DIR = os.environ.get("MLGNN_SCAFFOLD_DIR") or os.path.join(ROOT, "scaffold")
+SCAFFOLD_ENV = {"MLGNN_OUT_DIR": SCAFFOLD_DIR, "MLGNN_SPLIT": "scaffold", "MLGNN_MODES": "morgan"}
+SCAFFOLD = [
+    ("SC01", "scripts/01_nested_cv_stacking.py", SCAFFOLD_ENV),
+    ("SC09", "scripts/09_gnn_baseline.py", SCAFFOLD_ENV),
+    ("13", "scripts/13_scaffold_split.py", {}),
 ]
 
 # Import names always checked by --check, in addition to EVERY third-party module that
@@ -168,11 +180,11 @@ def check_dependencies():
     return not bad
 
 
-def all_steps(include_sensitivity=True):
+def all_steps(include_sensitivity=True, include_scaffold=True):
     """Ordered (step id, script, extra environment) triples: the main pipeline, then the sensitivity analysis."""
     figures = [(step_id(s), s, {}) for s in FIGURES]
     steps = [(step_id(s), s, {}) for s in PIPELINE]
-    return steps + (SENSITIVITY if include_sensitivity else []) + figures
+    return (steps + (SENSITIVITY if include_sensitivity else []) + (SCAFFOLD if include_scaffold else []) + figures)
 
 
 def execute_and_log(script_path, master_log_path, extra_env=None):
@@ -213,7 +225,7 @@ def execute_and_log(script_path, master_log_path, extra_env=None):
 
 
 def select_steps(args):
-    steps = all_steps(include_sensitivity=not args.no_sensitivity)
+    steps = all_steps(include_sensitivity=not args.no_sensitivity, include_scaffold=not args.no_scaffold)
     ids = [sid for sid, _, _ in steps]
     if args.only:
         wanted = [i for w in args.only for i in ([step_id(s) for s in FIGURES] if w == "figures" else [w])]
@@ -273,6 +285,8 @@ def main():
     ap.add_argument("--only", nargs="+", metavar="STEP", help="run only these steps (e.g. 04 04.1); 'figures' selects the whole figure stage")
     ap.add_argument("--no-sensitivity", action="store_true",
                     help="skip the outlier sensitivity analysis (steps S01, S02, 10) in a full run")
+    ap.add_argument("--no-scaffold", action="store_true",
+                    help="skip the scaffold-split robustness analysis (steps SC01, SC09, 13) in a full run")
     ap.add_argument("--strict", action="store_true",
                     help="fail instead of silently skipping a model whose libraries cannot be imported (step 09)")
     args = ap.parse_args()
