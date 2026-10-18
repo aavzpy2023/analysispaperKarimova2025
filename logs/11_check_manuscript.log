@@ -9,11 +9,12 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 [OK] figure figures/01_nested_cv_algorithm_selection.png
 [OK] figure figures/01_nested_cv_stability_boxplot.png
+[OK] figure figures/01_nested_cv_time_vs_performance.png
 [OK] figure figures/04_augment_r2_comparison.png
 [OK] figure figures/05_pIC50_vs_LE_scatter.png
 [OK] figure figures/07_docking_scatter.png
 [OK] figure figures/08_admet_quadrants.png
 [OK] figure figures/09_gnn_benchmark_comparison.png
 
-[CHECK] 26 files followed, 7 figures, 565 project variables used, 0 undefined
+[CHECK] 27 files followed, 8 figures, 565 project variables used, 0 undefined
 [OK] Every figure, included file, and variable used by the manuscript is produced by the pipeline.

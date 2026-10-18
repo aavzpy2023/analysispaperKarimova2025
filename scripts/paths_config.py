@@ -57,6 +57,7 @@ LATEX_SCREENING  = os.path.join(LATEX_DIR, "screening_variables.tex")
 LATEX_DATA       = os.path.join(LATEX_DIR, "data_variables.tex")
 LATEX_ADMET      = os.path.join(LATEX_DIR, "admet_variables.tex")
 LATEX_TIMING     = os.path.join(LATEX_DIR, "timing_variables.tex")
+LATEX_COST_TABLE = os.path.join(LATEX_DIR, "cost_table.tex")
 LATEX_FDA_TABLE  = os.path.join(LATEX_DIR, "fda_candidates_table.tex")
 LATEX_ADMET_TABLE = os.path.join(LATEX_DIR, "admet_table.tex")
 

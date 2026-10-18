@@ -11,6 +11,7 @@ S1    — Exact ensemble selection per fold (supplementary heatmap)
 """
 
 import os
+import re
 import collections
 import numpy as np
 import pandas as pd
@@ -121,7 +122,16 @@ if not os.path.exists(GNN_RESULTS_CSV):
 _gnn = pd.read_csv(GNN_RESULTS_CSV).iloc[0]
 DMPNN_R2  = float(_gnn["R2"])
 DMPNN_MAE = float(_gnn["MAE"])
-DMPNN_STD = float((_gnn["CI_High"] - _gnn["CI_Low"]) / (2 * 1.96) * np.sqrt(25))
+DMPNN_STD = float(pd.read_csv(GNN_FOLD_SCORES_CSV)["R2"].std(ddof=1))
+
+# Tuned D-MPNN (step 12) and the default network's training time (macros written by step 09), for the cost figure.
+TUNED_R2 = TUNED_STD = TUNED_MIN = DEFAULT_MIN = None
+if os.path.exists(GNN_TUNED_CHECKPOINT):
+    _t = pd.read_csv(GNN_TUNED_CHECKPOINT)
+    TUNED_R2, TUNED_STD, TUNED_MIN = _t["R2"].mean(), _t["R2"].std(ddof=1), _t["Time_s"].mean() / 60
+    TUNED_MIN_SD = _t["Time_s"].std(ddof=1) / 60
+    _m = dict(re.findall(r"\\newcommand\{\\(\w+)\}\{([^}]*)\}", open(LATEX_TIMING).read()))
+    DEFAULT_MIN = float(_m["GnnFoldSecMean"]) / 60
 
 # Base learner families (for grouping in Fig 3)
 ALGO_FAMILY = {
@@ -174,7 +184,7 @@ paper_r2 = tt.groupby("Paper_reference_label")["Paper_R2"].first()
 # FIGURE 1 — R2 distribution per molecular representation
 #   Message: Morgan FP matches Karimova baseline without 3D descriptors
 # ==================================================================
-fig, ax = plt.subplots(figsize=(7.5, 4.8))
+fig, ax = plt.subplots(figsize=(7.5, 5.2))
 
 sns.boxplot(data=df, x="Mode_Clean", y="R2_outer", order=LABEL_ORDER,
             hue="Mode_Clean", palette=PALETTE, legend=False, dodge=False,
@@ -228,8 +238,9 @@ h_mean   = mlines.Line2D([], [], marker="D", color="w",
                           ms=7, label="Mean")
 h_median = mlines.Line2D([], [], color="#111111", lw=2, label="Median")
 ax.legend(handles=[h_mean, h_median], loc="lower left", fontsize=9)
-ax.text(0.99, 0.02, "n = 25 outer folds per representation",
-        transform=ax.transAxes, ha="right", va="bottom",
+ax.set_ylim(0.585, ax.get_ylim()[1])
+ax.text(0.5, 0.02, "n = 25 outer folds per representation",
+        transform=ax.transAxes, ha="center", va="bottom",
         fontsize=8.2, color="#777777")
 sns.despine(ax=ax)
 save(fig, "01_nested_cv_stability_boxplot")
@@ -463,10 +474,10 @@ save(fig, "01_nested_cv_performance_summary")
 #   Message: Morgan FP is on the Pareto front — best trade-off
 # ==================================================================
 LABEL_OFFSETS = {
-    "Morgan FP":      (0,   26, "center"),
+    "Morgan FP":      (-12, 26, "right"),
     "RDKit 2D":       (0,   26, "center"),
-    "RDKit 2D+FP":    (-12, -34, "right"),
-    "RDKit 2D+3D+FP": (14,  26, "left"),
+    "RDKit 2D+FP":    (14, -30, "left"),
+    "RDKit 2D+3D+FP": (0,   64, "center"),
 }
 
 fig, ax = plt.subplots(figsize=(7.8, 4.8))
@@ -485,7 +496,8 @@ for lab in LABEL_ORDER:
     ax.annotate(lab, (mx, my),
                 textcoords="offset points", xytext=(dx, dy),
                 ha=ha, fontsize=9.5, fontweight="semibold",
-                color=PALETTE[lab], zorder=6)
+                color=PALETTE[lab], zorder=6,
+                bbox=dict(boxstyle="round,pad=0.15", fc="white", ec="none", alpha=0.85))
 
 # Pareto front
 cent = (df.groupby("Mode_Clean", observed=True)
@@ -503,11 +515,18 @@ if len(front) > 1:
     ax.text(mx_f, my_f - 0.025, "Pareto front",
             fontsize=8.2, color="#AAAAAA", ha="center", style="italic")
 
-ax.axhline(DMPNN_R2, ls=":", color="#AA3333", lw=1.2, alpha=0.8)
-ax.text(5.5, DMPNN_R2 - 0.012,
-        f"D-MPNN  R²={DMPNN_R2:.3f}",
-        fontsize=8.2, color="#AA3333", ha="left", va="top")
+if TUNED_R2 is not None:
+    # Only the tuned network is shown: like the classical models, it includes a model-selection search.
+    ax.errorbar(TUNED_MIN, TUNED_R2, xerr=TUNED_MIN_SD, yerr=TUNED_STD, fmt="s", ms=10, color="#AA3333",
+                mec="white", mew=1.6, lw=1.8, capsize=3, zorder=5)
+    ax.annotate("D-MPNN\n(tuned)", (TUNED_MIN, TUNED_R2), textcoords="offset points", xytext=(-12, 0),
+                ha="right", va="center", fontsize=9, fontweight="semibold", color="#AA3333", zorder=6)
+else:
+    ax.axhline(DMPNN_R2, ls=":", color="#AA3333", lw=1.2, alpha=0.8)
+    ax.text(5.5, DMPNN_R2 - 0.012, f"D-MPNN  R²={DMPNN_R2:.3f}",
+            fontsize=8.2, color="#AA3333", ha="left", va="top")
 
+ax.set_xlim(2.5, 41)
 ax.set_xlabel("Runtime per outer fold (min)")
 ax.set_ylabel(r"$R^2$ (outer fold)")
 ax.set_title("Accuracy vs. computational cost  (mean ± SD)", pad=10)

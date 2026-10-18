@@ -34,16 +34,17 @@ We then placed these results against the incremental progression reported in the
 	\centering
 	\caption{Methodological comparison isolating the performance impact of architectural complexity, descriptor dimensionality, and data augmentation in TgDHFR bioactivity prediction.}
 	\label{tab:methodological_comparison}
-	\begin{tabular}{lllc}
+	\small
+	\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.35\textwidth}p{0.2\textwidth}p{0.13\textwidth}p{0.2\textwidth}@{}}
 		\toprule
-		\textbf{Model Framework} & \textbf{Descriptors} & \textbf{Data Augmentation} & \textbf{Test $R^2$ (mean $\pm$ std)} \\
+		\textbf{Model Framework} & \textbf{Descriptors} & \shortstack[l]{\textbf{Data}\\\textbf{Augmentation}} & \shortstack[l]{\textbf{Test $R^2$}\\\textbf{(mean $\pm$ std)}} \\
 		\midrule
 		Current Study (Classical Ensemble) & ECFP4 (2D) & None & \MorganRTwoMean $\pm$ \MorganRTwoStd \\
 		Baseline \cite{karimova2025} & 2D/3D/FP & None & \PaperBaselineRTwo \textsuperscript{a} \\
 		Feature-selected model \cite{karimova2025} & 2D/3D/FP (Selected) & None & \PaperSelectedRTwo \textsuperscript{a} \\
 		Augmented Final Model \cite{karimova2025} & 2D/3D/FP (Selected) & Gaussian Noise & \PaperFinalRTwo \textsuperscript{a} \\
 		\bottomrule
-		\multicolumn{4}{l}{\footnotesize \textsuperscript{a} Standard deviation not reported (NR) in the original study.}
+		\multicolumn{4}{p{0.9\textwidth}}{\footnotesize \textsuperscript{a} Standard deviation not reported (NR) in the original study.}
 	\end{tabular}
 \end{table}
 
@@ -72,7 +73,14 @@ Equivalence is a separate question. With the $\pm 0.05$ margin, the tuned networ
 
 Both graph-network variants and the classical ensembles fall in the same range as the original study's unselected baseline ($R^2 = \PaperBaselineRTwo$). The final augmented ensemble of the original study ($R^2 = \PaperFinalRTwo$) lies above this range, but, as discussed in Section~\ref{sec:res_classical}, that value comes from a single hold-out split and was not reproduced by selection or augmentation on a classical learner. Under the data volume of this benchmark, the graph architecture therefore did not provide a measurable gain over fixed fingerprints.
 
-Computational cost does not favor the classical approach in this protocol, but the comparison needs care. One default D-MPNN training took about \GnnFoldSecMean\ s on the workstation CPU (about \GnnTotalMin\ minutes for the \TotalOuterFolds\ folds), whereas a classical outer fold with its complete inner search took between \ClassicalFoldSecMin\ and \ClassicalFoldSecMax\ s depending on the representation (\ClassicalMorganFoldSec\ s, about \ClassicalMorganTotalHours\ h in total, for Morgan). The default network received no model selection. When it did, in the tuned variant, one outer fold took \GnnTunedFoldSecMean\ s, about \GnnTunedTotalHours\ h of worker time for the whole benchmark, which is more than the classical protocol even though the network's search was smaller. The case for the classical ensembles therefore rests on accuracy that is not lower, on simpler inputs and models that run on a CPU, and on a deployed model that uses only a subset of the fingerprint bits, and not on a shorter benchmark.
+Computational cost does not favor the classical approach in this protocol, but the comparison needs care (Table~\ref{tab:cost}). One default D-MPNN training took about \GnnFoldSecMean\ s on the workstation CPU (about \GnnTotalMin\ minutes for the \TotalOuterFolds\ folds), whereas a classical outer fold with its complete inner search took between \ClassicalFoldSecMin\ and \ClassicalFoldSecMax\ s depending on the representation (\ClassicalMorganFoldSec\ s, about \ClassicalMorganTotalHours\ h in total, for Morgan). The default network received no model selection. When it did, in the tuned variant, one outer fold took \GnnTunedFoldSecMean\ s, about \GnnTunedTotalHours\ h of worker time for the whole benchmark, which is more than the classical protocol even though the network's search was smaller. The case for the classical ensembles therefore rests on accuracy that is not lower, on simpler inputs and models that run on a CPU, and on a deployed model that uses only a subset of the fingerprint bits, and not on a shorter benchmark.
+
+\begin{table}[htbp]
+	\centering
+	\caption{Run time and accuracy of every model. Time is the mean wall-clock time of one outer fold on the workstation, including the inner search where one exists, and the 25-fold total is that time multiplied by 25. Times are not normalized by thread count (the classical models used all threads on one fold at a time; the tuned D-MPNN ran two training processes in parallel).}
+	\label{tab:cost}
+	\resizebox{\textwidth}{!}{\input{latex/cost_table.tex}}
+\end{table}
 
 \begin{figure}[htbp]
 	\centering

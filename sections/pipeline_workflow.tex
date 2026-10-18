@@ -1,4 +1,4 @@
-\newcommand{\boxheight}{3.85cm}
+\newcommand{\boxheight}{4.55cm}
 \begin{figure}[!h]
 	\centering
 	\resizebox{\textwidth}{!}{%
@@ -77,15 +77,15 @@
 			\node[phase5, right=of box4] (box5) {
 				\begin{minipage}[t][\boxheight][t]{3.15cm}
 					\centering
-					\textbf{\footnotesize Validated Candidates} \par\vspace{2pt}\hrule\vspace{5pt}
+					\textbf{\footnotesize Prioritized Candidates} \par\vspace{2pt}\hrule\vspace{5pt}
 					\textbf{\DockBestCandidate} \par\vspace{1pt}
-					\textit{Top Consensus Lead} \par
+					\textit{Top Consensus Hit} \par
 					$p\mathrm{IC}_{50} = \DockBestMLpIC$ \\$\DockBestDockScore$\,kcal/mol \par\vspace{4pt}
 					\textbf{Triamterene} \par\vspace{1pt}
-					\textit{High-Efficiency Lead} \par
+					\textit{Most Ligand-Efficient} \par
 					$p\mathrm{IC}_{50} = \TriamtereneMLpIC$ \\$\TriamtereneDockScore$\,kcal/mol \par\vspace{4pt}
 					\hrule\vspace{3pt}
-					\textit{\DockNValidated{} Hits Structurally Verified}
+					\textit{\DockNValidatedUnique{} Unique Consensus Hits (Docking)}
 				\end{minipage}
 			};
 			
@@ -97,8 +97,8 @@
 			
 		\end{tikzpicture}%
 	}
-	\caption{\textbf{Schematic overview of the multi-tier computational repurposing and validation pipeline.} 
-		The hierarchical funnel integrates: (1) 2D ligand-based representation benchmarking under nested cross-validation, (2) applicability domain-constrained screening of FDA-approved compounds, (3) orthogonal physics-based consensus validation via molecular docking (AutoDock Vina), and (4) in silico ADMET profiling (Caco-2 permeability route categorization and hERG cardiotoxicity filtering) to isolate clinically viable TgDHFR candidates.}
+	\caption{\textbf{Schematic overview of the multi-tier computational screening and prioritization pipeline.} 
+		The hierarchical funnel integrates: (1) 2D ligand-based representation benchmarking under nested cross-validation, (2) applicability domain-constrained screening of FDA-approved compounds, (3) orthogonal physics-based consensus filtering via molecular docking (AutoDock Vina), and (4) in silico ADMET profiling (Caco-2 permeability route categorization and hERG cardiotoxicity filtering) to prioritize TgDHFR candidates for experimental testing.}
 	\label{fig:pipeline_flowchart}
 	\vspace{-10pt}
 \end{figure}
