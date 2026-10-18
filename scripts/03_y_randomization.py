@@ -33,23 +33,9 @@ logger = logging.getLogger(__name__)
 # =========================================================
 # 1. DYNAMIC DISCOVERY OF THE BEST MODEL
 # =========================================================
-def get_winning_architecture():
-    """Analyzes the Nested CV results to find the winning representation and architecture."""
-    if not os.path.exists(CHECKPOINT_FILE):
-        logger.error(f"Checkpoint file not found: {CHECKPOINT_FILE}. Run 01_nested_cv_stacking.py first.")
-        sys.exit(1)
-
-    df = pd.read_csv(CHECKPOINT_FILE)
-
-    # Find the representation (Mode) with the highest average outer R2
-    mode_perf = df.groupby('Mode')['R2_outer'].mean().sort_values(ascending=False)
-    best_mode = mode_perf.index[0]
-
-    # Find the most stable architecture (most frequently selected) for that Mode
-    df_best_mode = df[df['Mode'] == best_mode]
-    best_architecture = df_best_mode['Selected_Model'].value_counts().index[0]
-
-    return best_mode, best_architecture
+# Architecture of the deployed screening model (STACK_MEMBERS in step 04), evaluated on the Morgan fingerprints it uses.
+DEPLOYED_MODE = 'morgan'
+DEPLOYED_ARCHITECTURE = 'RF+XGB+SVM'
 
 
 # =========================================================
@@ -126,9 +112,8 @@ def main():
         predicting the average potency, negative is worse than that.
     """)
 
-    best_mode, best_architecture = get_winning_architecture()
-    logger.info(f"Audit Result -> Best representation: '{best_mode}'")
-    logger.info(f"Audit Result -> Most stable architecture: '{best_architecture}'")
+    best_mode, best_architecture = DEPLOYED_MODE, DEPLOYED_ARCHITECTURE
+    logger.info(f"Deployed model -> representation: '{best_mode}', architecture: '{best_architecture}'")
 
     # 1. Load Data
     logger.info(f"Loading training data from: {TRAIN_FILE}")
@@ -139,11 +124,7 @@ def main():
 
     # 2. Feature Matrix Generation
     logger.info(f"Generating feature matrix X for representation mode '{best_mode}'...")
-    if 'morgan' in best_mode.lower():
-        X_raw = np.array([get_morgan_fp(s) for s in df['Smiles']])
-    else:
-        logger.warning(f"Winning representation '{best_mode}' is not pure Morgan. Falling back to Morgan FP for randomization validation.")
-        X_raw = np.array([get_morgan_fp(s) for s in df['Smiles']])
+    X_raw = np.array([get_morgan_fp(s) for s in df['Smiles']])
 
     X = pd.DataFrame(X_raw, columns=[f"fp_{i}" for i in range(X_raw.shape[1])])
     logger.info(f"Feature matrix dimensions: {X.shape}")
@@ -180,7 +161,7 @@ def main():
         result sits above the shuffled results; the pass criterion used here is real R2 > mean + 2.33 SD (~99% confidence).
 
         If the verdict is PASSED, the predictive signal is not a chance correlation. Note that this test uses Morgan
-        fingerprints and the most frequently selected stacking architecture from step 01.
+        fingerprints and the stacking architecture of the deployed screening model (RF+XGB+SVM, as in step 04).
     """)
     logger.info("-" * 80)
     logger.info("Y-RANDOMIZATION INTEGRITY REPORT")

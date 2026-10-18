@@ -176,6 +176,8 @@ PAPER_TOP = ['Bisacodyl', 'Etodolac', 'Triamterene', 'Finerenone',
 PDB_FILE = RECEPTOR_PDB
 RECEPTOR_FILE = RECEPTOR_PDBQT
 LIGAND_CODE = "CP6"
+# Pyrimethamine; the crystal PDB has no bond orders, so they are assigned from this template (redocking, step 06)
+LIGAND_TEMPLATE_SMILES = "CCc1nc(N)nc(N)c1-c1ccc(Cl)cc1"
 CHAIN = "B"  # DHFR active site chain
 EXHAUSTIVENESS = 32
 RMSD_THRESHOLD = 2.0

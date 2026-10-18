@@ -21,7 +21,7 @@ from sklearn.linear_model import RidgeCV
 from sklearn.base import clone
 from xgboost import XGBRegressor
 
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import GroupKFold, train_test_split
 from sklearn.metrics import r2_score, mean_absolute_error
 from sklearn.inspection import permutation_importance
 
@@ -44,7 +44,8 @@ logger = logging.getLogger(__name__)
 # =========================================================
 # MODEL BASE ESTIMATORS (MULTITHREADING ENABLED)
 # =========================================================
-# Base estimators for the Stacking Regressor (winning topology from nested CV)
+# Base estimators of the deployed Stacking Regressor. This architecture is fixed in advance; it is not the one most often
+# selected by the nested CV in step 01 (RF+SVM for Morgan).
 # Every model of this step is fitted and evaluated single-threaded: a multi-threaded RandomForest.predict() sums the trees
 # in a thread-dependent order, which changes the last bits of the predictions between runs. Parallelism is applied
 # across independent tasks instead (features in the permutation importance, runs in the ensemble), which cannot change results.
@@ -84,8 +85,11 @@ def build_X(smiles_list):
 # =========================================================
 # MODEL BUILDER
 # =========================================================
-def build_model():
-    """Returns a fresh instance of the winning Stacking Regressor architecture."""
+def build_model(groups=None, X=None, y=None):
+    """Returns a fresh instance of the fixed stacking architecture (STACK_MEMBERS + RidgeCV meta-learner).
+    With augmented data, `groups` (the original molecule of each row) makes the stacking's internal 5-fold split keep all
+    noisy copies of a molecule on the same side, so that the meta-learner is not fitted on out-of-fold predictions of
+    molecules whose copies the base models have seen."""
     estimators = [(n, clone(m)) for n, m in STACK_MEMBERS]
     if len(estimators) == 1:
         return clone(estimators[0][1])
@@ -94,7 +98,7 @@ def build_model():
     return StackingRegressor(
         estimators=estimators,
         final_estimator=RidgeCV(),
-        cv=5,
+        cv=5 if groups is None else list(GroupKFold(n_splits=5).split(X, y, groups)),
         n_jobs=1,
     )
 
@@ -151,8 +155,9 @@ def augment_data(X_train, y_train, noise_levels=None, seed=RANDOM_STATE):
         y_parts.append(y_train)
     X_aug = np.vstack(X_parts)
     y_aug = np.concatenate(y_parts)
+    groups = np.tile(np.arange(len(y_train)), len(X_parts))
     logger.info(f"Dataset expansion: {len(y_train)} -> {len(y_aug)} (noise levels: {noise_levels})")
-    return X_aug, y_aug
+    return X_aug, y_aug, groups
 
 
 # =========================================================
@@ -190,19 +195,19 @@ def calculate_empirical_bootstrap_pvalue(boot_array, reference_val):
 # =========================================================
 # ENSEMBLE PREDICTION
 # =========================================================
-def _fit_predict_run(X_train, y_train, X_test, run):
-    m = build_model()
+def _fit_predict_run(X_train, y_train, X_test, run, groups=None):
+    m = build_model(groups, X_train, y_train)
     m.set_params(rf__random_state=RANDOM_STATE + run, xgb__random_state=RANDOM_STATE + run)
     m.fit(X_train, y_train)
     pred = m.predict(X_test)
     return pred.flatten() if pred.ndim > 1 else pred
 
 
-def ensemble_predict(X_train, y_train, X_test, n_runs=N_ENSEMBLE_RUNS):
+def ensemble_predict(X_train, y_train, X_test, n_runs=N_ENSEMBLE_RUNS, groups=None):
     """Trains n_runs stochastic models (different seeds for the tree ensembles) and returns their averaged predictions.
     Each run is single-threaded and independent, so running them in parallel does not change the result."""
     all_preds = Parallel(n_jobs=max(1, min(n_runs, N_JOBS)))(
-        delayed(_fit_predict_run)(X_train, y_train, X_test, run) for run in range(n_runs))
+        delayed(_fit_predict_run)(X_train, y_train, X_test, run, groups) for run in range(n_runs))
     return np.mean(all_preds, axis=0)
 
 
@@ -388,9 +393,9 @@ def run():
     logger.info("-" * 80)
     t0 = time.time()
 
-    X_aug, y_aug = augment_data(X_dev_b, y_dev)
+    X_aug, y_aug, groups_aug = augment_data(X_dev_b, y_dev)
 
-    y_pred_c = ensemble_predict(X_aug, y_aug, X_test_b)
+    y_pred_c = ensemble_predict(X_aug, y_aug, X_test_b, groups=groups_aug)
     r2_c = r2_score(y_test, y_pred_c)
     mae_c = mean_absolute_error(y_test, y_pred_c)
 
@@ -464,7 +469,7 @@ def run():
 
     # Optional: Save augmented model under separate filename if required for downstream auditing
     aug_model_path = MODEL_FILE.replace('.joblib', '_augmented.joblib')
-    final_model_aug = build_model()
+    final_model_aug = build_model(groups_aug, X_aug, y_aug)
     final_model_aug.fit(X_aug, y_aug)
     joblib.dump(final_model_aug, aug_model_path)
     logger.info(f"Saved augmented model separately to: {aug_model_path}")

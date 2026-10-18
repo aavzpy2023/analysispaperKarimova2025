@@ -74,10 +74,11 @@ def convert_ligand_to_pdbqt(ligand_pdb, out_pdbqt=os.path.join(RECEPTOR_DIR, "cr
             print(f"  [INFO] Multiple fragments detected ({len(frags)}). Retaining the largest one.")
             mol = max(frags, key=lambda f: f.GetNumAtoms())
 
-        try:
-            Chem.SanitizeMol(mol)
-        except Exception as e:
-            print(f"  [WARNING] RDKit Sanitization issue: {e}")
+        # The PDB file has no bond orders (RDKit would build an all-single-bond, non-aromatic molecule), so they are
+        # assigned from the known structure of the ligand.
+        mol = AllChem.AssignBondOrdersFromTemplate(Chem.MolFromSmiles(LIGAND_TEMPLATE_SMILES), mol)
+        Chem.SanitizeMol(mol)
+        crystal_ref = Chem.Mol(mol)
 
         # Add hydrogens and generate 3D coordinates
         mol = Chem.AddHs(mol)
@@ -107,11 +108,11 @@ def convert_ligand_to_pdbqt(ligand_pdb, out_pdbqt=os.path.join(RECEPTOR_DIR, "cr
             f.write(pdbqt_string)
 
         print(f"  [+] Ligand successfully converted to {out_pdbqt} via RDKit + Meeko.")
-        return out_pdbqt
+        return out_pdbqt, crystal_ref
 
     except Exception as e:
         print(f"  [ERROR] Conversion process failed: {e}")
-        return None
+        return None, None
 
 
 def compute_rmsd_centroid(coords_ref, coords_docked):
@@ -123,6 +124,14 @@ def compute_rmsd_centroid(coords_ref, coords_docked):
     print(f"  [-] Docked Output Centroid     : {c2.round(3)}")
     print(f"  [>] Calculated Centroid Distance: {dist:.3f} Å")
     return dist
+
+
+def heavy_atom_rmsd(crystal_ref, pose_pdbqt):
+    """Symmetry-aware heavy-atom RMSD between the crystal ligand and a Vina pose, without realigning them."""
+    from meeko import PDBQTMolecule, RDKitMolCreate
+    from rdkit.Chem import rdMolAlign
+    pose = RDKitMolCreate.from_pdbqt_mol(PDBQTMolecule(pose_pdbqt, is_dlg=False, skip_typing=True))[0]
+    return float(rdMolAlign.CalcRMS(Chem.RemoveHs(pose), Chem.RemoveHs(crystal_ref)))
 
 
 def parse_vina_output_coords(vina_pdbqt_string):
@@ -158,16 +167,16 @@ def run_redocking_validation():
     print(f"Timestamp: {time.strftime('%Y-%m-%d %H:%M:%S')}")
     print(f"Receptor setup: Chain {CHAIN} (DHFR active site) of PDB 6AOG")
     print("=" * 80)
-    print(f"Target Criterion: Centroid distance < {RMSD_THRESHOLD} Å = Protocol Validated\n")
+    print(f"Target Criterion: heavy-atom RMSD < {RMSD_THRESHOLD} Å = Protocol Validated\n")
     explain("What this step does", f"""
         Before trusting docking scores for new drugs, we check that the docking software can reproduce a known answer. The
         crystal structure 6AOG contains the real inhibitor pyrimethamine ({LIGAND_CODE}) bound to the TgDHFR active site. We
         take that ligand out, place it back with AutoDock Vina (a physics-based scoring program that searches positions and
         orientations of a molecule inside a search box), and compare where Vina puts it with where it sits in the crystal.
 
-        Pass criterion: the docked ligand's geometric centre must lie within {RMSD_THRESHOLD} Å of the crystal position
-        (1 Å = 0.1 nm, about one bond length). Methodological note for reviewers: this compares centres only, which is more
-        lenient than the usual heavy-atom RMSD (that also checks orientation of the ligand); a stricter check could be added.
+        Pass criterion: the heavy-atom RMSD between the docked pose and the crystal ligand must be below {RMSD_THRESHOLD} Å
+        (1 Å = 0.1 nm, about one bond length), which also checks the orientation of the ligand. The distance between the two
+        geometric centres is reported as well, but note that the search box is centred on the crystal ligand.
 
         The same search box (centre and size in paths_config.py) is then reused for all FDA drugs in step 07.
         Binding affinity is in kcal/mol: more negative = predicted tighter binding.
@@ -199,7 +208,7 @@ def run_redocking_validation():
     print(f"[2/4] LIGAND PREPARATION AND CONVERSION")
     t0 = time.time()
     ligand_pdb = write_ligand_pdb(ligand_lines)
-    ligand_pdbqt = convert_ligand_to_pdbqt(ligand_pdb)
+    ligand_pdbqt, crystal_ref = convert_ligand_to_pdbqt(ligand_pdb)
     if ligand_pdbqt is None:
         sys.exit(1)
     print(f"  [+] Preparation completed in {time.time() - t0:.2f}s\n")
@@ -222,7 +231,9 @@ def run_redocking_validation():
     v.dock(exhaustiveness=EXHAUSTIVENESS, n_poses=1)
 
     best_energy = v.energies(n_poses=1)[0][0]
-    docked_coords = parse_vina_output_coords(v.poses(n_poses=1))
+    pose_pdbqt = v.poses(n_poses=1)
+    docked_coords = parse_vina_output_coords(pose_pdbqt)
+    heavy_rmsd = heavy_atom_rmsd(crystal_ref, pose_pdbqt)
 
     print(f"  [+] Docking completed in {time.time() - t0:.2f}s")
     print(f"  [+] Best Pose Binding Affinity: {best_energy:.3f} kcal/mol\n")
@@ -232,7 +243,9 @@ def run_redocking_validation():
     print("-" * 80)
 
     if docked_coords is not None and len(docked_coords) > 0:
-        rmsd = compute_rmsd_centroid(crystal_coords, docked_coords)
+        centroid_dist = compute_rmsd_centroid(crystal_coords, docked_coords)
+        print(f"  [>] Heavy-atom RMSD (symmetry-aware): {heavy_rmsd:.3f} Å")
+        rmsd = heavy_rmsd
         print("-" * 80)
 
         if rmsd < RMSD_THRESHOLD:
@@ -241,20 +254,21 @@ def run_redocking_validation():
             print(f'  "Docking protocol validation was performed by re-docking')
             print(f'  pyrimethamine ({LIGAND_CODE}, PDB: 6AOG, chain {CHAIN})')
             print(f'  into the TgDHFR active site. The top-ranked pose reproduced')
-            print(f'  the crystallographic binding mode with a centroid distance')
+            print(f'  the crystallographic binding mode with a heavy-atom RMSD')
             print(f'  of {rmsd:.2f} Å (threshold: {RMSD_THRESHOLD:.1f} Å)."')
             print(f'\n  [IMPORTANT WARNING]: The corrected active site center')
             print(f'  for the DHFR site (chain {CHAIN}) is [{cx:.3f}, {cy:.3f}, {cz:.3f}].')
             print(f'  Ensure CENTER_X/Y/Z in paths_config.py (used by 07_molecular_docking.py) match this center.')
         else:
             print("  [FAILED] ✗ PROTOCOL NOT VALIDATED")
-            print(f"  Centroid distance {rmsd:.3f}Å exceeds the {RMSD_THRESHOLD}Å threshold.")
+            print(f"  Heavy-atom RMSD {rmsd:.3f}Å exceeds the {RMSD_THRESHOLD}Å threshold.")
             print(f"  Suggestion: Try increasing BOX_SIZE to 25.0 or 30.0 and re-run.")
 
         # LaTeX Export
         with open(LATEX_REDOCKING, 'w') as f:
             f.write("% Auto-generated by 06_redocking_validation.py pipeline\n")
             f.write(f"\\newcommand{{\\RedockRMSD}}{{{rmsd:.2f}}}\n")
+            f.write(f"\\newcommand{{\\RedockCentroidDist}}{{{centroid_dist:.2f}}}\n")
             f.write(f"\\newcommand{{\\RedockEnergy}}{{{best_energy:.2f}}}\n")
             f.write(f"\\newcommand{{\\RedockThreshold}}{{{RMSD_THRESHOLD:.1f}}}\n")
             f.write(f"\\newcommand{{\\RedockLigand}}{{{LIGAND_CODE}}}\n")
