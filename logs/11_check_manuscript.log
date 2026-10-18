@@ -15,6 +15,7 @@
 [OK] figure figures/07_docking_scatter.png
 [OK] figure figures/08_admet_quadrants.png
 [OK] figure figures/09_gnn_benchmark_comparison.png
+[OK] figure figures/S1_nested_cv_selection_full_heatmap.png
 
-[CHECK] 27 files followed, 8 figures, 565 project variables used, 0 undefined
+[CHECK] 28 files followed, 9 figures, 565 project variables used, 0 undefined
 [OK] Every figure, included file, and variable used by the manuscript is produced by the pipeline.
